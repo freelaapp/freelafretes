@@ -430,8 +430,8 @@ function SiteFooter() {
       <div className="mx-auto max-w-6xl px-5 md:px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
         <div className="col-span-2 md:col-span-1">
           <Logo size={40} variant="onDark" />
-          <p className="mt-4 text-sm text-primary-foreground/70">
-            Marketplace de fretes que conecta o Brasil.
+          <p className="mt-4 text-sm text-accent-foreground/70">
+            Intermediador nacional de fretes que conecta o Brasil.
           </p>
         </div>
         <FooterCol title="Faça seu cadastro" links={[
