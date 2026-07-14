@@ -6,6 +6,7 @@ import { Truck, Building2, Lock, MapPin, Package, Search } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import { formatDateBR } from "@/lib/format";
+import heroTruck from "@/assets/hero-truck.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
