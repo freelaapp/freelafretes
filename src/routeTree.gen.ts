@@ -35,6 +35,7 @@ import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viag
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
 import { Route as AdminProvidersIdRouteImport } from './routes/admin.providers.$id'
+import { Route as AdminFreightsIdRouteImport } from './routes/admin.freights.$id'
 import { Route as AdminContractorsIdRouteImport } from './routes/admin.contractors.$id'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -168,6 +169,11 @@ const AdminProvidersIdRoute = AdminProvidersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminProvidersRoute,
 } as any)
+const AdminFreightsIdRoute = AdminFreightsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminFreightsRoute,
+} as any)
 const AdminContractorsIdRoute = AdminContractorsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -180,7 +186,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
-  '/admin/freights': typeof AdminFreightsRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
@@ -208,7 +215,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
-  '/admin/freights': typeof AdminFreightsRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin': typeof AdminIndexRoute
   '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
@@ -238,7 +246,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
-  '/admin/freights': typeof AdminFreightsRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/motorista/viagens'
     | '/admin/'
     | '/admin/contractors/$id'
+    | '/admin/freights/$id'
     | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/motorista/viagens'
     | '/admin'
     | '/admin/contractors/$id'
+    | '/admin/freights/$id'
     | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/motorista/viagens'
     | '/admin/'
     | '/admin/contractors/$id'
+    | '/admin/freights/$id'
     | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
@@ -556,6 +568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProvidersIdRouteImport
       parentRoute: typeof AdminProvidersRoute
     }
+    '/admin/freights/$id': {
+      id: '/admin/freights/$id'
+      path: '/$id'
+      fullPath: '/admin/freights/$id'
+      preLoaderRoute: typeof AdminFreightsIdRouteImport
+      parentRoute: typeof AdminFreightsRoute
+    }
     '/admin/contractors/$id': {
       id: '/admin/contractors/$id'
       path: '/$id'
@@ -577,6 +596,18 @@ const AdminContractorsRouteChildren: AdminContractorsRouteChildren = {
 const AdminContractorsRouteWithChildren =
   AdminContractorsRoute._addFileChildren(AdminContractorsRouteChildren)
 
+interface AdminFreightsRouteChildren {
+  AdminFreightsIdRoute: typeof AdminFreightsIdRoute
+}
+
+const AdminFreightsRouteChildren: AdminFreightsRouteChildren = {
+  AdminFreightsIdRoute: AdminFreightsIdRoute,
+}
+
+const AdminFreightsRouteWithChildren = AdminFreightsRoute._addFileChildren(
+  AdminFreightsRouteChildren,
+)
+
 interface AdminProvidersRouteChildren {
   AdminProvidersIdRoute: typeof AdminProvidersIdRoute
 }
@@ -591,7 +622,7 @@ const AdminProvidersRouteWithChildren = AdminProvidersRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminContractorsRoute: typeof AdminContractorsRouteWithChildren
-  AdminFreightsRoute: typeof AdminFreightsRoute
+  AdminFreightsRoute: typeof AdminFreightsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
   AdminValidationRoute: typeof AdminValidationRoute
@@ -600,7 +631,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminContractorsRoute: AdminContractorsRouteWithChildren,
-  AdminFreightsRoute: AdminFreightsRoute,
+  AdminFreightsRoute: AdminFreightsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdminProvidersRoute: AdminProvidersRouteWithChildren,
   AdminValidationRoute: AdminValidationRoute,
