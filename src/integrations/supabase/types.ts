@@ -802,6 +802,7 @@ export type Database = {
       }
       is_admin: { Args: { _uid: string }; Returns: boolean }
       is_super_admin: { Args: { _uid: string }; Returns: boolean }
+      public_stats: { Args: never; Returns: Json }
     }
     Enums: {
       admin_role: "ADMIN" | "SUPER_ADMIN"
