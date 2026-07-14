@@ -14,9 +14,9 @@ import truckPhoto from "@/assets/freela-truck.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Freela Fretes — Marketplace de fretes do Brasil" },
+      { title: "Freela Fretes — Intermediador nacional de fretes" },
       { name: "description", content: "Conectamos embarcadores a caminhoneiros autônomos em todo o Brasil. Publique cargas, encontre fretes e feche negócio com pagamento protegido." },
-      { property: "og:title", content: "Freela Fretes — Marketplace de fretes do Brasil" },
+      { property: "og:title", content: "Freela Fretes — Intermediador nacional de fretes" },
       { property: "og:description", content: "Publique cargas ou encontre fretes em todo o Brasil com pagamento protegido." },
       { property: "og:type", content: "website" },
     ],
