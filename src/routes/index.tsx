@@ -157,11 +157,11 @@ function StatsBar() {
   const { data } = useQuery({
     queryKey: ["public-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("public_stats");
-      if (error) throw error;
-      return data as { open_freights: number; drivers: number; total_km: number; gmv_cents: number };
+      const { publicStats } = await import("@/lib/api.functions");
+      return await publicStats();
     },
   });
+
 
   const items = [
     { icon: Package, value: nfInt.format(data?.open_freights ?? 0), label: "Fretes disponíveis" },
