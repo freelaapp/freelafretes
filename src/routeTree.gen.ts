@@ -29,6 +29,7 @@ import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminValidationRouteImport } from './routes/admin.validation'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminProvidersRouteImport } from './routes/admin.providers'
+import { Route as AdminPricingRouteImport } from './routes/admin.pricing'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
@@ -146,6 +147,11 @@ const AdminProvidersRoute = AdminProvidersRouteImport.update({
   path: '/providers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPricingRoute = AdminPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -394,6 +404,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -624,6 +636,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProvidersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pricing': {
+      id: '/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AdminPricingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/payments': {
       id: '/admin/payments'
       path: '/payments'
@@ -794,6 +813,7 @@ interface AdminRouteChildren {
   AdminJobsRoute: typeof AdminJobsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPricingRoute: typeof AdminPricingRoute
   AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
   AdminTeamRoute: typeof AdminTeamRoute
   AdminValidationRoute: typeof AdminValidationRoute
@@ -808,6 +828,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJobsRoute: AdminJobsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPricingRoute: AdminPricingRoute,
   AdminProvidersRoute: AdminProvidersRouteWithChildren,
   AdminTeamRoute: AdminTeamRoute,
   AdminValidationRoute: AdminValidationRoute,
