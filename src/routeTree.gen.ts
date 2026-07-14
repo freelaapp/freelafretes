@@ -26,6 +26,7 @@ import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motoris
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminValidationRouteImport } from './routes/admin.validation'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminContractorsRouteImport } from './routes/admin.contractors'
 import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
@@ -117,6 +118,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminContractorsRoute = AdminContractorsRouteImport.update({
+  id: '/contractors',
+  path: '/contractors',
+  getParentRoute: () => AdminRoute,
+} as any)
 const MotoristaViagemIdRoute = MotoristaViagemIdRouteImport.update({
   id: '/motorista/viagem/$id',
   path: '/motorista/viagem/$id',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/contractors': typeof AdminContractorsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/contractors': typeof AdminContractorsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/contractors': typeof AdminContractorsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/contractors'
     | '/admin/login'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/admin/contractors'
     | '/admin/login'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/contractors'
     | '/admin/login'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -433,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/contractors': {
+      id: '/admin/contractors'
+      path: '/contractors'
+      fullPath: '/admin/contractors'
+      preLoaderRoute: typeof AdminContractorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/motorista/viagem/$id': {
       id: '/motorista/viagem/$id'
       path: '/motorista/viagem/$id'
@@ -472,12 +491,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminContractorsRoute: typeof AdminContractorsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminValidationRoute: typeof AdminValidationRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminContractorsRoute: AdminContractorsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminValidationRoute: AdminValidationRoute,
   AdminIndexRoute: AdminIndexRoute,
