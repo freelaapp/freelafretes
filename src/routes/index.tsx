@@ -119,20 +119,20 @@ function Hero() {
       <div className="grid md:grid-cols-2 gap-6 items-center p-6 md:p-10 min-h-[420px] md:min-h-[500px]">
         <div className="text-accent-foreground max-w-xl">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
-            <Flag className="h-3.5 w-3.5" /> Marketplace nacional de fretes
+            <Flag className="h-3.5 w-3.5" /> Intermediador nacional de fretes
           </span>
-          <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-primary-foreground">
+          <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-accent-foreground">
             Sua carga tem pressa.<br />
             <span className="text-primary">Seu caminhão tem destino.</span>
           </h1>
-          <p className="mt-4 text-sm md:text-base text-primary-foreground/80">
-            O marketplace que conecta embarcadores e caminhoneiros em todo o Brasil, com pagamento protegido e reputação verificada.
+          <p className="mt-4 text-sm md:text-base text-accent-foreground/80">
+            Conectamos embarcadores e caminhoneiros em todo o Brasil, com pagamento protegido e reputação verificada.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/cadastro/empresa" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-primary text-primary-foreground font-semibold shadow-elevated hover:bg-primary-hover">
               Tenho carga para enviar <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/cadastro/motorista" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-primary-foreground/30 text-primary-foreground font-semibold hover:bg-primary-foreground/10">
+            <Link to="/cadastro/motorista" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-accent-foreground/30 text-accent-foreground font-semibold hover:bg-accent-foreground/10">
               Sou motorista
             </Link>
           </div>
