@@ -32,6 +32,7 @@ import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
 import { Route as AdminFreightsRouteImport } from './routes/admin.freights'
 import { Route as AdminFeedbacksRouteImport } from './routes/admin.feedbacks'
 import { Route as AdminContractorsRouteImport } from './routes/admin.contractors'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
@@ -157,6 +158,11 @@ const AdminContractorsRoute = AdminContractorsRouteImport.update({
   path: '/contractors',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const MotoristaViagemIdRoute = MotoristaViagemIdRouteImport.update({
   id: '/motorista/viagem/$id',
   path: '/motorista/viagem/$id',
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
     | '/admin/freights'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
     | '/admin/freights'
@@ -380,6 +391,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
     | '/admin/freights'
@@ -595,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminContractorsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/motorista/viagem/$id': {
       id: '/motorista/viagem/$id'
       path: '/motorista/viagem/$id'
@@ -709,6 +728,7 @@ const AdminProvidersRouteWithChildren = AdminProvidersRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminContractorsRoute: typeof AdminContractorsRouteWithChildren
   AdminFeedbacksRoute: typeof AdminFeedbacksRoute
   AdminFreightsRoute: typeof AdminFreightsRouteWithChildren
@@ -721,6 +741,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
   AdminContractorsRoute: AdminContractorsRouteWithChildren,
   AdminFeedbacksRoute: AdminFeedbacksRoute,
   AdminFreightsRoute: AdminFreightsRouteWithChildren,
