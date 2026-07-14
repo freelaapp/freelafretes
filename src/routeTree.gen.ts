@@ -16,6 +16,7 @@ import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publ
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
 
@@ -54,6 +55,11 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbarcadorViagemIdRoute = EmbarcadorViagemIdRouteImport.update({
+  id: '/embarcador/viagem/$id',
+  path: '/embarcador/viagem/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmbarcadorPagamentoJobIdRoute =
   EmbarcadorPagamentoJobIdRouteImport.update({
     id: '/embarcador/pagamento/$jobId',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
   id:
     | '__root__'
     | '/'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -146,6 +158,7 @@ export interface RootRouteChildren {
   EmbarcadorViagensRoute: typeof EmbarcadorViagensRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
   EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
+  EmbarcadorViagemIdRoute: typeof EmbarcadorViagemIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embarcador/viagem/$id': {
+      id: '/embarcador/viagem/$id'
+      path: '/embarcador/viagem/$id'
+      fullPath: '/embarcador/viagem/$id'
+      preLoaderRoute: typeof EmbarcadorViagemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/embarcador/pagamento/$jobId': {
       id: '/embarcador/pagamento/$jobId'
       path: '/embarcador/pagamento/$jobId'
@@ -226,6 +246,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbarcadorViagensRoute: EmbarcadorViagensRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
   EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
+  EmbarcadorViagemIdRoute: EmbarcadorViagemIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
