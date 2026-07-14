@@ -1,0 +1,811 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      candidacies: {
+        Row: {
+          created_at: string
+          freight_id: string
+          id: string
+          message: string | null
+          proposed_amount_in_cents: number | null
+          provider_id: string
+          status: Database["public"]["Enums"]["candidacy_status"]
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          freight_id: string
+          id?: string
+          message?: string | null
+          proposed_amount_in_cents?: number | null
+          provider_id: string
+          status?: Database["public"]["Enums"]["candidacy_status"]
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          freight_id?: string
+          id?: string
+          message?: string | null
+          proposed_amount_in_cents?: number | null
+          provider_id?: string
+          status?: Database["public"]["Enums"]["candidacy_status"]
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidacies_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidacies_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidacies_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidacies_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      check_ins: {
+        Row: {
+          checked_in_at: string | null
+          code: string
+          created_at: string
+          id: string
+          job_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          checked_in_at?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          job_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          checked_in_at?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      check_outs: {
+        Row: {
+          checked_out_at: string | null
+          code: string
+          created_at: string
+          id: string
+          job_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          checked_out_at?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          job_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          checked_out_at?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_outs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contractors: {
+        Row: {
+          city: string | null
+          cnpj: string
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          corporate_reason: string
+          cpf: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_company_partner: boolean
+          monthly_freight_volume: string
+          segment: string
+          uf: string | null
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+          validation_status: Database["public"]["Enums"]["validation_status"]
+        }
+        Insert: {
+          city?: string | null
+          cnpj: string
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          corporate_reason: string
+          cpf: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_company_partner?: boolean
+          monthly_freight_volume: string
+          segment: string
+          uf?: string | null
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+          validation_status?: Database["public"]["Enums"]["validation_status"]
+        }
+        Update: {
+          city?: string | null
+          cnpj?: string
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          corporate_reason?: string
+          cpf?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_company_partner?: boolean
+          monthly_freight_volume?: string
+          segment?: string
+          uf?: string | null
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+          validation_status?: Database["public"]["Enums"]["validation_status"]
+        }
+        Relationships: []
+      }
+      feedbacks: {
+        Row: {
+          author_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          job_id: string
+          rating: number
+          role: Database["public"]["Enums"]["feedback_role"]
+        }
+        Insert: {
+          author_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          rating: number
+          role: Database["public"]["Enums"]["feedback_role"]
+        }
+        Update: {
+          author_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          rating?: number
+          role?: Database["public"]["Enums"]["feedback_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedbacks_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freights: {
+        Row: {
+          agreed_amount_in_cents: number | null
+          base_amount_in_cents: number
+          body_types: string[]
+          cargo_type: string
+          cargo_weight_kg: number
+          contractor_id: string
+          created_at: string
+          delivery_expected_at: string | null
+          description: string | null
+          destination_address: string | null
+          destination_cep: string | null
+          destination_city: string
+          destination_uf: string
+          distance_km: number
+          id: string
+          origin_address: string | null
+          origin_cep: string | null
+          origin_city: string
+          origin_uf: string
+          payment: number
+          pickup_at: string
+          status: Database["public"]["Enums"]["freight_status"]
+          title: string
+          toll_included: boolean
+          updated_at: string
+          vehicle_types: string[]
+        }
+        Insert: {
+          agreed_amount_in_cents?: number | null
+          base_amount_in_cents: number
+          body_types?: string[]
+          cargo_type: string
+          cargo_weight_kg: number
+          contractor_id: string
+          created_at?: string
+          delivery_expected_at?: string | null
+          description?: string | null
+          destination_address?: string | null
+          destination_cep?: string | null
+          destination_city: string
+          destination_uf: string
+          distance_km: number
+          id?: string
+          origin_address?: string | null
+          origin_cep?: string | null
+          origin_city: string
+          origin_uf: string
+          payment: number
+          pickup_at: string
+          status?: Database["public"]["Enums"]["freight_status"]
+          title: string
+          toll_included?: boolean
+          updated_at?: string
+          vehicle_types?: string[]
+        }
+        Update: {
+          agreed_amount_in_cents?: number | null
+          base_amount_in_cents?: number
+          body_types?: string[]
+          cargo_type?: string
+          cargo_weight_kg?: number
+          contractor_id?: string
+          created_at?: string
+          delivery_expected_at?: string | null
+          description?: string | null
+          destination_address?: string | null
+          destination_cep?: string | null
+          destination_city?: string
+          destination_uf?: string
+          distance_km?: number
+          id?: string
+          origin_address?: string | null
+          origin_cep?: string | null
+          origin_city?: string
+          origin_uf?: string
+          payment?: number
+          pickup_at?: string
+          status?: Database["public"]["Enums"]["freight_status"]
+          title?: string
+          toll_included?: boolean
+          updated_at?: string
+          vehicle_types?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freights_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          agreed_amount_in_cents: number
+          contractor_id: string
+          created_at: string
+          ended_at: string | null
+          freight_id: string
+          id: string
+          provider_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+        }
+        Insert: {
+          agreed_amount_in_cents: number
+          contractor_id: string
+          created_at?: string
+          ended_at?: string | null
+          freight_id: string
+          id?: string
+          provider_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Update: {
+          agreed_amount_in_cents?: number
+          contractor_id?: string
+          created_at?: string
+          ended_at?: string | null
+          freight_id?: string
+          id?: string
+          provider_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: true
+            referencedRelation: "freights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: true
+            referencedRelation: "freights_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_in_cents: number
+          created_at: string
+          id: string
+          job_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          paid_at: string | null
+          service_fee_in_cents: number
+          status: Database["public"]["Enums"]["payment_status"]
+        }
+        Insert: {
+          amount_in_cents: number
+          created_at?: string
+          id?: string
+          job_id: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          paid_at?: string | null
+          service_fee_in_cents: number
+          status?: Database["public"]["Enums"]["payment_status"]
+        }
+        Update: {
+          amount_in_cents?: number
+          created_at?: string
+          id?: string
+          job_id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          paid_at?: string | null
+          service_fee_in_cents?: number
+          status?: Database["public"]["Enums"]["payment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          avatar_url: string | null
+          birthdate: string
+          city: string
+          cnh_category: string
+          cnh_expires_at: string
+          cnh_number: string
+          cpf: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string
+          uf: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          birthdate: string
+          city: string
+          cnh_category: string
+          cnh_expires_at: string
+          cnh_number: string
+          cpf: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          phone: string
+          uf: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          birthdate?: string
+          city?: string
+          cnh_category?: string
+          cnh_expires_at?: string
+          cnh_number?: string
+          cpf?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string
+          uf?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          body_type: string
+          capacity_kg: number
+          created_at: string
+          id: string
+          is_active: boolean
+          plate: string
+          provider_id: string
+          vehicle_type: string
+        }
+        Insert: {
+          body_type: string
+          capacity_kg: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          plate: string
+          provider_id: string
+          vehicle_type: string
+        }
+        Update: {
+          body_type?: string
+          capacity_kg?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          plate?: string
+          provider_id?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      freights_public: {
+        Row: {
+          body_types: string[] | null
+          cargo_type: string | null
+          cargo_weight_kg: number | null
+          created_at: string | null
+          delivery_expected_at: string | null
+          destination_city: string | null
+          destination_uf: string | null
+          distance_km: number | null
+          id: string | null
+          origin_city: string | null
+          origin_uf: string | null
+          pickup_at: string | null
+          status: Database["public"]["Enums"]["freight_status"] | null
+          title: string | null
+          vehicle_types: string[] | null
+        }
+        Insert: {
+          body_types?: string[] | null
+          cargo_type?: string | null
+          cargo_weight_kg?: number | null
+          created_at?: string | null
+          delivery_expected_at?: string | null
+          destination_city?: string | null
+          destination_uf?: string | null
+          distance_km?: number | null
+          id?: string | null
+          origin_city?: string | null
+          origin_uf?: string | null
+          pickup_at?: string | null
+          status?: Database["public"]["Enums"]["freight_status"] | null
+          title?: string | null
+          vehicle_types?: string[] | null
+        }
+        Update: {
+          body_types?: string[] | null
+          cargo_type?: string | null
+          cargo_weight_kg?: number | null
+          created_at?: string | null
+          delivery_expected_at?: string | null
+          destination_city?: string | null
+          destination_uf?: string | null
+          distance_km?: number | null
+          id?: string | null
+          origin_city?: string | null
+          origin_uf?: string | null
+          pickup_at?: string | null
+          status?: Database["public"]["Enums"]["freight_status"] | null
+          title?: string | null
+          vehicle_types?: string[] | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      candidacy_status:
+        | "PENDING"
+        | "ACCEPTED"
+        | "REJECTED"
+        | "CANCELLED_BY_CONTRACTOR"
+        | "WITHDRAWN"
+      feedback_role: "PROVIDER" | "CONTRACTOR"
+      freight_status:
+        | "OPEN"
+        | "CLOSED"
+        | "CANCELLED"
+        | "CANCELLED_BY_CONTRACTOR"
+      job_status: "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+      payment_method: "PIX"
+      payment_status: "PENDING" | "COMPLETED" | "REFUNDED"
+      user_role: "contractor" | "provider"
+      validation_status: "PENDING_VALIDATION" | "APPROVED" | "REJECTED"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      candidacy_status: [
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "CANCELLED_BY_CONTRACTOR",
+        "WITHDRAWN",
+      ],
+      feedback_role: ["PROVIDER", "CONTRACTOR"],
+      freight_status: [
+        "OPEN",
+        "CLOSED",
+        "CANCELLED",
+        "CANCELLED_BY_CONTRACTOR",
+      ],
+      job_status: ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
+      payment_method: ["PIX"],
+      payment_status: ["PENDING", "COMPLETED", "REFUNDED"],
+      user_role: ["contractor", "provider"],
+      validation_status: ["PENDING_VALIDATION", "APPROVED", "REJECTED"],
+    },
+  },
+} as const

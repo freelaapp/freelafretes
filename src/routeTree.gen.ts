@@ -9,38 +9,278 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MotoristaViagensRouteImport } from './routes/motorista.viagens'
+import { Route as MotoristaPropostasRouteImport } from './routes/motorista.propostas'
+import { Route as MotoristaPerfilRouteImport } from './routes/motorista.perfil'
+import { Route as MotoristaBuscarRouteImport } from './routes/motorista.buscar'
+import { Route as EmbarcadorViagensRouteImport } from './routes/embarcador.viagens'
+import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publicar'
+import { Route as EmbarcadorPerfilRouteImport } from './routes/embarcador.perfil'
+import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
+import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
+import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
+import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
+import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
+import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
+import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MotoristaViagensRoute = MotoristaViagensRouteImport.update({
+  id: '/motorista/viagens',
+  path: '/motorista/viagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaPropostasRoute = MotoristaPropostasRouteImport.update({
+  id: '/motorista/propostas',
+  path: '/motorista/propostas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaPerfilRoute = MotoristaPerfilRouteImport.update({
+  id: '/motorista/perfil',
+  path: '/motorista/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaBuscarRoute = MotoristaBuscarRouteImport.update({
+  id: '/motorista/buscar',
+  path: '/motorista/buscar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorViagensRoute = EmbarcadorViagensRouteImport.update({
+  id: '/embarcador/viagens',
+  path: '/embarcador/viagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorPublicarRoute = EmbarcadorPublicarRouteImport.update({
+  id: '/embarcador/publicar',
+  path: '/embarcador/publicar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorPerfilRoute = EmbarcadorPerfilRouteImport.update({
+  id: '/embarcador/perfil',
+  path: '/embarcador/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorFretesRoute = EmbarcadorFretesRouteImport.update({
+  id: '/embarcador/fretes',
+  path: '/embarcador/fretes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroMotoristaRoute = CadastroMotoristaRouteImport.update({
+  id: '/cadastro/motorista',
+  path: '/cadastro/motorista',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
+  id: '/cadastro/empresa',
+  path: '/cadastro/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaViagemIdRoute = MotoristaViagemIdRouteImport.update({
+  id: '/motorista/viagem/$id',
+  path: '/motorista/viagem/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaFreteIdRoute = MotoristaFreteIdRouteImport.update({
+  id: '/motorista/frete/$id',
+  path: '/motorista/frete/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorViagemIdRoute = EmbarcadorViagemIdRouteImport.update({
+  id: '/embarcador/viagem/$id',
+  path: '/embarcador/viagem/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorPagamentoJobIdRoute =
+  EmbarcadorPagamentoJobIdRouteImport.update({
+    id: '/embarcador/pagamento/$jobId',
+    path: '/embarcador/pagamento/$jobId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const EmbarcadorFreteIdRoute = EmbarcadorFreteIdRouteImport.update({
+  id: '/embarcador/frete/$id',
+  path: '/embarcador/frete/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
+  '/cadastro/motorista': typeof CadastroMotoristaRoute
+  '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/perfil': typeof EmbarcadorPerfilRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
+  '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/viagens': typeof MotoristaViagensRoute
+  '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
+  '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
+  '/cadastro/motorista': typeof CadastroMotoristaRoute
+  '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/perfil': typeof EmbarcadorPerfilRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
+  '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/viagens': typeof MotoristaViagensRoute
+  '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
+  '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
+  '/cadastro/motorista': typeof CadastroMotoristaRoute
+  '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/perfil': typeof EmbarcadorPerfilRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
+  '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
+  '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/viagens': typeof MotoristaViagensRoute
+  '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
+  '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
+  '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/cadastro/empresa'
+    | '/cadastro/motorista'
+    | '/embarcador/fretes'
+    | '/embarcador/perfil'
+    | '/embarcador/publicar'
+    | '/embarcador/viagens'
+    | '/motorista/buscar'
+    | '/motorista/perfil'
+    | '/motorista/propostas'
+    | '/motorista/viagens'
+    | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
+    | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/cadastro/empresa'
+    | '/cadastro/motorista'
+    | '/embarcador/fretes'
+    | '/embarcador/perfil'
+    | '/embarcador/publicar'
+    | '/embarcador/viagens'
+    | '/motorista/buscar'
+    | '/motorista/perfil'
+    | '/motorista/propostas'
+    | '/motorista/viagens'
+    | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
+    | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/cadastro/empresa'
+    | '/cadastro/motorista'
+    | '/embarcador/fretes'
+    | '/embarcador/perfil'
+    | '/embarcador/publicar'
+    | '/embarcador/viagens'
+    | '/motorista/buscar'
+    | '/motorista/perfil'
+    | '/motorista/propostas'
+    | '/motorista/viagens'
+    | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
+    | '/embarcador/viagem/$id'
+    | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
+  CadastroEmpresaRoute: typeof CadastroEmpresaRoute
+  CadastroMotoristaRoute: typeof CadastroMotoristaRoute
+  EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
+  EmbarcadorPerfilRoute: typeof EmbarcadorPerfilRoute
+  EmbarcadorPublicarRoute: typeof EmbarcadorPublicarRoute
+  EmbarcadorViagensRoute: typeof EmbarcadorViagensRoute
+  MotoristaBuscarRoute: typeof MotoristaBuscarRoute
+  MotoristaPerfilRoute: typeof MotoristaPerfilRoute
+  MotoristaPropostasRoute: typeof MotoristaPropostasRoute
+  MotoristaViagensRoute: typeof MotoristaViagensRoute
+  EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
+  EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
+  EmbarcadorViagemIdRoute: typeof EmbarcadorViagemIdRoute
+  MotoristaFreteIdRoute: typeof MotoristaFreteIdRoute
+  MotoristaViagemIdRoute: typeof MotoristaViagemIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +288,134 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/motorista/viagens': {
+      id: '/motorista/viagens'
+      path: '/motorista/viagens'
+      fullPath: '/motorista/viagens'
+      preLoaderRoute: typeof MotoristaViagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/propostas': {
+      id: '/motorista/propostas'
+      path: '/motorista/propostas'
+      fullPath: '/motorista/propostas'
+      preLoaderRoute: typeof MotoristaPropostasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/perfil': {
+      id: '/motorista/perfil'
+      path: '/motorista/perfil'
+      fullPath: '/motorista/perfil'
+      preLoaderRoute: typeof MotoristaPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/buscar': {
+      id: '/motorista/buscar'
+      path: '/motorista/buscar'
+      fullPath: '/motorista/buscar'
+      preLoaderRoute: typeof MotoristaBuscarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/viagens': {
+      id: '/embarcador/viagens'
+      path: '/embarcador/viagens'
+      fullPath: '/embarcador/viagens'
+      preLoaderRoute: typeof EmbarcadorViagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/publicar': {
+      id: '/embarcador/publicar'
+      path: '/embarcador/publicar'
+      fullPath: '/embarcador/publicar'
+      preLoaderRoute: typeof EmbarcadorPublicarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/perfil': {
+      id: '/embarcador/perfil'
+      path: '/embarcador/perfil'
+      fullPath: '/embarcador/perfil'
+      preLoaderRoute: typeof EmbarcadorPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/fretes': {
+      id: '/embarcador/fretes'
+      path: '/embarcador/fretes'
+      fullPath: '/embarcador/fretes'
+      preLoaderRoute: typeof EmbarcadorFretesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro/motorista': {
+      id: '/cadastro/motorista'
+      path: '/cadastro/motorista'
+      fullPath: '/cadastro/motorista'
+      preLoaderRoute: typeof CadastroMotoristaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro/empresa': {
+      id: '/cadastro/empresa'
+      path: '/cadastro/empresa'
+      fullPath: '/cadastro/empresa'
+      preLoaderRoute: typeof CadastroEmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/viagem/$id': {
+      id: '/motorista/viagem/$id'
+      path: '/motorista/viagem/$id'
+      fullPath: '/motorista/viagem/$id'
+      preLoaderRoute: typeof MotoristaViagemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/frete/$id': {
+      id: '/motorista/frete/$id'
+      path: '/motorista/frete/$id'
+      fullPath: '/motorista/frete/$id'
+      preLoaderRoute: typeof MotoristaFreteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/viagem/$id': {
+      id: '/embarcador/viagem/$id'
+      path: '/embarcador/viagem/$id'
+      fullPath: '/embarcador/viagem/$id'
+      preLoaderRoute: typeof EmbarcadorViagemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/pagamento/$jobId': {
+      id: '/embarcador/pagamento/$jobId'
+      path: '/embarcador/pagamento/$jobId'
+      fullPath: '/embarcador/pagamento/$jobId'
+      preLoaderRoute: typeof EmbarcadorPagamentoJobIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/frete/$id': {
+      id: '/embarcador/frete/$id'
+      path: '/embarcador/frete/$id'
+      fullPath: '/embarcador/frete/$id'
+      preLoaderRoute: typeof EmbarcadorFreteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
+  CadastroEmpresaRoute: CadastroEmpresaRoute,
+  CadastroMotoristaRoute: CadastroMotoristaRoute,
+  EmbarcadorFretesRoute: EmbarcadorFretesRoute,
+  EmbarcadorPerfilRoute: EmbarcadorPerfilRoute,
+  EmbarcadorPublicarRoute: EmbarcadorPublicarRoute,
+  EmbarcadorViagensRoute: EmbarcadorViagensRoute,
+  MotoristaBuscarRoute: MotoristaBuscarRoute,
+  MotoristaPerfilRoute: MotoristaPerfilRoute,
+  MotoristaPropostasRoute: MotoristaPropostasRoute,
+  MotoristaViagensRoute: MotoristaViagensRoute,
+  EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
+  EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
+  EmbarcadorViagemIdRoute: EmbarcadorViagemIdRoute,
+  MotoristaFreteIdRoute: MotoristaFreteIdRoute,
+  MotoristaViagemIdRoute: MotoristaViagemIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
