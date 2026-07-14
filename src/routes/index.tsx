@@ -369,8 +369,8 @@ function Simulator() {
       <div className="rounded-3xl bg-accent text-accent-foreground p-6 md:p-10 shadow-elevated">
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-center">
           <div>
-            <h2 className="font-display text-3xl md:text-4xl text-primary-foreground">Simulador de frete</h2>
-            <p className="mt-2 text-sm text-primary-foreground/80">
+            <h2 className="font-display text-3xl md:text-4xl text-accent-foreground">Simulador de frete</h2>
+            <p className="mt-2 text-sm text-accent-foreground/80">
               Descubra em segundos uma faixa de valor de referência para sua rota. Baseado em fretes reais publicados.
             </p>
           </div>
