@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
+import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -28,34 +29,43 @@ const CadastroMotoristaRoute = CadastroMotoristaRouteImport.update({
   path: '/cadastro/motorista',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
+  id: '/cadastro/empresa',
+  path: '/cadastro/empresa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/cadastro/motorista'
+  fullPaths: '/' | '/auth' | '/cadastro/empresa' | '/cadastro/motorista'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/cadastro/motorista'
-  id: '__root__' | '/' | '/auth' | '/cadastro/motorista'
+  to: '/' | '/auth' | '/cadastro/empresa' | '/cadastro/motorista'
+  id: '__root__' | '/' | '/auth' | '/cadastro/empresa' | '/cadastro/motorista'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   CadastroMotoristaRoute: typeof CadastroMotoristaRoute
 }
 
@@ -82,12 +92,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroMotoristaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro/empresa': {
+      id: '/cadastro/empresa'
+      path: '/cadastro/empresa'
+      fullPath: '/cadastro/empresa'
+      preLoaderRoute: typeof CadastroEmpresaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CadastroEmpresaRoute: CadastroEmpresaRoute,
   CadastroMotoristaRoute: CadastroMotoristaRoute,
 }
 export const routeTree = rootRouteImport
