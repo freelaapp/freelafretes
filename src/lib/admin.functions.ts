@@ -607,3 +607,20 @@ export const contractorResubmitValidation = createServerFn({ method: "POST" })
     await context.supabase.from("contractors").update({ validation_status: "PENDING_VALIDATION", validation_notes: null }).eq("id", c.id);
     return { ok: true };
   });
+
+// ================ BOOTSTRAP (only works when zero admins) ================
+export const bootstrapFirstAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { count } = await context.supabase.from("admins").select("*", { count: "exact", head: true });
+    if ((count ?? 0) > 0) throw new Error("Já existem admins configurados");
+    const { data: user } = await context.supabase.auth.getUser();
+    const email = user.user?.email ?? "";
+    const name = (user.user?.user_metadata as any)?.full_name ?? email.split("@")[0];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("admins").insert({
+      user_id: context.userId, email, name, role: "SUPER_ADMIN", is_active: true,
+    });
+    if (error) throw error;
+    return { ok: true };
+  });
