@@ -32,6 +32,7 @@ import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
+import { Route as AdminContractorsIdRouteImport } from './routes/admin.contractors.$id'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -149,13 +150,18 @@ const EmbarcadorFreteIdRoute = EmbarcadorFreteIdRouteImport.update({
   path: '/embarcador/frete/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminContractorsIdRoute = AdminContractorsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminContractorsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/admin/contractors': typeof AdminContractorsRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -179,7 +186,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/admin/contractors': typeof AdminContractorsRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -205,7 +213,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/admin/contractors': typeof AdminContractorsRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/admin/'
+    | '/admin/contractors/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/admin'
+    | '/admin/contractors/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/admin/'
+    | '/admin/contractors/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -487,18 +499,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmbarcadorFreteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/contractors/$id': {
+      id: '/admin/contractors/$id'
+      path: '/$id'
+      fullPath: '/admin/contractors/$id'
+      preLoaderRoute: typeof AdminContractorsIdRouteImport
+      parentRoute: typeof AdminContractorsRoute
+    }
   }
 }
 
+interface AdminContractorsRouteChildren {
+  AdminContractorsIdRoute: typeof AdminContractorsIdRoute
+}
+
+const AdminContractorsRouteChildren: AdminContractorsRouteChildren = {
+  AdminContractorsIdRoute: AdminContractorsIdRoute,
+}
+
+const AdminContractorsRouteWithChildren =
+  AdminContractorsRoute._addFileChildren(AdminContractorsRouteChildren)
+
 interface AdminRouteChildren {
-  AdminContractorsRoute: typeof AdminContractorsRoute
+  AdminContractorsRoute: typeof AdminContractorsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdminValidationRoute: typeof AdminValidationRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminContractorsRoute: AdminContractorsRoute,
+  AdminContractorsRoute: AdminContractorsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdminValidationRoute: AdminValidationRoute,
   AdminIndexRoute: AdminIndexRoute,
