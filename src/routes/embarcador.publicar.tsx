@@ -118,7 +118,13 @@ function PublishPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     } finally { setLoading(false); }
+  }
+
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+
+  const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
+  const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
 
 
   return (
