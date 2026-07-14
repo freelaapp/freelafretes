@@ -1,15 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { SERVICE_FEE_BPS, makeCode } from "./server-helpers.server";
 
-const SERVICE_FEE_BPS = 1000; // 10%
-
-const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function makeCode(len = 6): string {
-  let out = "";
-  for (let i = 0; i < len; i++) out += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
-  return out;
-}
 
 // ============================================================
 // PUBLICAR FRETE
