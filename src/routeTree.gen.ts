@@ -26,6 +26,7 @@ import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motoris
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminValidationRouteImport } from './routes/admin.validation'
 import { Route as AdminProvidersRouteImport } from './routes/admin.providers'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
 import { Route as AdminFreightsRouteImport } from './routes/admin.freights'
@@ -125,6 +126,11 @@ const AdminProvidersRoute = AdminProvidersRouteImport.update({
   path: '/providers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
+    | '/admin/payments'
     | '/admin/providers'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
+    | '/admin/payments'
     | '/admin/providers'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
+    | '/admin/payments'
     | '/admin/providers'
     | '/admin/validation'
     | '/cadastro/empresa'
@@ -529,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProvidersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -675,6 +694,7 @@ interface AdminRouteChildren {
   AdminFreightsRoute: typeof AdminFreightsRouteWithChildren
   AdminJobsRoute: typeof AdminJobsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
   AdminValidationRoute: typeof AdminValidationRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -685,6 +705,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFreightsRoute: AdminFreightsRouteWithChildren,
   AdminJobsRoute: AdminJobsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminProvidersRoute: AdminProvidersRouteWithChildren,
   AdminValidationRoute: AdminValidationRoute,
   AdminIndexRoute: AdminIndexRoute,
