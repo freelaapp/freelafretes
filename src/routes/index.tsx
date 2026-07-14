@@ -27,33 +27,47 @@ function Landing() {
         <Link to="/auth" className="text-sm font-semibold text-accent">Entrar</Link>
       </header>
 
-
       {/* Hero */}
-      <section className="px-5 pt-4 pb-8">
-        <h1 className="text-3xl font-black leading-tight text-foreground">
-          Sua carga tem pressa.<br />
-          <span className="text-primary">Seu caminhão tem destino.</span>
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          O marketplace que conecta embarcadores a motoristas autônomos em todo o Brasil.
-        </p>
-        <div className="mt-6 space-y-3">
-          <Link to="/cadastro/empresa" className="flex items-center gap-3 w-full rounded-2xl bg-primary text-primary-foreground px-4 py-4 shadow-elevated">
+      <section className="px-5 pt-2">
+        <div className="relative overflow-hidden rounded-3xl bg-primary shadow-elevated">
+          <img
+            src={heroTruck.url}
+            alt="Caminhão laranja em estrada brasileira"
+            width={1600}
+            height={1200}
+            className="w-full h-56 sm:h-72 object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/40 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 text-primary-foreground">
+            <h1 className="text-2xl sm:text-3xl font-black leading-tight">
+              Sua carga tem pressa.<br />
+              <span className="text-accent">Seu caminhão tem destino.</span>
+            </h1>
+            <p className="mt-2 text-sm opacity-90">
+              O marketplace que conecta embarcadores a caminhoneiros em todo o Brasil.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <Link to="/cadastro/empresa" className="flex items-center gap-3 w-full rounded-2xl bg-accent text-accent-foreground px-4 py-4 shadow-elevated">
             <Building2 className="h-6 w-6 shrink-0" />
             <div className="text-left">
               <p className="font-bold">Tenho carga para enviar</p>
-              <p className="text-xs opacity-80">Cadastre-se como empresa</p>
+              <p className="text-xs opacity-90">Cadastre-se como empresa</p>
             </div>
           </Link>
-          <Link to="/cadastro/motorista" className="flex items-center gap-3 w-full rounded-2xl bg-accent text-accent-foreground px-4 py-4 shadow-elevated">
+          <Link to="/cadastro/motorista" className="flex items-center gap-3 w-full rounded-2xl border-2 border-primary bg-card text-primary px-4 py-4 shadow-card">
             <Truck className="h-6 w-6 shrink-0" />
             <div className="text-left">
               <p className="font-bold">Sou motorista</p>
-              <p className="text-xs opacity-90">Encontre o próximo frete</p>
+              <p className="text-xs opacity-80">Encontre o próximo frete</p>
             </div>
           </Link>
         </div>
       </section>
+
+      <div className="h-8" />
 
       {/* Vitrine */}
       <PublicFreights />
