@@ -78,14 +78,18 @@ function AuthPage() {
   );
 }
 
-export function Field({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement> & { value?: string; onChange?: (v: string) => void }) {
-  const { value, onChange, ...rest } = props as { value?: string; onChange?: (v: string) => void } & React.InputHTMLAttributes<HTMLInputElement>;
+type FieldProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> & {
+  label: string;
+  value?: string;
+  onChange?: (v: string) => void;
+};
+export function Field({ label, value, onChange, ...rest }: FieldProps) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-muted-foreground">{label}</span>
       <input
         {...rest}
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange?.(e.target.value)}
         className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
       />
