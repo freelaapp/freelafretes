@@ -124,7 +124,7 @@ function PublicFreights() {
                 <p className="mt-1 font-semibold text-sm truncate">{f.title}</p>
                 <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
                   <span className="inline-flex items-center gap-1"><Package className="h-3 w-3" />{f.cargo_type}</span>
-                  <span>· {(f.cargo_weight_kg / 1000).toLocaleString("pt-BR")} t</span>
+                  <span>· {((f.cargo_weight_kg ?? 0) / 1000).toLocaleString("pt-BR")} t</span>
                   <span>· {f.distance_km} km</span>
                 </div>
                 <p className="mt-1 text-[11px] text-muted-foreground">Coleta: {formatDateBR(f.pickup_at)}</p>
