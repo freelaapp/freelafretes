@@ -185,8 +185,58 @@ function PublishPage() {
           <>
             <Field label="Data e hora da coleta" type="datetime-local" value={pickup_at} onChange={setPickup} />
             <Field label="Previsão de entrega (opcional)" type="datetime-local" value={delivery_expected_at} onChange={setDelivery} />
+
+            {suggestMut.isPending && (
+              <div className="rounded-xl bg-secondary p-3 text-sm text-muted-foreground">Calculando valor sugerido…</div>
+            )}
+            {suggestion && (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor sugerido pelo motor</p>
+                <p className="font-mono text-3xl text-accent leading-none">
+                  R$ {(suggestion.freteCents / 100).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Faixa de mercado: R$ {(suggestion.faixaMinCents / 100).toLocaleString("pt-BR")} — R$ {(suggestion.faixaMaxCents / 100).toLocaleString("pt-BR")}
+                </p>
+                <button type="button" onClick={() => setPayment(Math.round(suggestion.freteCents / 100))}
+                  className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-hover">
+                  Usar valor sugerido
+                </button>
+                <button type="button" onClick={() => setBreakdownOpen((v) => !v)}
+                  className="w-full flex items-center justify-between text-xs font-semibold text-foreground border-t border-primary/20 pt-2">
+                  Como chegamos neste valor? {breakdownOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                </button>
+                {breakdownOpen && (
+                  <ul className="space-y-1 text-xs">
+                    {suggestion.breakdown.map((b) => (
+                      <li key={b.label} className="flex items-start justify-between gap-3 py-0.5">
+                        <div>
+                          <p>{b.label}</p>
+                          {b.hint && <p className="text-[10px] text-muted-foreground">{b.hint}</p>}
+                        </div>
+                        <span className={b.valor === 0 ? "text-muted-foreground" : b.valor < 0 ? "text-emerald-600 font-semibold" : "text-sky-700 font-semibold"}>
+                          {b.valor === 0 ? "—" : `${b.valor < 0 ? "-" : ""}R$ ${Math.abs(b.valor / 100).toLocaleString("pt-BR")}`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
             <Field label="Valor oferecido (R$)" type="number" value={String(payment || "")} onChange={(v) => setPayment(parseFloat(v) || 0)} />
+            {belowMin && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Valor abaixo do mercado — seu frete pode demorar a receber propostas.
+              </p>
+            )}
+            {aboveMax && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Valor acima do mercado — você pode conseguir o mesmo frete por menos.
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">Motoristas poderão aceitar este valor ou enviar contraproposta.</p>
+
             <div className="mt-4 rounded-xl bg-secondary p-4 text-sm">
               <p className="font-semibold">Revisão</p>
               <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg</p>
