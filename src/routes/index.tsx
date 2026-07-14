@@ -455,8 +455,8 @@ function SiteFooter() {
           { label: "Contato", href: "mailto:contato@freelafretes.com.br", external: true },
         ]} />
       </div>
-      <div className="border-t border-primary-foreground/10">
-        <div className="mx-auto max-w-6xl px-5 md:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-primary-foreground/60">
+      <div className="border-t border-accent-foreground/10">
+        <div className="mx-auto max-w-6xl px-5 md:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-accent-foreground/60">
           <p>Freela Fretes © {new Date().getFullYear()} · Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <a href="#" aria-label="LinkedIn" className="hover:text-primary"><Linkedin className="h-4 w-4" /></a>
