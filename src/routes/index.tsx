@@ -473,8 +473,8 @@ type FooterLink = { label: string; to?: string; href?: string; external?: boolea
 function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <p className="font-display text-sm text-primary-foreground mb-3">{title}</p>
-      <ul className="space-y-2 text-sm text-primary-foreground/70">
+      <p className="font-display text-sm text-accent-foreground mb-3">{title}</p>
+      <ul className="space-y-2 text-sm text-accent-foreground/70">
         {links.map((l) => (
           <li key={l.label}>
             {l.to ? (
