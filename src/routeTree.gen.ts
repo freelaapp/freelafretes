@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SimuladorRouteImport } from './routes/simulador'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -45,6 +46,11 @@ import { Route as AdminJobsIdRouteImport } from './routes/admin.jobs.$id'
 import { Route as AdminFreightsIdRouteImport } from './routes/admin.freights.$id'
 import { Route as AdminContractorsIdRouteImport } from './routes/admin.contractors.$id'
 
+const SimuladorRoute = SimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -451,6 +463,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  SimuladorRoute: typeof SimuladorRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   CadastroMotoristaRoute: typeof CadastroMotoristaRoute
   EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
@@ -471,6 +484,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/simulador': {
+      id: '/simulador'
+      path: '/simulador'
+      fullPath: '/simulador'
+      preLoaderRoute: typeof SimuladorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -801,6 +821,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  SimuladorRoute: SimuladorRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   CadastroMotoristaRoute: CadastroMotoristaRoute,
   EmbarcadorFretesRoute: EmbarcadorFretesRoute,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -249,6 +249,3 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </button>
   );
 }
-
-// SafeLink for external
-useEffect;
