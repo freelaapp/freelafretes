@@ -30,6 +30,7 @@ import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
 import { Route as AdminFreightsRouteImport } from './routes/admin.freights'
+import { Route as AdminFeedbacksRouteImport } from './routes/admin.feedbacks'
 import { Route as AdminContractorsRouteImport } from './routes/admin.contractors'
 import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
@@ -146,6 +147,11 @@ const AdminFreightsRoute = AdminFreightsRouteImport.update({
   path: '/freights',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFeedbacksRoute = AdminFeedbacksRouteImport.update({
+  id: '/feedbacks',
+  path: '/feedbacks',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminContractorsRoute = AdminContractorsRouteImport.update({
   id: '/contractors',
   path: '/contractors',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
   '/admin/freights': typeof AdminFreightsRouteWithChildren
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/contractors'
+    | '/admin/feedbacks'
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/contractors'
+    | '/admin/feedbacks'
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/contractors'
+    | '/admin/feedbacks'
     | '/admin/freights'
     | '/admin/jobs'
     | '/admin/login'
@@ -569,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFreightsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/feedbacks': {
+      id: '/admin/feedbacks'
+      path: '/feedbacks'
+      fullPath: '/admin/feedbacks'
+      preLoaderRoute: typeof AdminFeedbacksRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/contractors': {
       id: '/admin/contractors'
       path: '/contractors'
@@ -691,6 +710,7 @@ const AdminProvidersRouteWithChildren = AdminProvidersRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminContractorsRoute: typeof AdminContractorsRouteWithChildren
+  AdminFeedbacksRoute: typeof AdminFeedbacksRoute
   AdminFreightsRoute: typeof AdminFreightsRouteWithChildren
   AdminJobsRoute: typeof AdminJobsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
@@ -702,6 +722,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminContractorsRoute: AdminContractorsRouteWithChildren,
+  AdminFeedbacksRoute: AdminFeedbacksRoute,
   AdminFreightsRoute: AdminFreightsRouteWithChildren,
   AdminJobsRoute: AdminJobsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
