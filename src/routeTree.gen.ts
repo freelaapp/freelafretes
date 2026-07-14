@@ -24,6 +24,7 @@ import { Route as EmbarcadorPerfilRouteImport } from './routes/embarcador.perfil
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as AdminValidationRouteImport } from './routes/admin.validation'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
@@ -106,6 +107,11 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminValidationRoute = AdminValidationRouteImport.update({
+  id: '/validation',
+  path: '/validation',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/login'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/login'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/admin/login'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -407,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/validation': {
+      id: '/admin/validation'
+      path: '/validation'
+      fullPath: '/admin/validation'
+      preLoaderRoute: typeof AdminValidationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -454,11 +473,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminValidationRoute: typeof AdminValidationRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
+  AdminValidationRoute: AdminValidationRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
