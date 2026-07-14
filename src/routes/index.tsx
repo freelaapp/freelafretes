@@ -10,7 +10,7 @@ import { formatDateBR } from "@/lib/format";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Freela Fretes — Marketplace de fretes" },
+      { title: "Freela Fretes — Maior portal de fretes do Brasil" },
       { name: "description", content: "Publique cargas ou encontre fretes em todo o Brasil. Motoristas autônomos e embarcadores conectados." },
     ],
   }),
