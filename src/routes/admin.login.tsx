@@ -71,6 +71,12 @@ function AdminLogin() {
           {loading ? "Entrando..." : "Entrar"}
         </button>
         <p className="text-[11px] text-muted-foreground text-center">Área restrita à equipe operacional Freela Fretes.</p>
+        <div className="pt-3 border-t border-border">
+          <button type="button" onClick={doBootstrap} className="w-full text-xs text-muted-foreground hover:text-foreground underline">
+            Configurar primeiro admin (setup inicial)
+          </button>
+          <p className="text-[10px] text-muted-foreground text-center mt-1">Só funciona quando não existe nenhum admin. Faça login com sua conta antes.</p>
+        </div>
       </form>
     </div>
   );
