@@ -14,6 +14,7 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLogin() {
   const nav = useNavigate();
   const me = useServerFn(adminMe);
+  const bootstrap = useServerFn(bootstrapFirstAdmin);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,19 @@ function AdminLogin() {
       nav({ to: "/admin" });
     } catch (err: any) {
       toast.error(err.message ?? "Falha ao entrar");
+    } finally { setLoading(false); }
+  }
+
+  async function doBootstrap() {
+    setLoading(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) { toast.error("Faça login primeiro"); return; }
+      await bootstrap();
+      toast.success("Configurado como SUPER_ADMIN");
+      nav({ to: "/admin" });
+    } catch (err: any) {
+      toast.error(err.message ?? "Falha");
     } finally { setLoading(false); }
   }
 
