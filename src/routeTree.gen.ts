@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MotoristaViagensRouteImport } from './routes/motorista.viagens'
 import { Route as MotoristaPropostasRouteImport } from './routes/motorista.propostas'
+import { Route as MotoristaPerfilRouteImport } from './routes/motorista.perfil'
 import { Route as MotoristaBuscarRouteImport } from './routes/motorista.buscar'
 import { Route as EmbarcadorViagensRouteImport } from './routes/embarcador.viagens'
 import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publicar'
@@ -44,6 +45,11 @@ const MotoristaViagensRoute = MotoristaViagensRouteImport.update({
 const MotoristaPropostasRoute = MotoristaPropostasRouteImport.update({
   id: '/motorista/propostas',
   path: '/motorista/propostas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaPerfilRoute = MotoristaPerfilRouteImport.update({
+  id: '/motorista/perfil',
+  path: '/motorista/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MotoristaBuscarRoute = MotoristaBuscarRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/motorista/buscar': typeof MotoristaBuscarRoute
+  '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/embarcador/publicar'
     | '/embarcador/viagens'
     | '/motorista/buscar'
+    | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/embarcador/frete/$id'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/embarcador/publicar'
     | '/embarcador/viagens'
     | '/motorista/buscar'
+    | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/embarcador/frete/$id'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/embarcador/publicar'
     | '/embarcador/viagens'
     | '/motorista/buscar'
+    | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
     | '/embarcador/frete/$id'
@@ -230,6 +242,7 @@ export interface RootRouteChildren {
   EmbarcadorPublicarRoute: typeof EmbarcadorPublicarRoute
   EmbarcadorViagensRoute: typeof EmbarcadorViagensRoute
   MotoristaBuscarRoute: typeof MotoristaBuscarRoute
+  MotoristaPerfilRoute: typeof MotoristaPerfilRoute
   MotoristaPropostasRoute: typeof MotoristaPropostasRoute
   MotoristaViagensRoute: typeof MotoristaViagensRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/motorista/propostas'
       fullPath: '/motorista/propostas'
       preLoaderRoute: typeof MotoristaPropostasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/perfil': {
+      id: '/motorista/perfil'
+      path: '/motorista/perfil'
+      fullPath: '/motorista/perfil'
+      preLoaderRoute: typeof MotoristaPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/motorista/buscar': {
@@ -366,6 +386,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbarcadorPublicarRoute: EmbarcadorPublicarRoute,
   EmbarcadorViagensRoute: EmbarcadorViagensRoute,
   MotoristaBuscarRoute: MotoristaBuscarRoute,
+  MotoristaPerfilRoute: MotoristaPerfilRoute,
   MotoristaPropostasRoute: MotoristaPropostasRoute,
   MotoristaViagensRoute: MotoristaViagensRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
