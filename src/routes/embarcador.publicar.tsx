@@ -24,6 +24,7 @@ function PublishPage() {
   useRequireAuth("contractor");
   const nav = useNavigate();
   const publish = useServerFn(publishFreight);
+  const simulateFn = useServerFn(simulatePricing);
   const [step, setStep] = useState(1);
 
   // Carga
@@ -50,8 +51,50 @@ function PublishPage() {
   const [delivery_expected_at, setDelivery] = useState("");
   const [payment, setPayment] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
+  const [suggestion, setSuggestion] = useState<PricingResult | null>(null);
 
-  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+  // Restaura simulação salva no localStorage (vinda do simulador público)
+  useEffect(() => {
+    const saved = readSavedSimulation();
+    if (!saved) return;
+    const f: SimulatorFormState = saved.form;
+    if (f.originCity) setOCity(f.originCity);
+    if (f.originUf) setOUf(f.originUf);
+    if (f.destCity) setDCity(f.destCity);
+    if (f.destUf) setDUf(f.destUf);
+    if (f.distanceKm) setDist(parseInt(f.distanceKm) || 0);
+    if (f.cargoType) setCargoType(f.cargoType);
+    if (f.pesoKg) setWeight(parseInt(f.pesoKg) || 0);
+    if (f.vehicleType) setVts([f.vehicleType]);
+    if (f.temPedagio) setToll(true);
+    if (f.dataColeta) setPickup(f.dataColeta);
+    if (saved.result?.freteCents) setPayment(Math.round(saved.result.freteCents / 100));
+    clearSavedSimulation();
+    toast.success("Dados da simulação carregados");
+  }, []);
+
+  // Auto-sugestão no step 4
+  const vehicleTypeForCalc = vehicle_types[0] ?? "";
+  const suggestKey = useMemo(
+    () => `${distance_km}|${vehicleTypeForCalc}|${cargo_type}|${cargo_weight_kg}|${origin_uf}|${toll_included}|${pickup_at}`,
+    [distance_km, vehicleTypeForCalc, cargo_type, cargo_weight_kg, origin_uf, toll_included, pickup_at],
+  );
+  const suggestMut = useMutation({
+    mutationFn: async () => simulateFn({ data: {
+      origemUf: origin_uf, destinoUf: destination_uf,
+      distanciaKm: distance_km, vehicleType: vehicleTypeForCalc || "Truck",
+      pesoKg: cargo_weight_kg, cargoType: cargo_type,
+      temPedagio: toll_included, dataColeta: pickup_at || undefined,
+    } }),
+    onSuccess: (r) => setSuggestion(r),
+  });
+  useEffect(() => {
+    if (step !== 4) return;
+    if (!distance_km || !vehicleTypeForCalc || !cargo_type || !cargo_weight_kg) return;
+    suggestMut.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, suggestKey]);
 
   async function submit() {
     if (payment <= 0) return toast.error("Informe o valor");
@@ -66,6 +109,9 @@ function PublishPage() {
         distance_km, pickup_at: new Date(pickup_at).toISOString(),
         delivery_expected_at: delivery_expected_at ? new Date(delivery_expected_at).toISOString() : null,
         toll_included, payment_reais: payment,
+        suggested_amount_in_cents: suggestion?.freteCents ?? null,
+        pricing_breakdown: suggestion?.breakdown ?? null,
+        pricing_factors: suggestion?.fatores ?? null,
       } });
       toast.success("Frete publicado!");
       nav({ to: "/embarcador/fretes" });
