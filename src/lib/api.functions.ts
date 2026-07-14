@@ -482,3 +482,24 @@ export const addVehicle = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// ============================================================
+// PUBLIC STATS (landing page aggregates)
+// ============================================================
+export const publicStats = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const [openFreights, drivers, kmRows, gmvRows] = await Promise.all([
+    supabaseAdmin.from("freights").select("id", { count: "exact", head: true }).eq("status", "OPEN"),
+    supabaseAdmin.from("providers").select("id", { count: "exact", head: true }).or("is_banned.is.null,is_banned.eq.false"),
+    supabaseAdmin.from("freights").select("distance_km"),
+    supabaseAdmin.from("jobs").select("agreed_amount_in_cents").eq("status", "COMPLETED"),
+  ]);
+  const total_km = (kmRows.data ?? []).reduce((s: number, r: any) => s + (r.distance_km ?? 0), 0);
+  const gmv_cents = (gmvRows.data ?? []).reduce((s: number, r: any) => s + (r.agreed_amount_in_cents ?? 0), 0);
+  return {
+    open_freights: openFreights.count ?? 0,
+    drivers: drivers.count ?? 0,
+    total_km,
+    gmv_cents,
+  };
+});
