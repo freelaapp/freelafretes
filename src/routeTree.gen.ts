@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publicar'
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
@@ -23,6 +24,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorPublicarRoute = EmbarcadorPublicarRouteImport.update({
+  id: '/embarcador/publicar',
+  path: '/embarcador/publicar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmbarcadorFretesRoute = EmbarcadorFretesRouteImport.update({
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,6 +70,7 @@ export interface FileRoutesById {
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
+  '/embarcador/publicar': typeof EmbarcadorPublicarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -71,6 +80,7 @@ export interface FileRouteTypes {
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
+    | '/embarcador/publicar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -78,6 +88,7 @@ export interface FileRouteTypes {
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
+    | '/embarcador/publicar'
   id:
     | '__root__'
     | '/'
@@ -85,6 +96,7 @@ export interface FileRouteTypes {
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
+    | '/embarcador/publicar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,6 +105,7 @@ export interface RootRouteChildren {
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   CadastroMotoristaRoute: typeof CadastroMotoristaRoute
   EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
+  EmbarcadorPublicarRoute: typeof EmbarcadorPublicarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -109,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/publicar': {
+      id: '/embarcador/publicar'
+      path: '/embarcador/publicar'
+      fullPath: '/embarcador/publicar'
+      preLoaderRoute: typeof EmbarcadorPublicarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/embarcador/fretes': {
@@ -141,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   CadastroMotoristaRoute: CadastroMotoristaRoute,
   EmbarcadorFretesRoute: EmbarcadorFretesRoute,
+  EmbarcadorPublicarRoute: EmbarcadorPublicarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
