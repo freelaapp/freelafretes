@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SimuladorRouteImport } from './routes/simulador'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -28,6 +29,7 @@ import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminValidationRouteImport } from './routes/admin.validation'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminProvidersRouteImport } from './routes/admin.providers'
+import { Route as AdminPricingRouteImport } from './routes/admin.pricing'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
@@ -45,6 +47,11 @@ import { Route as AdminJobsIdRouteImport } from './routes/admin.jobs.$id'
 import { Route as AdminFreightsIdRouteImport } from './routes/admin.freights.$id'
 import { Route as AdminContractorsIdRouteImport } from './routes/admin.contractors.$id'
 
+const SimuladorRoute = SimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -140,6 +147,11 @@ const AdminProvidersRoute = AdminProvidersRouteImport.update({
   path: '/providers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPricingRoute = AdminPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -227,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -234,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -263,6 +277,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -270,6 +285,7 @@ export interface FileRoutesByTo {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -301,6 +317,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/simulador': typeof SimuladorRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/contractors': typeof AdminContractorsRouteWithChildren
   '/admin/feedbacks': typeof AdminFeedbacksRoute
@@ -308,6 +325,7 @@ export interface FileRoutesById {
   '/admin/jobs': typeof AdminJobsRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
   '/admin/validation': typeof AdminValidationRoute
@@ -340,6 +358,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -347,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -376,6 +396,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -383,6 +404,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -413,6 +435,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/simulador'
     | '/admin/audit'
     | '/admin/contractors'
     | '/admin/feedbacks'
@@ -420,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin/jobs'
     | '/admin/login'
     | '/admin/payments'
+    | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
     | '/admin/validation'
@@ -451,6 +475,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  SimuladorRoute: typeof SimuladorRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   CadastroMotoristaRoute: typeof CadastroMotoristaRoute
   EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
@@ -471,6 +496,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/simulador': {
+      id: '/simulador'
+      path: '/simulador'
+      fullPath: '/simulador'
+      preLoaderRoute: typeof SimuladorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -602,6 +634,13 @@ declare module '@tanstack/react-router' {
       path: '/providers'
       fullPath: '/admin/providers'
       preLoaderRoute: typeof AdminProvidersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/pricing': {
+      id: '/admin/pricing'
+      path: '/pricing'
+      fullPath: '/admin/pricing'
+      preLoaderRoute: typeof AdminPricingRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/payments': {
@@ -774,6 +813,7 @@ interface AdminRouteChildren {
   AdminJobsRoute: typeof AdminJobsRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPricingRoute: typeof AdminPricingRoute
   AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
   AdminTeamRoute: typeof AdminTeamRoute
   AdminValidationRoute: typeof AdminValidationRoute
@@ -788,6 +828,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminJobsRoute: AdminJobsRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPricingRoute: AdminPricingRoute,
   AdminProvidersRoute: AdminProvidersRouteWithChildren,
   AdminTeamRoute: AdminTeamRoute,
   AdminValidationRoute: AdminValidationRoute,
@@ -801,6 +842,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  SimuladorRoute: SimuladorRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   CadastroMotoristaRoute: CadastroMotoristaRoute,
   EmbarcadorFretesRoute: EmbarcadorFretesRoute,

@@ -408,7 +408,10 @@ export type Database = {
           origin_uf: string
           payment: number
           pickup_at: string
+          pricing_breakdown: Json | null
+          pricing_factors: Json | null
           status: Database["public"]["Enums"]["freight_status"]
+          suggested_amount_in_cents: number | null
           title: string
           toll_included: boolean
           updated_at: string
@@ -436,7 +439,10 @@ export type Database = {
           origin_uf: string
           payment: number
           pickup_at: string
+          pricing_breakdown?: Json | null
+          pricing_factors?: Json | null
           status?: Database["public"]["Enums"]["freight_status"]
+          suggested_amount_in_cents?: number | null
           title: string
           toll_included?: boolean
           updated_at?: string
@@ -464,7 +470,10 @@ export type Database = {
           origin_uf?: string
           payment?: number
           pickup_at?: string
+          pricing_breakdown?: Json | null
+          pricing_factors?: Json | null
           status?: Database["public"]["Enums"]["freight_status"]
+          suggested_amount_in_cents?: number | null
           title?: string
           toll_included?: boolean
           updated_at?: string
@@ -609,6 +618,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_cargo_factors: {
+        Row: {
+          cargo_type: string
+          factor: number
+          updated_at: string
+        }
+        Insert: {
+          cargo_type: string
+          factor: number
+          updated_at?: string
+        }
+        Update: {
+          cargo_type?: string
+          factor?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_settings: {
+        Row: {
+          id: number
+          settings: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: number
+          settings: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: number
+          settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      pricing_settings_history: {
+        Row: {
+          after: Json | null
+          before: Json | null
+          changed_at: string
+          changed_by: string | null
+          entity: string
+          entity_key: string | null
+          id: string
+        }
+        Insert: {
+          after?: Json | null
+          before?: Json | null
+          changed_at?: string
+          changed_by?: string | null
+          entity: string
+          entity_key?: string | null
+          id?: string
+        }
+        Update: {
+          after?: Json | null
+          before?: Json | null
+          changed_at?: string
+          changed_by?: string | null
+          entity?: string
+          entity_key?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      pricing_vehicle_costs: {
+        Row: {
+          capacidade_kg: number
+          ckm_cents_por_km: number
+          frete_minimo_cents: number
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          capacidade_kg: number
+          ckm_cents_por_km: number
+          frete_minimo_cents: number
+          updated_at?: string
+          vehicle_type: string
+        }
+        Update: {
+          capacidade_kg?: number
+          ckm_cents_por_km?: number
+          frete_minimo_cents?: number
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: []
       }
       providers: {
         Row: {

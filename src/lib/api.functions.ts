@@ -27,6 +27,9 @@ const publishFreightInput = z.object({
   delivery_expected_at: z.string().optional().nullable(),
   toll_included: z.boolean().default(false),
   payment_reais: z.number().positive(),
+  suggested_amount_in_cents: z.number().int().positive().optional().nullable(),
+  pricing_breakdown: z.any().optional().nullable(),
+  pricing_factors: z.any().optional().nullable(),
 });
 
 export const publishFreight = createServerFn({ method: "POST" })
@@ -66,6 +69,9 @@ export const publishFreight = createServerFn({ method: "POST" })
       toll_included: data.toll_included,
       payment: data.payment_reais,
       base_amount_in_cents,
+      suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
+      pricing_breakdown: data.pricing_breakdown ?? null,
+      pricing_factors: data.pricing_factors ?? null,
       status: "OPEN",
     }).select("id").single();
     if (error) throw error;
