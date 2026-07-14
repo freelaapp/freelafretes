@@ -118,7 +118,8 @@ function PublishPage() {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
     } finally { setLoading(false); }
-  }
+  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+
 
   return (
     <div className="pb-32">
