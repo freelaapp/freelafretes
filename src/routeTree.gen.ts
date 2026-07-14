@@ -19,6 +19,7 @@ import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publ
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
@@ -74,6 +75,11 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MotoristaViagemIdRoute = MotoristaViagemIdRouteImport.update({
+  id: '/motorista/viagem/$id',
+  path: '/motorista/viagem/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MotoristaFreteIdRoute = MotoristaFreteIdRouteImport.update({
   id: '/motorista/frete/$id',
   path: '/motorista/frete/$id',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
   '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
   '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
   '/motorista/frete/$id': typeof MotoristaFreteIdRoute
+  '/motorista/viagem/$id': typeof MotoristaViagemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
     | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
     | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
   id:
     | '__root__'
     | '/'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
     | '/motorista/frete/$id'
+    | '/motorista/viagem/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
   EmbarcadorViagemIdRoute: typeof EmbarcadorViagemIdRoute
   MotoristaFreteIdRoute: typeof MotoristaFreteIdRoute
+  MotoristaViagemIdRoute: typeof MotoristaViagemIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/motorista/viagem/$id': {
+      id: '/motorista/viagem/$id'
+      path: '/motorista/viagem/$id'
+      fullPath: '/motorista/viagem/$id'
+      preLoaderRoute: typeof MotoristaViagemIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motorista/frete/$id': {
       id: '/motorista/frete/$id'
       path: '/motorista/frete/$id'
@@ -331,6 +351,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
   EmbarcadorViagemIdRoute: EmbarcadorViagemIdRoute,
   MotoristaFreteIdRoute: MotoristaFreteIdRoute,
+  MotoristaViagemIdRoute: MotoristaViagemIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
