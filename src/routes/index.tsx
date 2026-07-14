@@ -330,24 +330,47 @@ function HowItWorks() {
    SIMULADOR DE FRETE
    ============================================================ */
 
+function maskCep(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
+}
+
+async function lookupCep(cep: string): Promise<{ uf: string; city: string } | null> {
+  const d = cep.replace(/\D/g, "");
+  if (d.length !== 8) return null;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${d}/json/`);
+    const j = await r.json();
+    if (j.erro) return null;
+    return { uf: j.uf, city: j.localidade };
+  } catch {
+    return null;
+  }
+}
+
 function Simulator() {
-  const [originUf, setOriginUf] = useState("");
-  const [destUf, setDestUf] = useState("");
+  const [originCep, setOriginCep] = useState("");
+  const [destCep, setDestCep] = useState("");
+  const [cargoValue, setCargoValue] = useState("");
   const [cargo, setCargo] = useState("");
-  const [result, setResult] = useState<{ min: number; max: number; km: number } | null>(null);
+  const [origin, setOrigin] = useState<{ uf: string; city: string } | null>(null);
+  const [dest, setDest] = useState<{ uf: string; city: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ min: number; max: number; km: number; insurance: number } | null>(null);
 
   // Estimativa baseada na média real de fretes similares publicados
   const { data: sample = [] } = useQuery({
-    queryKey: ["sim-sample", originUf, destUf, cargo],
+    queryKey: ["sim-sample", origin?.uf, dest?.uf, cargo],
     queryFn: async () => {
       let q = supabase.from("freights_public").select("distance_km, cargo_type").limit(200);
-      if (originUf) q = q.eq("origin_uf", originUf);
-      if (destUf) q = q.eq("destination_uf", destUf);
+      if (origin?.uf) q = q.eq("origin_uf", origin.uf);
+      if (dest?.uf) q = q.eq("destination_uf", dest.uf);
       if (cargo) q = q.eq("cargo_type", cargo);
       const { data } = await q;
       return data ?? [];
     },
-    enabled: !!originUf && !!destUf,
+    enabled: !!origin?.uf && !!dest?.uf,
   });
 
   const avgKm = useMemo(() => {
@@ -355,60 +378,115 @@ function Simulator() {
     return Math.round(sample.reduce((a, b: any) => a + (b.distance_km ?? 0), 0) / sample.length);
   }, [sample]);
 
-  function simulate() {
-    if (!originUf || !destUf) return;
-    const km = avgKm || 800; // fallback
+  async function simulate() {
+    setError(null);
+    setResult(null);
+    if (originCep.replace(/\D/g, "").length !== 8 || destCep.replace(/\D/g, "").length !== 8) {
+      setError("Informe CEPs válidos de origem e destino (8 dígitos).");
+      return;
+    }
+    setLoading(true);
+    const [o, d] = await Promise.all([lookupCep(originCep), lookupCep(destCep)]);
+    setLoading(false);
+    if (!o || !d) {
+      setError("Não foi possível localizar um dos CEPs. Verifique e tente novamente.");
+      return;
+    }
+    setOrigin(o);
+    setDest(d);
+    const km = avgKm || 800;
     // referência de mercado: R$ 3,80–R$ 5,50 por km
-    const min = Math.round(km * 3.8);
-    const max = Math.round(km * 5.5);
-    setResult({ min, max, km });
+    const min = Math.round(km * 380);   // em centavos
+    const max = Math.round(km * 550);
+    const cargoCents = Math.round((parseFloat(cargoValue.replace(/\./g, "").replace(",", ".")) || 0) * 100);
+    // seguro de carga: ~0,3% do valor declarado
+    const insurance = Math.round(cargoCents * 0.003);
+    setResult({ min: min + insurance, max: max + insurance, km, insurance });
   }
 
   return (
     <section id="empresas" className="scroll-mt-24">
       <div className="rounded-3xl bg-accent text-accent-foreground p-6 md:p-10 shadow-elevated">
-        <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-center">
+        <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-start">
           <div>
             <h2 className="font-display text-3xl md:text-4xl text-accent-foreground">Simulador de frete</h2>
             <p className="mt-2 text-sm text-accent-foreground/80">
-              Descubra em segundos uma faixa de valor de referência para sua rota. Baseado em fretes reais publicados.
+              Informe o CEP de origem, destino e o valor da carga. Estimamos uma faixa de referência com base em fretes reais publicados na plataforma.
             </p>
           </div>
-          <div className="bg-card rounded-2xl p-4 md:p-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <select value={originUf} onChange={(e) => setOriginUf(e.target.value)} className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background">
-                  <option value="">UF de origem</option>
-                  {UF_LIST.map((u) => <option key={u} value={u}>{u}</option>)}
+          <div className="bg-card text-foreground rounded-2xl p-4 md:p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="CEP de origem" icon={<MapPin className="h-4 w-4" />}>
+                <input
+                  inputMode="numeric"
+                  value={originCep}
+                  onChange={(e) => setOriginCep(maskCep(e.target.value))}
+                  placeholder="00000-000"
+                  className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                {origin && <p className="mt-1 text-xs text-muted-foreground">{origin.city}/{origin.uf}</p>}
+              </Field>
+              <Field label="CEP de destino" icon={<Flag className="h-4 w-4" />}>
+                <input
+                  inputMode="numeric"
+                  value={destCep}
+                  onChange={(e) => setDestCep(maskCep(e.target.value))}
+                  placeholder="00000-000"
+                  className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                {dest && <p className="mt-1 text-xs text-muted-foreground">{dest.city}/{dest.uf}</p>}
+              </Field>
+              <Field label="Valor da carga (R$)" icon={<Package className="h-4 w-4" />}>
+                <input
+                  inputMode="decimal"
+                  value={cargoValue}
+                  onChange={(e) => setCargoValue(e.target.value.replace(/[^\d,.]/g, ""))}
+                  placeholder="Ex.: 25.000,00"
+                  className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </Field>
+              <Field label="Tipo de carga (opcional)" icon={<Truck className="h-4 w-4" />}>
+                <select
+                  value={cargo}
+                  onChange={(e) => setCargo(e.target.value)}
+                  className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+                >
+                  <option value="">Selecione</option>
+                  {CARGO_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-              </div>
-              <div className="relative">
-                <Flag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <select value={destUf} onChange={(e) => setDestUf(e.target.value)} className="w-full pl-9 pr-3 py-3 rounded-xl border border-border text-sm bg-background">
-                  <option value="">UF de destino</option>
-                  {UF_LIST.map((u) => <option key={u} value={u}>{u}</option>)}
-                </select>
-              </div>
-              <select value={cargo} onChange={(e) => setCargo(e.target.value)} className="w-full px-3 py-3 rounded-xl border border-border text-sm bg-background md:col-span-1">
-                <option value="">Tipo de carga</option>
-                {CARGO_TYPES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <button
-                onClick={simulate}
-                disabled={!originUf || !destUf}
-                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary-hover disabled:opacity-50"
-              >
-                Simular valor
-              </button>
+              </Field>
             </div>
+
+            <button
+              onClick={simulate}
+              disabled={loading || !originCep || !destCep}
+              className="w-full md:w-auto px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary-hover disabled:opacity-50"
+            >
+              {loading ? "Calculando..." : "Simular valor do frete"}
+            </button>
+
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+
             {result && (
-              <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
-                <p className="text-xs text-muted-foreground">Faixa estimada · ~{nfInt.format(result.km)} km</p>
-                <p className="mt-1 font-display text-2xl text-accent">
-                  {nfMoney.format(result.min / 100 * 100)} <span className="text-muted-foreground text-lg">a</span> {nfMoney.format(result.max / 100 * 100)}
+              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Rota estimada</span>
+                  <span>{origin?.city}/{origin?.uf} → {dest?.city}/{dest?.uf} · ~{nfInt.format(result.km)} km</span>
+                </div>
+                <p className="font-display text-2xl md:text-3xl text-accent">
+                  {nfMoney.format(result.min / 100)} <span className="text-muted-foreground text-lg">a</span> {nfMoney.format(result.max / 100)}
                 </p>
-                <Link to="/cadastro/empresa" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                {result.insurance > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Inclui estimativa de seguro de carga: {nfMoney.format(result.insurance / 100)} (~0,3% do valor declarado).
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Valor de referência com base em fretes reais publicados. O preço final é definido na negociação com o motorista.
+                </p>
+                <Link to="/cadastro/empresa" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                   Publicar este frete agora <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -417,6 +495,18 @@ function Simulator() {
         </div>
       </div>
     </section>
+  );
+}
+
+function Field({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-semibold text-foreground/80 mb-1.5">{label}</span>
+      <div className="relative">
+        <span className="absolute left-3 top-[1.05rem] text-muted-foreground pointer-events-none">{icon}</span>
+        {children}
+      </div>
+    </label>
   );
 }
 
