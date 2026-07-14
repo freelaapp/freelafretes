@@ -13,6 +13,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MotoristaViagensRouteImport } from './routes/motorista.viagens'
 import { Route as MotoristaPropostasRouteImport } from './routes/motorista.propostas'
 import { Route as MotoristaPerfilRouteImport } from './routes/motorista.perfil'
@@ -49,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const MotoristaViagensRoute = MotoristaViagensRouteImport.update({
   id: '/motorista/viagens',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin/': typeof AdminIndexRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -156,7 +163,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/admin/login': typeof AdminLoginRoute
@@ -170,6 +176,7 @@ export interface FileRoutesByTo {
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin': typeof AdminIndexRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -193,6 +200,7 @@ export interface FileRoutesById {
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin/': typeof AdminIndexRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -217,6 +225,7 @@ export interface FileRouteTypes {
     | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
+    | '/admin/'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -225,7 +234,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/admin/login'
@@ -239,6 +247,7 @@ export interface FileRouteTypes {
     | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
+    | '/admin'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/motorista/perfil'
     | '/motorista/propostas'
     | '/motorista/viagens'
+    | '/admin/'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -319,6 +329,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/motorista/viagens': {
       id: '/motorista/viagens'
@@ -437,10 +454,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
