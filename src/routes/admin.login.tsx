@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { adminMe } from "@/lib/admin.functions";
+import { adminMe, bootstrapFirstAdmin } from "@/lib/admin.functions";
 import logoAsset from "@/assets/freela-fretes-logo.png.asset.json";
 import { toast } from "sonner";
 
