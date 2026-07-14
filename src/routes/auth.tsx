@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Building2, Truck } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Entrar — Freela Fretes" }] }),
@@ -38,11 +39,11 @@ function AuthPage() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="px-5 pt-5 pb-3">
-        <Link to="/" className="inline-flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground grid place-items-center font-black">FF</div>
-          <span className="font-bold text-primary">Freela Fretes</span>
+        <Link to="/" className="inline-flex">
+          <Logo size={40} />
         </Link>
       </header>
+
 
       <div className="flex-1 px-5 pt-4">
         {mode === "choose" ? (

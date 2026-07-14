@@ -2,6 +2,12 @@
 @source "../src";
 @import "tw-animate-css";
 
+@theme {
+  --font-sans: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Bebas Neue", "Barlow", system-ui, sans-serif;
+}
+
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -43,31 +49,31 @@
 :root {
   --radius: 0.875rem;
 
-  /* Neutrais */
-  --background: oklch(0.99 0.005 250);
-  --foreground: oklch(0.2 0.02 260);
+  /* Neutrais — cinza quente / preto Freela #1D1D1B */
+  --background: oklch(0.99 0.003 80);
+  --foreground: oklch(0.18 0.005 80);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 260);
+  --card-foreground: oklch(0.18 0.005 80);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 260);
-  --muted: oklch(0.965 0.008 250);
-  --muted-foreground: oklch(0.48 0.02 260);
-  --border: oklch(0.92 0.01 250);
-  --input: oklch(0.92 0.01 250);
+  --popover-foreground: oklch(0.18 0.005 80);
+  --muted: oklch(0.965 0.005 80);
+  --muted-foreground: oklch(0.45 0.008 80);
+  --border: oklch(0.92 0.005 80);
+  --input: oklch(0.92 0.005 80);
 
-  /* Azul-escuro logística #1E3A8A */
-  --primary: oklch(0.38 0.16 265);
-  --primary-foreground: oklch(0.99 0.005 250);
-  --primary-hover: oklch(0.33 0.16 265);
+  /* Laranja Freela #ECA826 — cor principal da marca */
+  --primary: oklch(0.76 0.15 72);
+  --primary-foreground: oklch(0.15 0.005 80);
+  --primary-hover: oklch(0.7 0.16 68);
 
-  /* Laranja acento #F97316 */
-  --accent: oklch(0.7 0.19 45);
-  --accent-foreground: oklch(0.99 0.005 250);
-  --accent-hover: oklch(0.63 0.2 42);
+  /* Acento escuro — cinza #424242 / preto Freela */
+  --accent: oklch(0.32 0.005 80);
+  --accent-foreground: oklch(0.99 0 0);
+  --accent-hover: oklch(0.24 0.005 80);
 
-  /* Secondary suave */
-  --secondary: oklch(0.955 0.015 260);
-  --secondary-foreground: oklch(0.25 0.05 265);
+  /* Secondary suave (creme quente) */
+  --secondary: oklch(0.96 0.02 80);
+  --secondary-foreground: oklch(0.22 0.005 80);
 
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
@@ -78,7 +84,7 @@
   --warning: oklch(0.75 0.15 85);
   --warning-foreground: oklch(0.22 0.05 60);
 
-  --ring: oklch(0.38 0.16 265);
+  --ring: oklch(0.76 0.15 72);
 }
 
 @layer base {
@@ -90,7 +96,12 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
   }
 
   body {

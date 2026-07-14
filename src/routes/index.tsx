@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Truck, Building2, Lock, MapPin, Package, Search } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import { formatDateBR } from "@/lib/format";
 
@@ -21,12 +22,10 @@ function Landing() {
     <div className="pb-10">
       {/* Header */}
       <header className="px-5 pt-5 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground grid place-items-center font-black">FF</div>
-          <span className="font-bold text-primary">Freela Fretes</span>
-        </div>
-        <Link to="/auth" className="text-sm font-semibold text-primary">Entrar</Link>
+        <Logo size={40} />
+        <Link to="/auth" className="text-sm font-semibold text-accent">Entrar</Link>
       </header>
+
 
       {/* Hero */}
       <section className="px-5 pt-4 pb-8">
