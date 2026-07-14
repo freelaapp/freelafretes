@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Truck, Package, MapPin, Lock, Search, Handshake, ShieldCheck, Route as RouteIcon,
-  Menu, X, Linkedin, Facebook, Instagram, ArrowRight,
+  Menu, X, Linkedin, Facebook, Instagram, Flag, ArrowRight,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
