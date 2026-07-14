@@ -24,7 +24,10 @@ export function useRequireAuth(requireRole?: AppRole) {
       if (auth.role === "contractor") nav({ to: "/embarcador/fretes" });
       else if (auth.role === "provider") nav({ to: "/motorista/buscar" });
     }
-  }, [auth.loading, auth.user, auth.role, requireRole, nav]);
+    if (requireRole === "provider" && banned.data && (banned.data.is_banned || banned.data.is_active === false)) {
+      nav({ to: "/motorista/suspenso" });
+    }
+  }, [auth.loading, auth.user, auth.role, requireRole, nav, banned.data]);
 
   return { ...auth, providerBanned: banned.data?.is_banned || banned.data?.is_active === false, banReason: banned.data?.ban_reason };
 }
