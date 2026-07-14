@@ -14,9 +14,9 @@ import truckPhoto from "@/assets/freela-truck.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Freela Fretes — Marketplace de fretes do Brasil" },
+      { title: "Freela Fretes — Intermediador nacional de fretes" },
       { name: "description", content: "Conectamos embarcadores a caminhoneiros autônomos em todo o Brasil. Publique cargas, encontre fretes e feche negócio com pagamento protegido." },
-      { property: "og:title", content: "Freela Fretes — Marketplace de fretes do Brasil" },
+      { property: "og:title", content: "Freela Fretes — Intermediador nacional de fretes" },
       { property: "og:description", content: "Publique cargas ou encontre fretes em todo o Brasil com pagamento protegido." },
       { property: "og:type", content: "website" },
     ],
@@ -119,20 +119,20 @@ function Hero() {
       <div className="grid md:grid-cols-2 gap-6 items-center p-6 md:p-10 min-h-[420px] md:min-h-[500px]">
         <div className="text-accent-foreground max-w-xl">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
-            <Flag className="h-3.5 w-3.5" /> Marketplace nacional de fretes
+            <Flag className="h-3.5 w-3.5" /> Intermediador nacional de fretes
           </span>
-          <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-primary-foreground">
+          <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-accent-foreground">
             Sua carga tem pressa.<br />
             <span className="text-primary">Seu caminhão tem destino.</span>
           </h1>
-          <p className="mt-4 text-sm md:text-base text-primary-foreground/80">
-            O marketplace que conecta embarcadores e caminhoneiros em todo o Brasil, com pagamento protegido e reputação verificada.
+          <p className="mt-4 text-sm md:text-base text-accent-foreground/80">
+            Conectamos embarcadores e caminhoneiros em todo o Brasil, com pagamento protegido e reputação verificada.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/cadastro/empresa" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-primary text-primary-foreground font-semibold shadow-elevated hover:bg-primary-hover">
               Tenho carga para enviar <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/cadastro/motorista" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-primary-foreground/30 text-primary-foreground font-semibold hover:bg-primary-foreground/10">
+            <Link to="/cadastro/motorista" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-accent-foreground/30 text-accent-foreground font-semibold hover:bg-accent-foreground/10">
               Sou motorista
             </Link>
           </div>
@@ -369,8 +369,8 @@ function Simulator() {
       <div className="rounded-3xl bg-accent text-accent-foreground p-6 md:p-10 shadow-elevated">
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-center">
           <div>
-            <h2 className="font-display text-3xl md:text-4xl text-primary-foreground">Simulador de frete</h2>
-            <p className="mt-2 text-sm text-primary-foreground/80">
+            <h2 className="font-display text-3xl md:text-4xl text-accent-foreground">Simulador de frete</h2>
+            <p className="mt-2 text-sm text-accent-foreground/80">
               Descubra em segundos uma faixa de valor de referência para sua rota. Baseado em fretes reais publicados.
             </p>
           </div>
@@ -430,8 +430,8 @@ function SiteFooter() {
       <div className="mx-auto max-w-6xl px-5 md:px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
         <div className="col-span-2 md:col-span-1">
           <Logo size={40} variant="onDark" />
-          <p className="mt-4 text-sm text-primary-foreground/70">
-            Marketplace de fretes que conecta o Brasil.
+          <p className="mt-4 text-sm text-accent-foreground/70">
+            Intermediador nacional de fretes que conecta o Brasil.
           </p>
         </div>
         <FooterCol title="Faça seu cadastro" links={[
@@ -455,8 +455,8 @@ function SiteFooter() {
           { label: "Contato", href: "mailto:contato@freelafretes.com.br", external: true },
         ]} />
       </div>
-      <div className="border-t border-primary-foreground/10">
-        <div className="mx-auto max-w-6xl px-5 md:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-primary-foreground/60">
+      <div className="border-t border-accent-foreground/10">
+        <div className="mx-auto max-w-6xl px-5 md:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-accent-foreground/60">
           <p>Freela Fretes © {new Date().getFullYear()} · Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <a href="#" aria-label="LinkedIn" className="hover:text-primary"><Linkedin className="h-4 w-4" /></a>
@@ -473,8 +473,8 @@ type FooterLink = { label: string; to?: string; href?: string; external?: boolea
 function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <p className="font-display text-sm text-primary-foreground mb-3">{title}</p>
-      <ul className="space-y-2 text-sm text-primary-foreground/70">
+      <p className="font-display text-sm text-accent-foreground mb-3">{title}</p>
+      <ul className="space-y-2 text-sm text-accent-foreground/70">
         {links.map((l) => (
           <li key={l.label}>
             {l.to ? (
