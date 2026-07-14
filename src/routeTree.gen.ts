@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EmbarcadorViagensRouteImport } from './routes/embarcador.viagens'
 import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publicar'
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
@@ -26,6 +27,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbarcadorViagensRoute = EmbarcadorViagensRouteImport.update({
+  id: '/embarcador/viagens',
+  path: '/embarcador/viagens',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmbarcadorPublicarRoute = EmbarcadorPublicarRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
+  '/embarcador/viagens': typeof EmbarcadorViagensRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/cadastro/motorista'
     | '/embarcador/fretes'
     | '/embarcador/publicar'
+    | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
   fileRoutesByTo: FileRoutesByTo
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/cadastro/motorista'
     | '/embarcador/fretes'
     | '/embarcador/publicar'
+    | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
   id:
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/cadastro/motorista'
     | '/embarcador/fretes'
     | '/embarcador/publicar'
+    | '/embarcador/viagens'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
   fileRoutesById: FileRoutesById
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   CadastroMotoristaRoute: typeof CadastroMotoristaRoute
   EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
   EmbarcadorPublicarRoute: typeof EmbarcadorPublicarRoute
+  EmbarcadorViagensRoute: typeof EmbarcadorViagensRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
   EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
 }
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embarcador/viagens': {
+      id: '/embarcador/viagens'
+      path: '/embarcador/viagens'
+      fullPath: '/embarcador/viagens'
+      preLoaderRoute: typeof EmbarcadorViagensRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/embarcador/publicar': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroMotoristaRoute: CadastroMotoristaRoute,
   EmbarcadorFretesRoute: EmbarcadorFretesRoute,
   EmbarcadorPublicarRoute: EmbarcadorPublicarRoute,
+  EmbarcadorViagensRoute: EmbarcadorViagensRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
   EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
 }
