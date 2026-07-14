@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as MotoristaViagensRouteImport } from './routes/motorista.viagens'
+import { Route as MotoristaSuspensoRouteImport } from './routes/motorista.suspenso'
 import { Route as MotoristaPropostasRouteImport } from './routes/motorista.propostas'
 import { Route as MotoristaPerfilRouteImport } from './routes/motorista.perfil'
 import { Route as MotoristaBuscarRouteImport } from './routes/motorista.buscar'
@@ -22,11 +25,25 @@ import { Route as EmbarcadorPerfilRouteImport } from './routes/embarcador.perfil
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as AdminValidationRouteImport } from './routes/admin.validation'
+import { Route as AdminTeamRouteImport } from './routes/admin.team'
+import { Route as AdminProvidersRouteImport } from './routes/admin.providers'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminJobsRouteImport } from './routes/admin.jobs'
+import { Route as AdminFreightsRouteImport } from './routes/admin.freights'
+import { Route as AdminFeedbacksRouteImport } from './routes/admin.feedbacks'
+import { Route as AdminContractorsRouteImport } from './routes/admin.contractors'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as MotoristaViagemIdRouteImport } from './routes/motorista.viagem.$id'
 import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$id'
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
+import { Route as AdminProvidersIdRouteImport } from './routes/admin.providers.$id'
+import { Route as AdminJobsIdRouteImport } from './routes/admin.jobs.$id'
+import { Route as AdminFreightsIdRouteImport } from './routes/admin.freights.$id'
+import { Route as AdminContractorsIdRouteImport } from './routes/admin.contractors.$id'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -38,14 +55,29 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const MotoristaViagensRoute = MotoristaViagensRouteImport.update({
   id: '/motorista/viagens',
   path: '/motorista/viagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotoristaSuspensoRoute = MotoristaSuspensoRouteImport.update({
+  id: '/motorista/suspenso',
+  path: '/motorista/suspenso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MotoristaPropostasRoute = MotoristaPropostasRouteImport.update({
@@ -93,6 +125,56 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminValidationRoute = AdminValidationRouteImport.update({
+  id: '/validation',
+  path: '/validation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTeamRoute = AdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProvidersRoute = AdminProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminJobsRoute = AdminJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFreightsRoute = AdminFreightsRouteImport.update({
+  id: '/freights',
+  path: '/freights',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFeedbacksRoute = AdminFeedbacksRouteImport.update({
+  id: '/feedbacks',
+  path: '/feedbacks',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContractorsRoute = AdminContractorsRouteImport.update({
+  id: '/contractors',
+  path: '/contractors',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const MotoristaViagemIdRoute = MotoristaViagemIdRouteImport.update({
   id: '/motorista/viagem/$id',
   path: '/motorista/viagem/$id',
@@ -119,11 +201,42 @@ const EmbarcadorFreteIdRoute = EmbarcadorFreteIdRouteImport.update({
   path: '/embarcador/frete/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProvidersIdRoute = AdminProvidersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminProvidersRoute,
+} as any)
+const AdminJobsIdRoute = AdminJobsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminJobsRoute,
+} as any)
+const AdminFreightsIdRoute = AdminFreightsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminFreightsRoute,
+} as any)
+const AdminContractorsIdRoute = AdminContractorsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminContractorsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
+  '/admin/jobs': typeof AdminJobsRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/providers': typeof AdminProvidersRouteWithChildren
+  '/admin/team': typeof AdminTeamRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -133,7 +246,13 @@ export interface FileRoutesByFullPath {
   '/motorista/buscar': typeof MotoristaBuscarRoute
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/suspenso': typeof MotoristaSuspensoRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
+  '/admin/jobs/$id': typeof AdminJobsIdRoute
+  '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -144,6 +263,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
+  '/admin/jobs': typeof AdminJobsRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/providers': typeof AdminProvidersRouteWithChildren
+  '/admin/team': typeof AdminTeamRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -153,7 +282,13 @@ export interface FileRoutesByTo {
   '/motorista/buscar': typeof MotoristaBuscarRoute
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/suspenso': typeof MotoristaSuspensoRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
+  '/admin/jobs/$id': typeof AdminJobsIdRoute
+  '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -163,8 +298,19 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/contractors': typeof AdminContractorsRouteWithChildren
+  '/admin/feedbacks': typeof AdminFeedbacksRoute
+  '/admin/freights': typeof AdminFreightsRouteWithChildren
+  '/admin/jobs': typeof AdminJobsRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/providers': typeof AdminProvidersRouteWithChildren
+  '/admin/team': typeof AdminTeamRoute
+  '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
@@ -174,7 +320,13 @@ export interface FileRoutesById {
   '/motorista/buscar': typeof MotoristaBuscarRoute
   '/motorista/perfil': typeof MotoristaPerfilRoute
   '/motorista/propostas': typeof MotoristaPropostasRoute
+  '/motorista/suspenso': typeof MotoristaSuspensoRoute
   '/motorista/viagens': typeof MotoristaViagensRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/contractors/$id': typeof AdminContractorsIdRoute
+  '/admin/freights/$id': typeof AdminFreightsIdRoute
+  '/admin/jobs/$id': typeof AdminJobsIdRoute
+  '/admin/providers/$id': typeof AdminProvidersIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -185,8 +337,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
+    | '/admin/contractors'
+    | '/admin/feedbacks'
+    | '/admin/freights'
+    | '/admin/jobs'
+    | '/admin/login'
+    | '/admin/payments'
+    | '/admin/providers'
+    | '/admin/team'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -196,7 +359,13 @@ export interface FileRouteTypes {
     | '/motorista/buscar'
     | '/motorista/perfil'
     | '/motorista/propostas'
+    | '/motorista/suspenso'
     | '/motorista/viagens'
+    | '/admin/'
+    | '/admin/contractors/$id'
+    | '/admin/freights/$id'
+    | '/admin/jobs/$id'
+    | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -207,6 +376,16 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
+    | '/admin/contractors'
+    | '/admin/feedbacks'
+    | '/admin/freights'
+    | '/admin/jobs'
+    | '/admin/login'
+    | '/admin/payments'
+    | '/admin/providers'
+    | '/admin/team'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -216,7 +395,13 @@ export interface FileRouteTypes {
     | '/motorista/buscar'
     | '/motorista/perfil'
     | '/motorista/propostas'
+    | '/motorista/suspenso'
     | '/motorista/viagens'
+    | '/admin'
+    | '/admin/contractors/$id'
+    | '/admin/freights/$id'
+    | '/admin/jobs/$id'
+    | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -225,8 +410,19 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/onboarding'
+    | '/admin/audit'
+    | '/admin/contractors'
+    | '/admin/feedbacks'
+    | '/admin/freights'
+    | '/admin/jobs'
+    | '/admin/login'
+    | '/admin/payments'
+    | '/admin/providers'
+    | '/admin/team'
+    | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
     | '/embarcador/fretes'
@@ -236,7 +432,13 @@ export interface FileRouteTypes {
     | '/motorista/buscar'
     | '/motorista/perfil'
     | '/motorista/propostas'
+    | '/motorista/suspenso'
     | '/motorista/viagens'
+    | '/admin/'
+    | '/admin/contractors/$id'
+    | '/admin/freights/$id'
+    | '/admin/jobs/$id'
+    | '/admin/providers/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -246,6 +448,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
@@ -257,6 +460,7 @@ export interface RootRouteChildren {
   MotoristaBuscarRoute: typeof MotoristaBuscarRoute
   MotoristaPerfilRoute: typeof MotoristaPerfilRoute
   MotoristaPropostasRoute: typeof MotoristaPropostasRoute
+  MotoristaSuspensoRoute: typeof MotoristaSuspensoRoute
   MotoristaViagensRoute: typeof MotoristaViagensRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
   EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
@@ -281,6 +485,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -288,11 +499,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/motorista/viagens': {
       id: '/motorista/viagens'
       path: '/motorista/viagens'
       fullPath: '/motorista/viagens'
       preLoaderRoute: typeof MotoristaViagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/motorista/suspenso': {
+      id: '/motorista/suspenso'
+      path: '/motorista/suspenso'
+      fullPath: '/motorista/suspenso'
+      preLoaderRoute: typeof MotoristaSuspensoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/motorista/propostas': {
@@ -358,6 +583,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/validation': {
+      id: '/admin/validation'
+      path: '/validation'
+      fullPath: '/admin/validation'
+      preLoaderRoute: typeof AdminValidationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/team': {
+      id: '/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AdminTeamRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/providers': {
+      id: '/admin/providers'
+      path: '/providers'
+      fullPath: '/admin/providers'
+      preLoaderRoute: typeof AdminProvidersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/jobs': {
+      id: '/admin/jobs'
+      path: '/jobs'
+      fullPath: '/admin/jobs'
+      preLoaderRoute: typeof AdminJobsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/freights': {
+      id: '/admin/freights'
+      path: '/freights'
+      fullPath: '/admin/freights'
+      preLoaderRoute: typeof AdminFreightsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/feedbacks': {
+      id: '/admin/feedbacks'
+      path: '/feedbacks'
+      fullPath: '/admin/feedbacks'
+      preLoaderRoute: typeof AdminFeedbacksRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/contractors': {
+      id: '/admin/contractors'
+      path: '/contractors'
+      fullPath: '/admin/contractors'
+      preLoaderRoute: typeof AdminContractorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/motorista/viagem/$id': {
       id: '/motorista/viagem/$id'
       path: '/motorista/viagem/$id'
@@ -393,11 +688,117 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmbarcadorFreteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/providers/$id': {
+      id: '/admin/providers/$id'
+      path: '/$id'
+      fullPath: '/admin/providers/$id'
+      preLoaderRoute: typeof AdminProvidersIdRouteImport
+      parentRoute: typeof AdminProvidersRoute
+    }
+    '/admin/jobs/$id': {
+      id: '/admin/jobs/$id'
+      path: '/$id'
+      fullPath: '/admin/jobs/$id'
+      preLoaderRoute: typeof AdminJobsIdRouteImport
+      parentRoute: typeof AdminJobsRoute
+    }
+    '/admin/freights/$id': {
+      id: '/admin/freights/$id'
+      path: '/$id'
+      fullPath: '/admin/freights/$id'
+      preLoaderRoute: typeof AdminFreightsIdRouteImport
+      parentRoute: typeof AdminFreightsRoute
+    }
+    '/admin/contractors/$id': {
+      id: '/admin/contractors/$id'
+      path: '/$id'
+      fullPath: '/admin/contractors/$id'
+      preLoaderRoute: typeof AdminContractorsIdRouteImport
+      parentRoute: typeof AdminContractorsRoute
+    }
   }
 }
 
+interface AdminContractorsRouteChildren {
+  AdminContractorsIdRoute: typeof AdminContractorsIdRoute
+}
+
+const AdminContractorsRouteChildren: AdminContractorsRouteChildren = {
+  AdminContractorsIdRoute: AdminContractorsIdRoute,
+}
+
+const AdminContractorsRouteWithChildren =
+  AdminContractorsRoute._addFileChildren(AdminContractorsRouteChildren)
+
+interface AdminFreightsRouteChildren {
+  AdminFreightsIdRoute: typeof AdminFreightsIdRoute
+}
+
+const AdminFreightsRouteChildren: AdminFreightsRouteChildren = {
+  AdminFreightsIdRoute: AdminFreightsIdRoute,
+}
+
+const AdminFreightsRouteWithChildren = AdminFreightsRoute._addFileChildren(
+  AdminFreightsRouteChildren,
+)
+
+interface AdminJobsRouteChildren {
+  AdminJobsIdRoute: typeof AdminJobsIdRoute
+}
+
+const AdminJobsRouteChildren: AdminJobsRouteChildren = {
+  AdminJobsIdRoute: AdminJobsIdRoute,
+}
+
+const AdminJobsRouteWithChildren = AdminJobsRoute._addFileChildren(
+  AdminJobsRouteChildren,
+)
+
+interface AdminProvidersRouteChildren {
+  AdminProvidersIdRoute: typeof AdminProvidersIdRoute
+}
+
+const AdminProvidersRouteChildren: AdminProvidersRouteChildren = {
+  AdminProvidersIdRoute: AdminProvidersIdRoute,
+}
+
+const AdminProvidersRouteWithChildren = AdminProvidersRoute._addFileChildren(
+  AdminProvidersRouteChildren,
+)
+
+interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminContractorsRoute: typeof AdminContractorsRouteWithChildren
+  AdminFeedbacksRoute: typeof AdminFeedbacksRoute
+  AdminFreightsRoute: typeof AdminFreightsRouteWithChildren
+  AdminJobsRoute: typeof AdminJobsRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
+  AdminTeamRoute: typeof AdminTeamRoute
+  AdminValidationRoute: typeof AdminValidationRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+  AdminContractorsRoute: AdminContractorsRouteWithChildren,
+  AdminFeedbacksRoute: AdminFeedbacksRoute,
+  AdminFreightsRoute: AdminFreightsRouteWithChildren,
+  AdminJobsRoute: AdminJobsRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminProvidersRoute: AdminProvidersRouteWithChildren,
+  AdminTeamRoute: AdminTeamRoute,
+  AdminValidationRoute: AdminValidationRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
@@ -409,6 +810,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaBuscarRoute: MotoristaBuscarRoute,
   MotoristaPerfilRoute: MotoristaPerfilRoute,
   MotoristaPropostasRoute: MotoristaPropostasRoute,
+  MotoristaSuspensoRoute: MotoristaSuspensoRoute,
   MotoristaViagensRoute: MotoristaViagensRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
   EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,

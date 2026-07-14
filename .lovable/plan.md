@@ -1,73 +1,85 @@
-# Freela Fretes — Plano de Implementação
+# Painel Administrativo — Freela Fretes
 
-App mobile-first em pt-BR conectando embarcadores e motoristas, com Supabase (Lovable Cloud) para auth e dados.
+Área interna em `/admin`, desktop-first, com sidebar fixa colapsável. Mesma identidade visual (laranja Freela + acento escuro), porém densa: tabelas, filtros e KPIs. Login separado em `/admin/login`; nenhum acesso sem registro ativo em `admins`.
 
-## Etapa 1 — Fundação
-- Ativar Lovable Cloud (Supabase) para auth + banco + RLS.
-- Design system em `src/styles.css`: primária azul `#1E3A8A`, acento laranja `#F97316`, tokens em oklch, cards arredondados, tipografia legível mobile.
-- Layout mobile-first com bottom navigation reutilizável.
-- Utilitários: formatação R$ pt-BR (centavos), máscaras (CPF, CNPJ, placa Mercosul, CEP, telefone), validação de dígitos CPF/CNPJ, gerador de código 6 chars sem 0/O/1/I.
+## 1. Banco de dados (migração)
 
-## Etapa 2 — Banco de dados (migração)
-Tabelas exatamente com os campos especificados: `contractors`, `providers`, `vehicles`, `freights`, `candidacies`, `jobs`, `check_ins`, `check_outs`, `payments`, `feedbacks`.
+Novas tabelas:
+- **admins** — `id, user_id (uniq, FK auth.users), name, email, role ('ADMIN'|'SUPER_ADMIN'), is_active, created_at`.
+- **admin_audit_logs** — `id, admin_id, action, entity_type, entity_id, details jsonb, created_at`.
+- **admin_freight_cancellations** — `id, freight_id, admin_id, reason, refund_type ('FULL'|'PARTIAL'|'NONE'), refund_amount_cents, created_at`.
 
-Enums: `user_role` (contractor|provider), `validation_status`, `freight_status`, `candidacy_status`, `job_status`, `payment_status`, `feedback_role`.
+Alterações:
+- `contractors`: já tem `validation_status`, `validation_notes`, `validated_at`, `is_active` (confirmar; adicionar o que faltar).
+- `providers`: adicionar `is_banned boolean default false`, `ban_reason text` (mantém `is_active`).
+- `jobs`: adicionar `disputed boolean default false`, `dispute_notes text`, `force_completed_by uuid`, `force_completed_reason text`.
+- `payments`: adicionar status `RELEASED` (enum ou check) + `released_at timestamptz`, `refund_reason text`, `refunded_at`.
+- `feedbacks`: adicionar `hidden boolean default false`, `hidden_reason text`.
 
-RLS + GRANTS por tabela:
-- `freights` OPEN legíveis por qualquer autenticado; view pública `freights_public` (sem `payment`, `base_amount_in_cents`, `agreed_amount_in_cents`) com SELECT `TO anon`.
-- Embarcador CRUD só nos próprios fretes; leitura de candidacies apenas nos seus fretes.
-- Motorista CRUD próprios veículos e candidacies; leitura de fretes OPEN.
-- `jobs`/`check_ins`/`check_outs`/`payments` visíveis apenas às partes da viagem.
-- `feedbacks` legível por partes da viagem; unicidade `(job_id, author_id, role)`.
+Função `public.is_admin(_uid uuid)` SECURITY DEFINER (retorna true se existe admin ativo). Função `public.is_super_admin(_uid)`. RLS: admins ativos podem SELECT em todas as tabelas de dados e INSERT/UPDATE nas ações do painel. `admins` só SUPER_ADMIN gerencia; próprio admin lê seu registro. `admin_audit_logs` só admins leem/inserem. GRANT completos.
 
-Trigger `on_auth_user_created` cria linha em `contractors` ou `providers` conforme `raw_user_meta_data.role`.
+Seed: cria admin SUPER_ADMIN para `admin@freelafretes.com.br` (linkado por email ao user, ou inserido quando o user existir via trigger de conveniência descrita no rodapé da migração).
 
-Seed via migração: 2 embarcadores, 3 motoristas com veículos, 8 fretes em rotas reais (Sorriso/MT→Santos/SP etc.), valores R$ 2k–15k.
+## 2. Server functions (`src/lib/admin.functions.ts`)
 
-## Etapa 3 — Landing pública
-- `/` header + hero + CTAs bifurcados.
-- Vitrine pública lendo `freights_public` com filtros (origem UF/cidade, destino UF/cidade, tipo carga, tipo veículo). Valor exibido como `R$ ●●●●●` com cadeado + CTA de cadastro. Rodapé "+ de X fretes publicados".
+Todas com `.middleware([requireSupabaseAuth])` e checagem `is_admin(userId)` (ou super) antes de qualquer escrita; toda escrita grava em `admin_audit_logs`.
 
-## Etapa 4 — Auth e cadastro bifurcado
-- `/auth` login + escolha "Sou Empresa" / "Sou Motorista".
-- `/cadastro/motorista` wizard 4 passos (CPF→dados→CNH→veículo).
-- `/cadastro/empresa` stepper 2 etapas (dados cadastrais → tela de análise), acesso liberado imediato com badge "Em validação".
-- Redirecionamento pós-login por papel para `/app/...`.
+- `adminMe` — retorna registro do admin logado ou null.
+- `adminDashboard` — KPIs + séries (fretes/dia 30d, viagens concluídas/canceladas por semana 12s) + ações pendentes.
+- `listContractorsAdmin(filters, page)`, `getContractorAdmin(id)`, `setContractorActive`, `updateContractor`.
+- `listValidationQueue(tab)`, `approveContractor(id)`, `rejectContractor(id, reason)`.
+- `listProvidersAdmin(filters, page)`, `getProviderAdmin(id)`, `setProviderActive`, `banProvider(id, reason)` — retira propostas PENDING.
+- `listFreightsAdmin(tab, filters, page)`, `getFreightAdmin(id)`, `adminCancelFreight(id, reason, refundType, refundAmount)`, `reopenFreight(id)`.
+- `listJobsAdmin(tab, filters, page)`, `getJobAdmin(id)`, `forceCompleteJob(id, reason)`, `cancelJobAdmin(id, reason, refund…)`, `toggleJobDispute(id, notes)`.
+- `listPaymentsAdmin(filters, page)`, `paymentsSummary()`, `releasePayment(id)`, `refundPayment(id, reason)`.
+- `listFeedbacksAdmin(filters, page)`, `hideFeedback(id, reason)`, `unhideFeedback(id)`.
+- `listAuditLogs(filters, page)`.
+- `listAdmins()`, `createAdmin({email,name,role})`, `setAdminActive(id, active)` — SUPER_ADMIN only.
 
-## Etapa 5 — Área do embarcador (`_authenticated/contractor/...`)
-- Bottom nav: Meus Fretes | Publicar | Viagens | Perfil.
-- Publicar frete: wizard 4 passos com validações (data futura, entrega > coleta, valor > 0).
-- Meus Fretes: lista com badges + contador de propostas.
-- Detalhe do frete + propostas: badges de "Aceita seu valor" vs "Contraproposta" com diferença.
-- Aceitar proposta (server fn transacional): fecha frete, WITHDRAWN nas demais, cria `job` SCHEDULED, cria `payment` PENDING, redireciona para pagamento.
-- Pagamento PIX: QR placeholder + copia-e-cola + botão simulação "✓ Já paguei" (comentário sobre webhook real).
-- Viagens: gerar códigos de coleta/entrega, avaliar motorista, cancelar antes da coleta.
+## 3. Rotas (todas em `src/routes/admin.*`)
 
-## Etapa 6 — Área do motorista (`_authenticated/provider/...`)
-- Bottom nav: Buscar Fretes | Minhas Propostas | Viagens | Perfil.
-- Buscar Fretes: feed com valor + R$/km, filtros iguais à vitrine.
-- Enviar proposta: modal com seleção de veículo compatível (validar tipo/carroceria), aceitar valor ou contraproposta, mensagem 500 chars, uma proposta por frete.
-- Minhas Propostas: badges + retirar/desistir.
-- Viagens: input código coleta → IN_PROGRESS; código entrega → COMPLETED; avaliar embarcador.
+Layout `admin.tsx` (pathless-style parent com Outlet) que:
+- Busca `adminMe` via loader/query; se null → redirect `/admin/login`.
+- Renderiza `<AdminSidebar/>` + área principal com `Outlet`. Sidebar mostra contador de fila de validação e item "Equipe" só para SUPER_ADMIN.
 
-## Etapa 7 — Regras de negócio (server functions)
-Server fns com `requireSupabaseAuth`:
-- `publishFreight`, `submitCandidacy`, `withdrawCandidacy`
-- `acceptCandidacy` (transacional)
-- `simulatePaymentPaid`
-- `generatePickupCode`, `generateDeliveryCode`
-- `confirmPickup(code)`, `confirmDelivery(code)` (marca `payments.COMPLETED` liberação simbólica)
-- `cancelFreight`, `driverWithdrawFromJob` (reabre frete)
-- `submitFeedback`
+Arquivos:
+- `admin.login.tsx` — email+senha, checa `adminMe` pós-login.
+- `admin.index.tsx` — Dashboard (KPIs, gráficos com Recharts já disponível, tabela ações pendentes).
+- `admin.validation.tsx` — Abas Pendentes/Aprovadas/Recusadas, modal aprovar/recusar.
+- `admin.contractors.tsx` + `admin.contractors.$id.tsx` — lista e detalhe.
+- `admin.providers.tsx` + `admin.providers.$id.tsx`.
+- `admin.freights.tsx` + `admin.freights.$id.tsx`.
+- `admin.jobs.tsx` + `admin.jobs.$id.tsx`.
+- `admin.payments.tsx`.
+- `admin.feedbacks.tsx`.
+- `admin.audit.tsx`.
+- `admin.team.tsx` (SUPER_ADMIN).
 
-Todas aplicam as regras: valor oculto público, unicidade proposta, códigos seguros, transições de status válidas.
+## 4. Componentes admin (`src/components/admin/`)
 
-## Detalhes técnicos
-- TanStack Router file-based; rotas protegidas em `src/routes/_authenticated/`.
-- TanStack Query para leitura (loader + `useSuspenseQuery`).
-- `head()` por rota com título/descrição pt-BR.
-- Valores em centavos internamente; helper `formatBRL(cents)` para UI.
-- Sem edge functions; toda lógica em `createServerFn`.
-- Componentes shadcn customizados via variants com tokens do design system (sem cores hardcoded).
+`AdminSidebar`, `AdminShell` (topbar com nome/logout), `KpiCard`, `DataTable` (paginação/ordenação genérica), `ConfirmModal` (com "digite X para confirmar" opcional), `StatusBadge`, `Timeline` (para viagem).
 
-Depois de aprovado, começo pela Etapa 1 (Cloud + design system) e sigo em sequência.
+## 5. Ajustes no app do usuário
+
+- Banner em `embarcador.*` quando `contractors.validation_status = REJECTED` mostrando `validation_notes` + botão "Corrigir e reenviar" (reabre form e volta para PENDING_VALIDATION).
+- Selo "Empresa verificada ✓" quando APPROVED (já existe? adicionar onde aparecem dados da empresa: detalhe do frete e perfil).
+- Filtro em queries de feedbacks públicos: `hidden = false`.
+- Guard de motorista: se `providers.is_banned` (ou `is_active=false`), tela cheia "Conta suspensa — fale com o suporte" antes de renderizar rotas `/motorista/*`.
+
+## 6. Regras técnicas
+
+- Valores sempre em centavos; formatador `formatBRL` já existe.
+- Paginação 20/página; ordenação server-side simples.
+- Toda escrita passa por `ConfirmModal` e grava audit log.
+- Estados vazios amigáveis em toda tabela.
+- Recharts é usado nos gráficos do dashboard (biblioteca já presente).
+
+## 7. Ordem de execução
+
+1. Migração (tabelas, colunas, funções, RLS, seed).
+2. Server functions admin.
+3. Layout + sidebar + login + guard.
+4. Dashboard.
+5. Validação, Empresas, Motoristas, Fretes, Viagens, Pagamentos, Avaliações, Auditoria, Equipe.
+6. Ajustes no app do usuário (banner rejeição, selo, filtro hidden, guard de banido).
+7. Verificar build.

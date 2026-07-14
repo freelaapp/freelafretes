@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_freight_cancellations: {
+        Row: {
+          admin_id: string
+          created_at: string
+          freight_id: string
+          id: string
+          reason: string
+          refund_amount_cents: number
+          refund_type: Database["public"]["Enums"]["refund_type"]
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          freight_id: string
+          id?: string
+          reason: string
+          refund_amount_cents?: number
+          refund_type?: Database["public"]["Enums"]["refund_type"]
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          freight_id?: string
+          id?: string
+          reason?: string
+          refund_amount_cents?: number
+          refund_type?: Database["public"]["Enums"]["refund_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_freight_cancellations_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_freight_cancellations_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_freight_cancellations_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          role: Database["public"]["Enums"]["admin_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          role?: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          role?: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       candidacies: {
         Row: {
           created_at: string
@@ -169,6 +292,7 @@ export type Database = {
           updated_at: string
           user_id: string
           validated_at: string | null
+          validation_notes: string | null
           validation_status: Database["public"]["Enums"]["validation_status"]
         }
         Insert: {
@@ -190,6 +314,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           validated_at?: string | null
+          validation_notes?: string | null
           validation_status?: Database["public"]["Enums"]["validation_status"]
         }
         Update: {
@@ -211,6 +336,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           validated_at?: string | null
+          validation_notes?: string | null
           validation_status?: Database["public"]["Enums"]["validation_status"]
         }
         Relationships: []
@@ -220,6 +346,8 @@ export type Database = {
           author_id: string
           comment: string | null
           created_at: string
+          hidden: boolean
+          hidden_reason: string | null
           id: string
           job_id: string
           rating: number
@@ -229,6 +357,8 @@ export type Database = {
           author_id: string
           comment?: string | null
           created_at?: string
+          hidden?: boolean
+          hidden_reason?: string | null
           id?: string
           job_id: string
           rating: number
@@ -238,6 +368,8 @@ export type Database = {
           author_id?: string
           comment?: string | null
           created_at?: string
+          hidden?: boolean
+          hidden_reason?: string | null
           id?: string
           job_id?: string
           rating?: number
@@ -353,7 +485,11 @@ export type Database = {
           agreed_amount_in_cents: number
           contractor_id: string
           created_at: string
+          dispute_notes: string | null
+          disputed: boolean
           ended_at: string | null
+          force_completed_by: string | null
+          force_completed_reason: string | null
           freight_id: string
           id: string
           provider_id: string
@@ -365,7 +501,11 @@ export type Database = {
           agreed_amount_in_cents: number
           contractor_id: string
           created_at?: string
+          dispute_notes?: string | null
+          disputed?: boolean
           ended_at?: string | null
+          force_completed_by?: string | null
+          force_completed_reason?: string | null
           freight_id: string
           id?: string
           provider_id: string
@@ -377,7 +517,11 @@ export type Database = {
           agreed_amount_in_cents?: number
           contractor_id?: string
           created_at?: string
+          dispute_notes?: string | null
+          disputed?: boolean
           ended_at?: string | null
+          force_completed_by?: string | null
+          force_completed_reason?: string | null
           freight_id?: string
           id?: string
           provider_id?: string
@@ -424,6 +568,9 @@ export type Database = {
           job_id: string
           method: Database["public"]["Enums"]["payment_method"]
           paid_at: string | null
+          refund_reason: string | null
+          refunded_at: string | null
+          released_at: string | null
           service_fee_in_cents: number
           status: Database["public"]["Enums"]["payment_status"]
         }
@@ -434,6 +581,9 @@ export type Database = {
           job_id: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_at?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
           service_fee_in_cents: number
           status?: Database["public"]["Enums"]["payment_status"]
         }
@@ -444,6 +594,9 @@ export type Database = {
           job_id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           paid_at?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
           service_fee_in_cents?: number
           status?: Database["public"]["Enums"]["payment_status"]
         }
@@ -460,6 +613,7 @@ export type Database = {
       providers: {
         Row: {
           avatar_url: string | null
+          ban_reason: string | null
           birthdate: string
           city: string
           cnh_category: string
@@ -471,6 +625,7 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean
+          is_banned: boolean
           phone: string
           uf: string
           updated_at: string
@@ -478,6 +633,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          ban_reason?: string | null
           birthdate: string
           city: string
           cnh_category: string
@@ -489,6 +645,7 @@ export type Database = {
           full_name: string
           id?: string
           is_active?: boolean
+          is_banned?: boolean
           phone: string
           uf: string
           updated_at?: string
@@ -496,6 +653,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          ban_reason?: string | null
           birthdate?: string
           city?: string
           cnh_category?: string
@@ -507,6 +665,7 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean
+          is_banned?: boolean
           phone?: string
           uf?: string
           updated_at?: string
@@ -641,8 +800,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_super_admin: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
+      admin_role: "ADMIN" | "SUPER_ADMIN"
       candidacy_status:
         | "PENDING"
         | "ACCEPTED"
@@ -657,7 +819,8 @@ export type Database = {
         | "CANCELLED_BY_CONTRACTOR"
       job_status: "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
       payment_method: "PIX"
-      payment_status: "PENDING" | "COMPLETED" | "REFUNDED"
+      payment_status: "PENDING" | "COMPLETED" | "REFUNDED" | "RELEASED"
+      refund_type: "FULL" | "PARTIAL" | "NONE"
       user_role: "contractor" | "provider"
       validation_status: "PENDING_VALIDATION" | "APPROVED" | "REJECTED"
     }
@@ -787,6 +950,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_role: ["ADMIN", "SUPER_ADMIN"],
       candidacy_status: [
         "PENDING",
         "ACCEPTED",
@@ -803,7 +967,8 @@ export const Constants = {
       ],
       job_status: ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
       payment_method: ["PIX"],
-      payment_status: ["PENDING", "COMPLETED", "REFUNDED"],
+      payment_status: ["PENDING", "COMPLETED", "REFUNDED", "RELEASED"],
+      refund_type: ["FULL", "PARTIAL", "NONE"],
       user_role: ["contractor", "provider"],
       validation_status: ["PENDING_VALIDATION", "APPROVED", "REJECTED"],
     },
