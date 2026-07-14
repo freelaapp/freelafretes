@@ -15,6 +15,7 @@ import { Route as EmbarcadorPublicarRouteImport } from './routes/embarcador.publ
 import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes'
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
+import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -47,6 +48,12 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro/empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbarcadorPagamentoJobIdRoute =
+  EmbarcadorPagamentoJobIdRouteImport.update({
+    id: '/embarcador/pagamento/$jobId',
+    path: '/embarcador/pagamento/$jobId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EmbarcadorFreteIdRoute = EmbarcadorFreteIdRouteImport.update({
   id: '/embarcador/frete/$id',
   path: '/embarcador/frete/$id',
@@ -61,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +78,7 @@ export interface FileRoutesByTo {
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +89,7 @@ export interface FileRoutesById {
   '/embarcador/fretes': typeof EmbarcadorFretesRoute
   '/embarcador/publicar': typeof EmbarcadorPublicarRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
+  '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
     | '/embarcador/fretes'
     | '/embarcador/publicar'
     | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +111,7 @@ export interface FileRouteTypes {
     | '/embarcador/fretes'
     | '/embarcador/publicar'
     | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
   id:
     | '__root__'
     | '/'
@@ -109,6 +121,7 @@ export interface FileRouteTypes {
     | '/embarcador/fretes'
     | '/embarcador/publicar'
     | '/embarcador/frete/$id'
+    | '/embarcador/pagamento/$jobId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +132,7 @@ export interface RootRouteChildren {
   EmbarcadorFretesRoute: typeof EmbarcadorFretesRoute
   EmbarcadorPublicarRoute: typeof EmbarcadorPublicarRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
+  EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embarcador/pagamento/$jobId': {
+      id: '/embarcador/pagamento/$jobId'
+      path: '/embarcador/pagamento/$jobId'
+      fullPath: '/embarcador/pagamento/$jobId'
+      preLoaderRoute: typeof EmbarcadorPagamentoJobIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/embarcador/frete/$id': {
       id: '/embarcador/frete/$id'
       path: '/embarcador/frete/$id'
@@ -183,6 +204,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmbarcadorFretesRoute: EmbarcadorFretesRoute,
   EmbarcadorPublicarRoute: EmbarcadorPublicarRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
+  EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
