@@ -148,7 +148,7 @@ export const listContractorsAdmin = createServerFn({ method: "GET" })
     const from = (data.page - 1) * 20; const to = from + 19;
     let q = context.supabase.from("contractors").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
     if (data.search) q = q.or(`company_name.ilike.%${data.search}%,cnpj.ilike.%${data.search}%,contact_email.ilike.%${data.search}%`);
-    if (data.validation) q = q.eq("validation_status", data.validation);
+    if (data.validation) q = q.eq("validation_status", data.validation as "PENDING_VALIDATION" | "APPROVED" | "REJECTED");
     if (data.uf) q = q.eq("uf", data.uf);
     if (data.active === "active") q = q.eq("is_active", true);
     if (data.active === "inactive") q = q.eq("is_active", false);
