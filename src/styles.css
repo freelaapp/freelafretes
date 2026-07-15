@@ -3,8 +3,9 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Bebas Neue", "Barlow", system-ui, sans-serif;
+  --font-sans: "Poppins", "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Poppins", system-ui, sans-serif;
+  --font-body: "Montserrat", system-ui, sans-serif;
 }
 
 
@@ -42,49 +43,50 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
-  --shadow-elevated: 0 10px 30px -12px rgb(30 58 138 / 0.18);
+  --shadow-card: 0 1px 3px 0 rgb(27 36 48 / 0.08), 0 1px 2px -1px rgb(27 36 48 / 0.05);
+  --shadow-elevated: 0 12px 32px -12px rgb(234 88 12 / 0.28);
 }
 
 :root {
   --radius: 0.875rem;
 
-  /* Neutrais — cinza quente / preto Freela #1D1D1B */
-  --background: oklch(0.99 0.003 80);
-  --foreground: oklch(0.18 0.005 80);
+  /* Off-White #F8F7F4 / Grafite Asfalto #1B2430 */
+  --background: oklch(0.985 0.003 85);
+  --foreground: oklch(0.22 0.03 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.005 80);
+  --card-foreground: oklch(0.22 0.03 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.005 80);
-  --muted: oklch(0.965 0.005 80);
-  --muted-foreground: oklch(0.45 0.008 80);
-  --border: oklch(0.92 0.005 80);
-  --input: oklch(0.92 0.005 80);
+  --popover-foreground: oklch(0.22 0.03 250);
+  --muted: oklch(0.96 0.005 85);
+  --muted-foreground: oklch(0.48 0.02 250);
+  --border: oklch(0.91 0.008 85);
+  --input: oklch(0.91 0.008 85);
 
-  /* Laranja Freela #ECA826 — cor principal da marca */
-  --primary: oklch(0.76 0.15 72);
-  --primary-foreground: oklch(0.15 0.005 80);
-  --primary-hover: oklch(0.7 0.16 68);
+  /* Laranja Frete #EA580C */
+  --primary: oklch(0.64 0.19 42);
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.58 0.2 40);
 
-  /* Acento escuro — cinza #424242 / preto Freela */
-  --accent: oklch(0.32 0.005 80);
-  --accent-foreground: oklch(0.99 0 0);
-  --accent-hover: oklch(0.24 0.005 80);
+  /* Acento — Grafite Asfalto #1B2430 */
+  --accent: oklch(0.24 0.03 250);
+  --accent-foreground: oklch(1 0 0);
+  --accent-hover: oklch(0.18 0.03 250);
 
-  /* Secondary suave (creme quente) */
-  --secondary: oklch(0.96 0.02 80);
-  --secondary-foreground: oklch(0.22 0.005 80);
+  /* Secondary — creme suave sobre off-white */
+  --secondary: oklch(0.95 0.008 60);
+  --secondary-foreground: oklch(0.24 0.03 250);
 
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --success: oklch(0.6 0.15 155);
-  --success-foreground: oklch(0.99 0 0);
+  /* Verde funcional #16A34A — usado apenas para sucesso/confirmação */
+  --success: oklch(0.62 0.17 145);
+  --success-foreground: oklch(1 0 0);
 
-  --warning: oklch(0.75 0.15 85);
+  --warning: oklch(0.78 0.16 75);
   --warning-foreground: oklch(0.22 0.05 60);
 
-  --ring: oklch(0.76 0.15 72);
+  --ring: oklch(0.64 0.19 42);
 }
 
 @layer base {
@@ -96,12 +98,13 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
   }
 
-  h1, h2, .font-display {
+  h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
-    letter-spacing: 0.02em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   body {
