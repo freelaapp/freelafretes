@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import type { Database } from "@/integrations/supabase/types";
+
 import {
   calcularFrete,
   vehicleLabelToKey,
@@ -15,34 +14,19 @@ import {
 } from "./pricing";
 
 // ============================================================
-// Cliente Supabase publishable (leitura pública, sem sessão)
-// ============================================================
-function createPublicClient() {
-  const url = process.env.SUPABASE_URL!;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-}
-
-// ============================================================
 // Carrega toda a config e o contexto de mercado
+// (usa admin client — service role — pois as tabelas de pricing
+// não são mais legíveis por anon/authenticated diretamente)
 // ============================================================
 async function loadConfig(originUf?: string, vehicleType?: string) {
-  const s = createPublicClient();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const s = supabaseAdmin;
   const [settingsQ, vcostsQ, cfactorsQ] = await Promise.all([
     s.from("pricing_settings").select("settings").eq("id", 1).maybeSingle(),
     s.from("pricing_vehicle_costs").select("*"),
     s.from("pricing_cargo_factors").select("*"),
   ]);
+
 
   const settings: PricingSettings = { ...DEFAULT_SETTINGS, ...(settingsQ.data?.settings as any ?? {}) };
   const vehicleCosts: Record<string, VehicleCost> = { ...DEFAULT_VEHICLE_COSTS };
