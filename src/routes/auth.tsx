@@ -40,7 +40,7 @@ function AuthPage() {
     <div className="min-h-dvh flex flex-col">
       <header className="px-5 pt-5 pb-3">
         <Link to="/" className="inline-flex">
-          <Logo size={40} />
+          <Logo size={56} />
         </Link>
       </header>
 
