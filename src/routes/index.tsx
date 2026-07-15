@@ -11,6 +11,7 @@ import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import { formatDateBR } from "@/lib/format";
 import { SimulatorCard } from "@/components/SimulatorCard";
 import truckPhoto from "@/assets/freela-truck.png.asset.json";
+import truckVideo from "@/assets/freela-trucks-parade.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -139,10 +140,14 @@ function Hero() {
           </div>
         </div>
         <div className="relative">
-          <img
-            src={truckPhoto.url}
-            alt="Caminhão Freela Fretes na estrada"
-            className="w-full h-56 md:h-[420px] object-contain md:object-cover object-center rounded-2xl"
+          <video
+            src={truckVideo.url}
+            poster={truckPhoto.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-56 md:h-[420px] object-cover object-center rounded-2xl bg-black/5"
           />
         </div>
       </div>
