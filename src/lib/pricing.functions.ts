@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import type { Database } from "@/integrations/supabase/types";
+
 import {
   calcularFrete,
   vehicleLabelToKey,
