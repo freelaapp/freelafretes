@@ -73,7 +73,7 @@ function TopNav() {
   return (
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur border-b border-border">
       <div className="mx-auto max-w-6xl px-5 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4">
-        <Link to="/" className="shrink-0"><Logo size={36} /></Link>
+        <Link to="/" className="shrink-0"><Logo size={48} /></Link>
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-foreground/80">
           <a href="#fretes" className="hover:text-primary">Fretes</a>
           <a href="#empresas" className="hover:text-primary">Para Empresas</a>
