@@ -20,7 +20,7 @@ function SimuladorPage() {
     <div className="min-h-dvh bg-secondary/40">
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur border-b border-border">
         <div className="mx-auto max-w-5xl px-5 md:px-8 h-16 md:h-20 flex items-center justify-between">
-          <Link to="/"><Logo size={48} /></Link>
+          <Link to="/"><Logo size={64} /></Link>
           <div className="flex items-center gap-3 text-sm">
             <Link to="/cadastro/empresa" className="px-3 py-2 rounded-lg font-semibold text-foreground hover:bg-secondary">Tenho carga</Link>
             <Link to="/cadastro/motorista" className="px-3 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary-hover">Sou motorista</Link>
