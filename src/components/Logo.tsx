@@ -1,4 +1,5 @@
-import logoAsset from "@/assets/freela-fretes-logo.png.asset.json";
+import fullLogoAsset from "@/assets/freela-fretes-logo.png.asset.json";
+import iconAsset from "@/assets/freela-fretes-icon.png.asset.json";
 
 interface LogoProps {
   size?: number;
@@ -7,16 +8,33 @@ interface LogoProps {
   variant?: "default" | "onDark" | "onOrange";
 }
 
-export function Logo({ size = 36, showWordmark = true, className = "", variant = "default" }: LogoProps) {
-  const wordmarkColor =
-    variant === "onDark" || variant === "onOrange" ? "text-white" : "text-accent";
-  const accentColor =
-    variant === "onOrange" ? "text-white/90" : variant === "onDark" ? "text-primary" : "text-primary";
+export function Logo({
+  size = 36,
+  showWordmark = true,
+  className = "",
+  variant = "default",
+}: LogoProps) {
+  const isDark = variant === "onDark" || variant === "onOrange";
+  const wordmarkColor = isDark ? "text-white" : "text-accent";
+  const accentColor = variant === "onOrange" ? "text-white/90" : variant === "onDark" ? "text-primary" : "text-primary";
+
+  if (showWordmark && !isDark) {
+    return (
+      <img
+        src={fullLogoAsset.url}
+        alt="Freela Fretes"
+        width={size}
+        height={size}
+        className={`object-contain ${className}`}
+        style={{ height: size, width: "auto" }}
+      />
+    );
+  }
 
   return (
     <div className={`inline-flex items-center gap-2 ${className}`}>
       <img
-        src={logoAsset.url}
+        src={iconAsset.url}
         alt="Freela Fretes"
         width={size}
         height={size}
