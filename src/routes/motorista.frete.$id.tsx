@@ -90,9 +90,6 @@ function DriverFreightDetail() {
           <div className="bg-card w-full max-w-[480px] rounded-t-3xl p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto h-1 w-10 rounded-full bg-border" />
             <p className="font-bold">Enviar proposta</p>
-            <SelectField label="Veículo" value={vehicleId} onChange={setVehicleId} options={vehicles.map((v) => `${v.id}::${v.vehicle_type} · ${v.plate}`)} placeholder="Escolha" />
-            {/* Hack: SelectField uses string; parse the id back */}
-            {/* Use custom select instead */}
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">Veículo</span>
               <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm">
