@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import logoAsset from "@/assets/freela-fretes-logo.png.asset.json";
+import { NotificationBell } from "./NotificationBell";
 
 interface Props {
   title: string;
@@ -18,9 +19,11 @@ export function AppHeader({ title, right, subtitle }: Props) {
             {subtitle && <p className="text-xs opacity-80 mt-1">{subtitle}</p>}
           </div>
         </div>
-        {right}
+        <div className="flex items-center gap-1 shrink-0">
+          <NotificationBell />
+          {right}
+        </div>
       </div>
     </header>
   );
 }
-

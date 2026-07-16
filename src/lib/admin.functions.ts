@@ -393,10 +393,23 @@ export const forceCompleteJob = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), reason: z.string().min(3).max(1000) }).parse(d))
   .handler(async ({ data, context }) => {
     const admin = await requireAdmin(context);
+    const { data: job } = await context.supabase.from("jobs").select("disputed,provider_id,contractor_id").eq("id", data.id).maybeSingle();
+    if (job?.disputed) throw new Error("Viagem em disputa. Encerre a disputa antes de forçar a conclusão.");
     const now = new Date().toISOString();
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now, force_completed_by: admin.id, force_completed_reason: data.reason }).eq("id", data.id);
     await context.supabase.from("payments").update({ status: "RELEASED", released_at: now }).eq("job_id", data.id).eq("status", "COMPLETED");
     await audit(context, admin.id, "FORCE_COMPLETE_JOB", "job", data.id, { reason: data.reason });
+    if (job) {
+      const [{ data: p }, { data: c }] = await Promise.all([
+        context.supabase.from("providers").select("user_id").eq("id", job.provider_id).maybeSingle(),
+        context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle(),
+      ]);
+      const { notifyMany } = await import("./notify.server");
+      await notifyMany([
+        ...(p?.user_id ? [{ user_id: p.user_id, title: "Pagamento liberado ✓", body: "Sua viagem foi concluída pelo admin e o pagamento foi liberado.", link: `/motorista/viagem/${data.id}` }] : []),
+        ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem finalizada pelo admin", body: data.reason, link: `/embarcador/viagem/${data.id}` }] : []),
+      ]);
+    }
     return { ok: true };
   });
 
@@ -472,8 +485,15 @@ export const releasePayment = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const admin = await requireAdmin(context);
+    const { data: pay } = await context.supabase.from("payments").select("job_id,jobs(disputed,provider_id)").eq("id", data.id).maybeSingle();
+    if ((pay as any)?.jobs?.disputed) throw new Error("Viagem em disputa. Encerre a disputa antes de liberar o pagamento.");
     await context.supabase.from("payments").update({ status: "RELEASED", released_at: new Date().toISOString() }).eq("id", data.id);
     await audit(context, admin.id, "RELEASE_PAYMENT", "payment", data.id);
+    if (pay) {
+      const { data: p } = await context.supabase.from("providers").select("user_id").eq("id", (pay as any).jobs?.provider_id).maybeSingle();
+      const { notify } = await import("./notify.server");
+      await notify(p?.user_id, "Pagamento liberado ✓", "Seu pagamento foi transferido via PIX.", `/motorista/viagem/${pay.job_id}`);
+    }
     return { ok: true };
   });
 
@@ -482,8 +502,21 @@ export const refundPayment = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), reason: z.string().min(3).max(1000) }).parse(d))
   .handler(async ({ data, context }) => {
     const admin = await requireAdmin(context);
+    const { data: pay } = await context.supabase.from("payments").select("job_id,jobs(provider_id,contractor_id)").eq("id", data.id).maybeSingle();
     await context.supabase.from("payments").update({ status: "REFUNDED", refunded_at: new Date().toISOString(), refund_reason: data.reason }).eq("id", data.id);
     await audit(context, admin.id, "REFUND_PAYMENT", "payment", data.id, { reason: data.reason });
+    if (pay) {
+      const j = (pay as any).jobs;
+      const [{ data: p }, { data: c }] = await Promise.all([
+        context.supabase.from("providers").select("user_id").eq("id", j?.provider_id).maybeSingle(),
+        context.supabase.from("contractors").select("user_id").eq("id", j?.contractor_id).maybeSingle(),
+      ]);
+      const { notifyMany } = await import("./notify.server");
+      await notifyMany([
+        ...(p?.user_id ? [{ user_id: p.user_id, title: "Pagamento estornado", body: data.reason, link: `/motorista/viagem/${pay.job_id}` }] : []),
+        ...(c?.user_id ? [{ user_id: c.user_id, title: "Pagamento estornado", body: data.reason, link: `/embarcador/viagem/${pay.job_id}` }] : []),
+      ]);
+    }
     return { ok: true };
   });
 
