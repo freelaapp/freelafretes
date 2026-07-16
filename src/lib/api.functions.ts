@@ -67,7 +67,8 @@ export const publishFreight = createServerFn({ method: "POST" })
       pickup_at: data.pickup_at,
       delivery_expected_at: data.delivery_expected_at ?? null,
       toll_included: data.toll_included,
-      payment: data.payment_reais,
+      // `payment` é sempre derivado de base_amount_in_cents (fonte única de verdade)
+      payment: base_amount_in_cents / 100,
       base_amount_in_cents,
       suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
       pricing_breakdown: data.pricing_breakdown ?? null,
