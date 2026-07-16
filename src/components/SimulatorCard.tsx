@@ -18,8 +18,8 @@ function fmtMoneySigned(cents: number) {
 }
 
 export type SimulatorFormState = {
-  originCity: string; originUf: string;
-  destCity: string; destUf: string;
+  originCep: string; originCity: string; originUf: string;
+  destCep: string; destCity: string; destUf: string;
   distanceKm: string;
   vehicleType: string; cargoType: string;
   pesoKg: string; volumeM3: string; valorCarga: string;
@@ -29,7 +29,8 @@ export type SimulatorFormState = {
 };
 
 const emptyForm: SimulatorFormState = {
-  originCity: "", originUf: "", destCity: "", destUf: "",
+  originCep: "", originCity: "", originUf: "",
+  destCep: "", destCity: "", destUf: "",
   distanceKm: "", vehicleType: "", cargoType: "",
   pesoKg: "", volumeM3: "", valorCarga: "",
   temPedagio: false, coletaNoturna: false,
@@ -37,8 +38,30 @@ const emptyForm: SimulatorFormState = {
   dataColeta: "",
 };
 
+type CepLookupState = { loading: boolean; error?: string };
+
+function maskCep(v: string) {
+  return v.replace(/\D/g, "").slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+async function fetchViaCep(cep: string): Promise<{ localidade: string; uf: string } | null> {
+  const clean = cep.replace(/\D/g, "");
+  if (clean.length !== 8) return null;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.erro) return null;
+    return { localidade: data.localidade as string, uf: data.uf as string };
+  } catch {
+    return null;
+  }
+}
+
 export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   const [form, setForm] = useState<SimulatorFormState>(emptyForm);
+  const [originCepState, setOriginCepState] = useState<CepLookupState>({ loading: false });
+  const [destCepState, setDestCepState] = useState<CepLookupState>({ loading: false });
   const [expandBreakdown, setExpandBreakdown] = useState(true);
   const simulate = useServerFn(simulatePricing);
 
@@ -52,6 +75,28 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  async function handleCepChange(kind: "origin" | "dest", raw: string) {
+    const masked = maskCep(raw);
+    if (kind === "origin") set("originCep", masked);
+    else set("destCep", masked);
+    const clean = masked.replace(/\D/g, "");
+    const setState = kind === "origin" ? setOriginCepState : setDestCepState;
+    if (clean.length !== 8) {
+      setState({ loading: false });
+      return;
+    }
+    setState({ loading: true });
+    const found = await fetchViaCep(clean);
+    if (!found) {
+      setState({ loading: false, error: "CEP não encontrado" });
+      return;
+    }
+    setState({ loading: false });
+    setForm((f) => kind === "origin"
+      ? { ...f, originCity: found.localidade, originUf: found.uf }
+      : { ...f, destCity: found.localidade, destUf: found.uf });
+  }
+
   function saveAndGoPublish() {
     try {
       localStorage.setItem(SIMULATION_STORAGE_KEY, JSON.stringify({ form, result: mut.data }));
@@ -61,8 +106,10 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   return (
     <div className="rounded-2xl bg-card text-foreground p-5 md:p-6 shadow-card space-y-4">
       <div className={`grid gap-3 ${compact ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+        <CepInput label="CEP origem" value={form.originCep} onChange={(v) => handleCepChange("origin", v)} state={originCepState} placeholder="78890-000" />
         <TextInput label="Cidade origem" value={form.originCity} onChange={(v) => set("originCity", v)} placeholder="Sorriso" />
         <SelectInput label="UF origem" value={form.originUf} onChange={(v) => set("originUf", v)} options={UF_LIST} />
+        <CepInput label="CEP destino" value={form.destCep} onChange={(v) => handleCepChange("dest", v)} state={destCepState} placeholder="11010-000" />
         <TextInput label="Cidade destino" value={form.destCity} onChange={(v) => set("destCity", v)} placeholder="Santos" />
         <SelectInput label="UF destino" value={form.destUf} onChange={(v) => set("destUf", v)} options={UF_LIST} />
         <NumberInput label="Distância (km)" value={form.distanceKm} onChange={(v) => set("distanceKm", v)} placeholder="1980" hint="consulte no seu app de mapas — em breve calcularemos para você" />
@@ -247,5 +294,17 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
       className={`px-3 py-2 rounded-full text-xs font-semibold border transition ${checked ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-secondary"}`}>
       {label}
     </button>
+  );
+}
+
+function CepInput({ label, value, onChange, state, placeholder }: { label: string; value: string; onChange: (v: string) => void; state: CepLookupState; placeholder?: string }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-semibold text-foreground/80 mb-1.5">{label}</span>
+      <input inputMode="numeric" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40" />
+      {state.loading && <p className="mt-1 text-[11px] text-muted-foreground">Buscando CEP…</p>}
+      {state.error && !state.loading && <p className="mt-1 text-[11px] text-destructive">{state.error}</p>}
+    </label>
   );
 }
