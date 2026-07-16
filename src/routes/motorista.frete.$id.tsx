@@ -69,6 +69,7 @@ function DriverFreightDetail() {
   return (
     <div className="pb-10">
       <AppHeader title="Detalhe do frete" right={<Link to="/motorista/buscar"><ArrowLeft className="h-5 w-5" /></Link>} />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
           <p className="font-bold">{freight.title}</p>
