@@ -108,7 +108,7 @@ export function NotificationBell({ tone = "dark" }: { tone?: "dark" | "light" })
                   onClick={async () => {
                     await markRead(n.id);
                     setOpen(false);
-                    if (n.link) router.navigate({ to: n.link });
+                    if (n.link) router.navigate({ to: n.link as string });
                   }}
                   className="block w-full text-left hover:bg-muted/60"
                 >
