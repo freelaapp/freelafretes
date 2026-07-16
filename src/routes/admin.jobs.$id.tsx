@@ -21,6 +21,7 @@ function JobDetail() {
   const cancel = useServerFn(cancelJobAdmin);
   const dispute = useServerFn(toggleJobDispute);
   const q = useQuery({ queryKey: ["job-admin", id], queryFn: () => get({ data: { id } }) });
+  const evQ = useTripEvents(id);
   const qc = useQueryClient();
   const [forceOpen, setForceOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
