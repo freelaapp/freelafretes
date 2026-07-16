@@ -517,10 +517,10 @@ export const publicStats = createServerFn({ method: "GET" }).handler(async () =>
   const [openFreights, drivers, kmRows, gmvRows] = await Promise.all([
     supabaseAdmin.from("freights").select("id", { count: "exact", head: true }).eq("status", "OPEN"),
     supabaseAdmin.from("providers").select("id", { count: "exact", head: true }).or("is_banned.is.null,is_banned.eq.false"),
-    supabaseAdmin.from("freights").select("distance_km"),
+    supabaseAdmin.from("jobs").select("status,freights(distance_km)").eq("status", "COMPLETED"),
     supabaseAdmin.from("jobs").select("agreed_amount_in_cents").eq("status", "COMPLETED"),
   ]);
-  const total_km = (kmRows.data ?? []).reduce((s: number, r: any) => s + (r.distance_km ?? 0), 0);
+  const total_km = (kmRows.data ?? []).reduce((s: number, r: any) => s + (r.freights?.distance_km ?? 0), 0);
   const gmv_cents = (gmvRows.data ?? []).reduce((s: number, r: any) => s + (r.agreed_amount_in_cents ?? 0), 0);
   return {
     open_freights: openFreights.count ?? 0,
