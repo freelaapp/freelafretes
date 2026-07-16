@@ -106,8 +106,10 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   return (
     <div className="rounded-2xl bg-card text-foreground p-5 md:p-6 shadow-card space-y-4">
       <div className={`grid gap-3 ${compact ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+        <CepInput label="CEP origem" value={form.originCep} onChange={(v) => handleCepChange("origin", v)} state={originCepState} placeholder="78890-000" />
         <TextInput label="Cidade origem" value={form.originCity} onChange={(v) => set("originCity", v)} placeholder="Sorriso" />
         <SelectInput label="UF origem" value={form.originUf} onChange={(v) => set("originUf", v)} options={UF_LIST} />
+        <CepInput label="CEP destino" value={form.destCep} onChange={(v) => handleCepChange("dest", v)} state={destCepState} placeholder="11010-000" />
         <TextInput label="Cidade destino" value={form.destCity} onChange={(v) => set("destCity", v)} placeholder="Santos" />
         <SelectInput label="UF destino" value={form.destUf} onChange={(v) => set("destUf", v)} options={UF_LIST} />
         <NumberInput label="Distância (km)" value={form.distanceKm} onChange={(v) => set("distanceKm", v)} placeholder="1980" hint="consulte no seu app de mapas — em breve calcularemos para você" />
