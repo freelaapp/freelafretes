@@ -81,6 +81,15 @@ function TripDetail() {
           <p className="mt-2 text-primary font-bold">{formatBRL(job.agreed_amount_in_cents)}</p>
         </div>
 
+        <TripChecklist events={evQ.data ?? []} jobStatus={job.status} />
+
+        {job.disputed && (
+          <div className="rounded-2xl bg-destructive/10 border border-destructive p-4 text-sm">
+            <p className="font-semibold text-destructive">Viagem em disputa</p>
+            <p className="text-xs text-muted-foreground mt-1">Uma ocorrência foi reportada. O pagamento está retido até análise.</p>
+          </div>
+        )}
+
         {job.status === "SCHEDULED" && !paid && (
           <div className="rounded-2xl bg-warning/10 border border-warning p-4">
             <p className="text-sm font-semibold">Aguardando pagamento</p>
