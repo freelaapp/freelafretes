@@ -128,8 +128,9 @@ function FreightDetail() {
                 )}
               </div>
               {c.status === "PENDING" && freight.status === "OPEN" && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
                   <ButtonPrimary onClick={() => onAccept(c.id)}>Aceitar proposta</ButtonPrimary>
+                  <ButtonOutline onClick={() => onReject(c.id)}>Recusar</ButtonOutline>
                 </div>
               )}
             </div>
