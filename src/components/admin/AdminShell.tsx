@@ -19,16 +19,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const me = useServerFn(adminMe);
   const queueFn = useServerFn(listValidationQueue);
+  const providerCountFn = useServerFn(countProviderValidationPending);
   const meQ = useQuery({ queryKey: ["admin-me"], queryFn: () => me() });
   const validationCount = useQuery({
     queryKey: ["admin-validation-count"],
-    queryFn: async () => (await queueFn({ data: { tab: "PENDING_VALIDATION" } })).length,
+    queryFn: async () => {
+      const [contractors, providers] = await Promise.all([
+        queueFn({ data: { tab: "PENDING_VALIDATION" } }).then((r) => r.length),
+        providerCountFn(),
+      ]);
+      return contractors + providers;
+    },
     refetchInterval: 30_000,
   });
 
   const items: NavItem[] = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/admin/validation", icon: ShieldCheck, label: "Validação de Empresas", badge: validationCount.data ?? 0 },
+    { to: "/admin/validation", icon: ShieldCheck, label: "Validação", badge: validationCount.data ?? 0 },
     { to: "/admin/contractors", icon: Building2, label: "Empresas" },
     { to: "/admin/providers", icon: Truck, label: "Motoristas" },
     { to: "/admin/freights", icon: Package, label: "Fretes" },
