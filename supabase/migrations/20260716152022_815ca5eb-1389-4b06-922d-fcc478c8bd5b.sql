@@ -1,0 +1,1 @@
+CREATE POLICY "freights anon read open" ON public.freights FOR SELECT TO anon USING (status = 'OPEN');

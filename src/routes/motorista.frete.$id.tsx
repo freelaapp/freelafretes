@@ -7,7 +7,7 @@ import { submitCandidacy } from "@/lib/api.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
-import { Field, TextArea, SelectField, ButtonPrimary } from "@/components/ui-kit";
+import { Field, TextArea, ButtonPrimary } from "@/components/ui-kit";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
@@ -90,9 +90,6 @@ function DriverFreightDetail() {
           <div className="bg-card w-full max-w-[480px] rounded-t-3xl p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto h-1 w-10 rounded-full bg-border" />
             <p className="font-bold">Enviar proposta</p>
-            <SelectField label="Veículo" value={vehicleId} onChange={setVehicleId} options={vehicles.map((v) => `${v.id}::${v.vehicle_type} · ${v.plate}`)} placeholder="Escolha" />
-            {/* Hack: SelectField uses string; parse the id back */}
-            {/* Use custom select instead */}
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">Veículo</span>
               <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm">

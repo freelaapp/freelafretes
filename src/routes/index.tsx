@@ -172,7 +172,7 @@ function StatsBar() {
   const items = [
     { icon: Package, value: nfInt.format(data?.open_freights ?? 0), label: "Fretes disponíveis" },
     { icon: Truck, value: nfInt.format(data?.drivers ?? 0), label: "Motoristas cadastrados" },
-    { icon: RouteIcon, value: formatKm(data?.total_km ?? 0), label: "KMs publicados no Brasil" },
+    { icon: RouteIcon, value: formatKm(data?.total_km ?? 0), label: "KMs percorridos" },
     { icon: ShieldCheck, value: formatMoneyShort(data?.gmv_cents ?? 0), label: "Em fretes transportados" },
   ];
 

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { acceptCandidacy, cancelFreight } from "@/lib/api.functions";
+import { acceptCandidacy, cancelFreight, rejectCandidacy } from "@/lib/api.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
@@ -22,6 +22,7 @@ function FreightDetail() {
   const qc = useQueryClient();
   const accept = useServerFn(acceptCandidacy);
   const cancel = useServerFn(cancelFreight);
+  const reject = useServerFn(rejectCandidacy);
 
   const { data: freight } = useQuery({
     queryKey: ["freight", id],
@@ -47,6 +48,15 @@ function FreightDetail() {
       const res = await accept({ data: { candidacy_id: cid } });
       toast.success("Proposta aceita!");
       nav({ to: "/embarcador/pagamento/$jobId", params: { jobId: res.job_id } });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
+  async function onReject(cid: string) {
+    if (!confirm("Recusar essa proposta?")) return;
+    try {
+      await reject({ data: { candidacy_id: cid } });
+      toast.success("Proposta recusada");
+      qc.invalidateQueries({ queryKey: ["candidacies", id] });
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
@@ -118,8 +128,9 @@ function FreightDetail() {
                 )}
               </div>
               {c.status === "PENDING" && freight.status === "OPEN" && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
                   <ButtonPrimary onClick={() => onAccept(c.id)}>Aceitar proposta</ButtonPrimary>
+                  <ButtonOutline onClick={() => onReject(c.id)}>Recusar</ButtonOutline>
                 </div>
               )}
             </div>

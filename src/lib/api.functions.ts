@@ -67,7 +67,8 @@ export const publishFreight = createServerFn({ method: "POST" })
       pickup_at: data.pickup_at,
       delivery_expected_at: data.delivery_expected_at ?? null,
       toll_included: data.toll_included,
-      payment: data.payment_reais,
+      // `payment` é sempre derivado de base_amount_in_cents (fonte única de verdade)
+      payment: base_amount_in_cents / 100,
       base_amount_in_cents,
       suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
       pricing_breakdown: data.pricing_breakdown ?? null,
@@ -134,6 +135,25 @@ export const withdrawCandidacy = createServerFn({ method: "POST" })
       .update({ status: "WITHDRAWN" })
       .eq("id", data.candidacy_id)
       .eq("status", "PENDING");
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const rejectCandidacy = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ candidacy_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: cand } = await context.supabase.from("candidacies")
+      .select("id,freight_id,status").eq("id", data.candidacy_id).maybeSingle();
+    if (!cand || cand.status !== "PENDING") throw new Error("Proposta indisponível");
+    const { data: freight } = await context.supabase.from("freights")
+      .select("id,contractor_id").eq("id", cand.freight_id).maybeSingle();
+    if (!freight) throw new Error("Frete não encontrado");
+    const { data: c } = await context.supabase.from("contractors")
+      .select("id").eq("id", freight.contractor_id).eq("user_id", context.userId).maybeSingle();
+    if (!c) throw new Error("Sem permissão");
+    const { error } = await context.supabase.from("candidacies")
+      .update({ status: "REJECTED" }).eq("id", cand.id).eq("status", "PENDING");
     if (error) throw error;
     return { ok: true };
   });
@@ -497,10 +517,10 @@ export const publicStats = createServerFn({ method: "GET" }).handler(async () =>
   const [openFreights, drivers, kmRows, gmvRows] = await Promise.all([
     supabaseAdmin.from("freights").select("id", { count: "exact", head: true }).eq("status", "OPEN"),
     supabaseAdmin.from("providers").select("id", { count: "exact", head: true }).or("is_banned.is.null,is_banned.eq.false"),
-    supabaseAdmin.from("freights").select("distance_km"),
+    supabaseAdmin.from("jobs").select("status,freights(distance_km)").eq("status", "COMPLETED"),
     supabaseAdmin.from("jobs").select("agreed_amount_in_cents").eq("status", "COMPLETED"),
   ]);
-  const total_km = (kmRows.data ?? []).reduce((s: number, r: any) => s + (r.distance_km ?? 0), 0);
+  const total_km = (kmRows.data ?? []).reduce((s: number, r: any) => s + (r.freights?.distance_km ?? 0), 0);
   const gmv_cents = (gmvRows.data ?? []).reduce((s: number, r: any) => s + (r.agreed_amount_in_cents ?? 0), 0);
   return {
     open_freights: openFreights.count ?? 0,
