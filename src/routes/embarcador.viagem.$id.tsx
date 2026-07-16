@@ -59,6 +59,8 @@ function TripDetail() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  const evQ = useTripEvents(id);
+
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
   const f = job.freights as { id: string; title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
   const p = job.providers as { full_name: string };
