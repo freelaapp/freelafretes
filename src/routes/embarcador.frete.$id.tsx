@@ -22,6 +22,7 @@ function FreightDetail() {
   const qc = useQueryClient();
   const accept = useServerFn(acceptCandidacy);
   const cancel = useServerFn(cancelFreight);
+  const reject = useServerFn(rejectCandidacy);
 
   const { data: freight } = useQuery({
     queryKey: ["freight", id],
