@@ -94,8 +94,10 @@ export const submitCandidacy = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => candidacyInput.parse(d))
   .handler(async ({ data, context }) => {
     const { data: provider } = await context.supabase
-      .from("providers").select("id").eq("user_id", context.userId).maybeSingle();
+      .from("providers").select("id,validation_status").eq("user_id", context.userId).maybeSingle();
     if (!provider) throw new Error("Cadastro de motorista não encontrado");
+    if (provider.validation_status !== "APPROVED") throw new Error("Sua conta ainda não foi aprovada. Você poderá enviar propostas após a aprovação.");
+
 
     const { data: freight } = await context.supabase.from("freights")
       .select("id,status,vehicle_types,body_types").eq("id", data.freight_id).maybeSingle();
@@ -452,6 +454,15 @@ const providerProfileInput = z.object({
     plate: z.string().min(7),
     capacity_kg: z.number().int().positive(),
   }),
+  cnh_document_url: z.string().min(1),
+  cnh_back_url: z.string().min(1),
+  address_proof_url: z.string().min(1),
+  selfie_url: z.string().optional().nullable(),
+  bank_code: z.string().min(1),
+  bank_agency: z.string().min(1),
+  bank_account: z.string().min(1),
+  pix_key: z.string().min(1),
+  pix_key_type: z.enum(["cpf", "email", "phone", "random"]),
 });
 export const createProviderProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -473,6 +484,16 @@ export const createProviderProfile = createServerFn({ method: "POST" })
       cnh_expires_at: data.cnh_expires_at,
       city: data.city,
       uf: data.uf,
+      cnh_document_url: data.cnh_document_url,
+      cnh_back_url: data.cnh_back_url,
+      address_proof_url: data.address_proof_url,
+      selfie_url: data.selfie_url ?? null,
+      bank_code: data.bank_code,
+      bank_agency: data.bank_agency,
+      bank_account: data.bank_account,
+      pix_key: data.pix_key,
+      pix_key_type: data.pix_key_type,
+      validation_status: "PENDING_VALIDATION",
     }).select("id").single();
     if (error) throw error;
     const { error: vErr } = await context.supabase.from("vehicles").insert({
@@ -483,6 +504,29 @@ export const createProviderProfile = createServerFn({ method: "POST" })
       capacity_kg: data.vehicle.capacity_kg,
     });
     if (vErr) throw vErr;
+    return { ok: true };
+  });
+
+export const resendProviderDocuments = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    cnh_document_url: z.string().min(1),
+    cnh_back_url: z.string().min(1),
+    address_proof_url: z.string().min(1),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: p } = await context.supabase.from("providers")
+      .select("id,validation_status").eq("user_id", context.userId).maybeSingle();
+    if (!p) throw new Error("Motorista não encontrado");
+    if (p.validation_status !== "REJECTED") throw new Error("Só é possível reenviar quando o cadastro foi recusado");
+    const { error } = await context.supabase.from("providers").update({
+      cnh_document_url: data.cnh_document_url,
+      cnh_back_url: data.cnh_back_url,
+      address_proof_url: data.address_proof_url,
+      validation_status: "PENDING_VALIDATION",
+      validation_notes: null,
+    }).eq("id", p.id);
+    if (error) throw error;
     return { ok: true };
   });
 

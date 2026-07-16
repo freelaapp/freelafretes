@@ -6,6 +6,7 @@ import { withdrawCandidacy } from "@/lib/api.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
+import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Badge, ButtonOutline } from "@/components/ui-kit";
 import { formatBRL } from "@/lib/format";
@@ -44,6 +45,7 @@ function MyProposals() {
   return (
     <div className="pb-24">
       <AppHeader title="Minhas propostas" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {candidacies.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nenhuma proposta ainda.</p>}
         {candidacies.map((c) => {

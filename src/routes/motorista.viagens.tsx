@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
+import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Badge } from "@/components/ui-kit";
 import { formatBRL, formatDateBR } from "@/lib/format";
@@ -32,6 +33,7 @@ function DriverTrips() {
   return (
     <div className="pb-24">
       <AppHeader title="Minhas viagens" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {jobs.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nenhuma viagem.</p>}
         {jobs.map((j) => {

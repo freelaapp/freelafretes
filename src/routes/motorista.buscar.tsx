@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
+import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Badge, SelectField } from "@/components/ui-kit";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
@@ -68,6 +69,7 @@ function SearchFreights() {
   return (
     <div className="pb-24">
       <AppHeader title="Buscar fretes" subtitle="Encontre sua próxima viagem" />
+      <DriverStatusBanner />
       <div className="px-4 pt-3 grid grid-cols-2 gap-2">
         <SelectField label="Origem" value={originUf} onChange={setOu} options={UF_LIST} placeholder="UF" />
         <SelectField label="Destino" value={destUf} onChange={setDu} options={UF_LIST} placeholder="UF" />

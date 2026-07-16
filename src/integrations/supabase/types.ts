@@ -714,11 +714,17 @@ export type Database = {
       }
       providers: {
         Row: {
+          address_proof_url: string | null
           avatar_url: string | null
           ban_reason: string | null
+          bank_account: string | null
+          bank_agency: string | null
+          bank_code: string | null
           birthdate: string
           city: string
+          cnh_back_url: string | null
           cnh_category: string
+          cnh_document_url: string | null
           cnh_expires_at: string
           cnh_number: string
           cpf: string
@@ -729,16 +735,28 @@ export type Database = {
           is_active: boolean
           is_banned: boolean
           phone: string
+          pix_key: string | null
+          pix_key_type: string | null
+          selfie_url: string | null
           uf: string
           updated_at: string
           user_id: string
+          validated_at: string | null
+          validation_notes: string | null
+          validation_status: Database["public"]["Enums"]["validation_status"]
         }
         Insert: {
+          address_proof_url?: string | null
           avatar_url?: string | null
           ban_reason?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
           birthdate: string
           city: string
+          cnh_back_url?: string | null
           cnh_category: string
+          cnh_document_url?: string | null
           cnh_expires_at: string
           cnh_number: string
           cpf: string
@@ -749,16 +767,28 @@ export type Database = {
           is_active?: boolean
           is_banned?: boolean
           phone: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          selfie_url?: string | null
           uf: string
           updated_at?: string
           user_id: string
+          validated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: Database["public"]["Enums"]["validation_status"]
         }
         Update: {
+          address_proof_url?: string | null
           avatar_url?: string | null
           ban_reason?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_code?: string | null
           birthdate?: string
           city?: string
+          cnh_back_url?: string | null
           cnh_category?: string
+          cnh_document_url?: string | null
           cnh_expires_at?: string
           cnh_number?: string
           cpf?: string
@@ -769,9 +799,15 @@ export type Database = {
           is_active?: boolean
           is_banned?: boolean
           phone?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          selfie_url?: string | null
           uf?: string
           updated_at?: string
           user_id?: string
+          validated_at?: string | null
+          validation_notes?: string | null
+          validation_status?: Database["public"]["Enums"]["validation_status"]
         }
         Relationships: []
       }

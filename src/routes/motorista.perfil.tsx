@@ -7,6 +7,7 @@ import { addVehicle } from "@/lib/api.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
+import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Field, SelectField, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
 import { VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
@@ -62,6 +63,7 @@ function DriverProfile() {
   return (
     <div className="pb-24">
       <AppHeader title="Meu perfil" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {p && (
           <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
