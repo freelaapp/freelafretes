@@ -146,6 +146,8 @@ function TripDetail() {
             </div>
           </>
         )}
+
+        <TripEventLog events={evQ.data ?? []} />
       </div>
     </div>
   );
