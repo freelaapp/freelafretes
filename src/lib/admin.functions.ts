@@ -624,3 +624,69 @@ export const bootstrapFirstAdmin = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// ================ PROVIDER VALIDATION ================
+export const listProviderValidationQueue = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    tab: z.enum(["PENDING_VALIDATION","APPROVED","REJECTED"]).default("PENDING_VALIDATION"),
+    search: z.string().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    let q = context.supabase.from("providers")
+      .select("*, vehicles(id,vehicle_type,body_type,plate,capacity_kg)")
+      .eq("validation_status", data.tab)
+      .order("created_at", { ascending: true });
+    if (data.search) q = q.or(`full_name.ilike.%${data.search}%,cpf.ilike.%${data.search}%,email.ilike.%${data.search}%`);
+    const { data: rows, error } = await q;
+    if (error) throw error;
+    return rows ?? [];
+  });
+
+export const countProviderValidationPending = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context);
+    const { count } = await context.supabase.from("providers")
+      .select("id", { count: "exact", head: true })
+      .eq("validation_status", "PENDING_VALIDATION");
+    return count ?? 0;
+  });
+
+export const approveProviderValidation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await requireAdmin(context);
+    const { error } = await context.supabase.from("providers")
+      .update({ validation_status: "APPROVED", validated_at: new Date().toISOString(), validation_notes: null })
+      .eq("id", data.id);
+    if (error) throw error;
+    await audit(context, admin.id, "APPROVE_PROVIDER", "provider", data.id);
+    return { ok: true };
+  });
+
+export const rejectProviderValidation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), reason: z.string().min(3).max(1000) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const admin = await requireAdmin(context);
+    const { error } = await context.supabase.from("providers")
+      .update({ validation_status: "REJECTED", validation_notes: data.reason })
+      .eq("id", data.id);
+    if (error) throw error;
+    await audit(context, admin.id, "REJECT_PROVIDER", "provider", data.id, { reason: data.reason });
+    return { ok: true };
+  });
+
+export const adminSignDriverDocUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ path: z.string().min(1) }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { data: signed, error } = await context.supabase.storage
+      .from("driver-documents").createSignedUrl(data.path, 300);
+    if (error) throw error;
+    return { url: signed.signedUrl };
+  });
