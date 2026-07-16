@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { acceptCandidacy, cancelFreight } from "@/lib/api.functions";
+import { acceptCandidacy, cancelFreight, rejectCandidacy } from "@/lib/api.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
