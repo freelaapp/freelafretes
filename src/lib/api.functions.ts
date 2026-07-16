@@ -94,8 +94,10 @@ export const submitCandidacy = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => candidacyInput.parse(d))
   .handler(async ({ data, context }) => {
     const { data: provider } = await context.supabase
-      .from("providers").select("id").eq("user_id", context.userId).maybeSingle();
+      .from("providers").select("id,validation_status").eq("user_id", context.userId).maybeSingle();
     if (!provider) throw new Error("Cadastro de motorista não encontrado");
+    if (provider.validation_status !== "APPROVED") throw new Error("Sua conta ainda não foi aprovada. Você poderá enviar propostas após a aprovação.");
+
 
     const { data: freight } = await context.supabase.from("freights")
       .select("id,status,vehicle_types,body_types").eq("id", data.freight_id).maybeSingle();
