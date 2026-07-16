@@ -51,6 +51,15 @@ function FreightDetail() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  async function onReject(cid: string) {
+    if (!confirm("Recusar essa proposta?")) return;
+    try {
+      await reject({ data: { candidacy_id: cid } });
+      toast.success("Proposta recusada");
+      qc.invalidateQueries({ queryKey: ["candidacies", id] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
   async function onCancel() {
     if (!confirm("Cancelar este frete?")) return;
     try {
