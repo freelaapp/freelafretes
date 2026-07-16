@@ -95,6 +95,13 @@ export type Database = {
             referencedRelation: "freights"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "admin_freight_cancellations_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       admins: {
@@ -170,6 +177,13 @@ export type Database = {
             columns: ["freight_id"]
             isOneToOne: false
             referencedRelation: "freights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidacies_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: false
+            referencedRelation: "freights_public"
             referencedColumns: ["id"]
           },
           {
@@ -537,6 +551,13 @@ export type Database = {
             columns: ["freight_id"]
             isOneToOne: true
             referencedRelation: "freights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_freight_id_fkey"
+            columns: ["freight_id"]
+            isOneToOne: true
+            referencedRelation: "freights_public"
             referencedColumns: ["id"]
           },
           {
@@ -936,34 +957,49 @@ export type Database = {
           origin_city: string | null
           origin_uf: string | null
           pickup_at: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["freight_status"] | null
           title: string | null
           vehicle_types: string[] | null
+        }
+        Insert: {
+          body_types?: string[] | null
+          cargo_type?: string | null
+          cargo_weight_kg?: number | null
+          created_at?: string | null
+          delivery_expected_at?: string | null
+          destination_city?: string | null
+          destination_uf?: string | null
+          distance_km?: number | null
+          id?: string | null
+          origin_city?: string | null
+          origin_uf?: string | null
+          pickup_at?: string | null
+          status?: Database["public"]["Enums"]["freight_status"] | null
+          title?: string | null
+          vehicle_types?: string[] | null
+        }
+        Update: {
+          body_types?: string[] | null
+          cargo_type?: string | null
+          cargo_weight_kg?: number | null
+          created_at?: string | null
+          delivery_expected_at?: string | null
+          destination_city?: string | null
+          destination_uf?: string | null
+          distance_km?: number | null
+          id?: string | null
+          origin_city?: string | null
+          origin_uf?: string | null
+          pickup_at?: string | null
+          status?: Database["public"]["Enums"]["freight_status"] | null
+          title?: string | null
+          vehicle_types?: string[] | null
         }
         Relationships: []
       }
     }
     Functions: {
-      freights_public: {
-        Args: never
-        Returns: {
-          body_types: string[]
-          cargo_type: string
-          cargo_weight_kg: number
-          created_at: string
-          delivery_expected_at: string
-          destination_city: string
-          destination_uf: string
-          distance_km: number
-          id: string
-          origin_city: string
-          origin_uf: string
-          pickup_at: string
-          status: string
-          title: string
-          vehicle_types: string[]
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       admin_role: "ADMIN" | "SUPER_ADMIN"
