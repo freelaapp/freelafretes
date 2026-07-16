@@ -44,6 +44,7 @@ function DriverSignup() {
   });
   const [uploading, setUploading] = useState<FileSlot | null>(null);
   const [authedUserId, setAuthedUserId] = useState<string | null>(null);
+  const [authPromise, setAuthPromise] = useState<Promise<string | null> | null>(null);
 
   // bancário
   const [bank_code, setBankCode] = useState("");
@@ -60,26 +61,49 @@ function DriverSignup() {
 
   async function ensureAuth(): Promise<string | null> {
     if (authedUserId) return authedUserId;
+    if (authPromise) return authPromise;
     setSigningUp(true);
-    try {
-      const { data: signUp, error: sErr } = await supabase.auth.signUp({
-        email, password,
-        options: { data: { role: "provider" }, emailRedirectTo: window.location.origin },
-      });
-      if (sErr) throw sErr;
-      let uid = signUp.user?.id ?? null;
-      if (!signUp.session) {
-        const { data: li, error: liErr } = await supabase.auth.signInWithPassword({ email, password });
-        if (liErr) throw liErr;
-        uid = li.user?.id ?? uid;
+    const p = (async () => {
+      try {
+        // Reutiliza sessão existente (usuário voltou etapa/refresh)
+        const { data: existing } = await supabase.auth.getSession();
+        if (existing.session?.user) {
+          setAuthedUserId(existing.session.user.id);
+          return existing.session.user.id;
+        }
+        const { data: signUp, error: sErr } = await supabase.auth.signUp({
+          email, password,
+          options: { data: { role: "provider" }, emailRedirectTo: window.location.origin },
+        });
+        let uid = signUp?.user?.id ?? null;
+        if (sErr) {
+          const msg = (sErr.message || "").toLowerCase();
+          const status = (sErr as unknown as { status?: number }).status;
+          if (msg.includes("already") || msg.includes("registered") || status === 422) {
+            const { data: li, error: liErr } = await supabase.auth.signInWithPassword({ email, password });
+            if (liErr) throw new Error("E-mail já cadastrado. Confirme a senha para continuar.");
+            uid = li.user?.id ?? null;
+          } else {
+            throw sErr;
+          }
+        } else if (!signUp.session) {
+          const { data: li, error: liErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (liErr) throw liErr;
+          uid = li.user?.id ?? uid;
+        }
+        if (!uid) throw new Error("Falha ao autenticar");
+        setAuthedUserId(uid);
+        return uid;
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Erro ao autenticar");
+        return null;
+      } finally {
+        setSigningUp(false);
+        setAuthPromise(null);
       }
-      if (!uid) throw new Error("Falha ao autenticar");
-      setAuthedUserId(uid);
-      return uid;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao autenticar");
-      return null;
-    } finally { setSigningUp(false); }
+    })();
+    setAuthPromise(p);
+    return p;
   }
 
   async function uploadFile(slot: FileSlot, file: File) {
