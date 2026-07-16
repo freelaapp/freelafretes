@@ -296,3 +296,15 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </button>
   );
 }
+
+function CepInput({ label, value, onChange, state, placeholder }: { label: string; value: string; onChange: (v: string) => void; state: CepLookupState; placeholder?: string }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-semibold text-foreground/80 mb-1.5">{label}</span>
+      <input inputMode="numeric" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-3 py-3 rounded-xl border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40" />
+      {state.loading && <p className="mt-1 text-[11px] text-muted-foreground">Buscando CEP…</p>}
+      {state.error && !state.loading && <p className="mt-1 text-[11px] text-destructive">{state.error}</p>}
+    </label>
+  );
+}
