@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getJobAdmin, forceCompleteJob, cancelJobAdmin, toggleJobDispute } from "@/lib/admin.functions";
 import { PageHeader, StatusBadge, ConfirmModal } from "@/components/admin/ui";
+import { TripEventLog, useTripEvents } from "@/components/TripTimeline";
 import { formatBRL, formatDateTimeBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Clock, Package, Truck, Star } from "lucide-react";
