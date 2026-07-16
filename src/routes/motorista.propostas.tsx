@@ -45,6 +45,7 @@ function MyProposals() {
   return (
     <div className="pb-24">
       <AppHeader title="Minhas propostas" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {candidacies.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nenhuma proposta ainda.</p>}
         {candidacies.map((c) => {

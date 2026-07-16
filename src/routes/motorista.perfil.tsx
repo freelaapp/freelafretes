@@ -63,6 +63,7 @@ function DriverProfile() {
   return (
     <div className="pb-24">
       <AppHeader title="Meu perfil" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {p && (
           <div className="rounded-2xl bg-card border border-border p-4 shadow-card">

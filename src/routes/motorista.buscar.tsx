@@ -69,6 +69,7 @@ function SearchFreights() {
   return (
     <div className="pb-24">
       <AppHeader title="Buscar fretes" subtitle="Encontre sua próxima viagem" />
+      <DriverStatusBanner />
       <div className="px-4 pt-3 grid grid-cols-2 gap-2">
         <SelectField label="Origem" value={originUf} onChange={setOu} options={UF_LIST} placeholder="UF" />
         <SelectField label="Destino" value={destUf} onChange={setDu} options={UF_LIST} placeholder="UF" />

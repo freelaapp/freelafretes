@@ -33,6 +33,7 @@ function DriverTrips() {
   return (
     <div className="pb-24">
       <AppHeader title="Minhas viagens" />
+      <DriverStatusBanner />
       <div className="px-4 pt-4 space-y-3">
         {jobs.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nenhuma viagem.</p>}
         {jobs.map((j) => {
