@@ -25,3 +25,31 @@ export const UF_LIST = [
 ] as const;
 
 export const SERVICE_FEE_BPS = 1000; // 10%
+
+export const BANK_OPTIONS = [
+  { code: "001", name: "Banco do Brasil" },
+  { code: "104", name: "Caixa Econômica Federal" },
+  { code: "237", name: "Bradesco" },
+  { code: "341", name: "Itaú" },
+  { code: "033", name: "Santander" },
+  { code: "260", name: "Nubank" },
+  { code: "077", name: "Inter" },
+  { code: "336", name: "C6 Bank" },
+  { code: "212", name: "Banco Original" },
+  { code: "290", name: "PagBank" },
+  { code: "323", name: "Mercado Pago" },
+  { code: "756", name: "Sicoob" },
+  { code: "748", name: "Sicredi" },
+  { code: "208", name: "BTG Pactual" },
+  { code: "422", name: "Safra" },
+  { code: "735", name: "Neon" },
+  { code: "070", name: "BRB" },
+] as const;
+
+export const PIX_KEY_TYPES = [
+  { value: "cpf", label: "CPF" },
+  { value: "email", label: "E-mail" },
+  { value: "phone", label: "Telefone" },
+  { value: "random", label: "Chave aleatória" },
+] as const;
+
