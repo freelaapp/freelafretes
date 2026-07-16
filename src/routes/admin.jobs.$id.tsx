@@ -61,6 +61,9 @@ function JobDetail() {
         </ol>
       </div>
 
+      <TripEventLog events={evQ.data ?? []} />
+
+
       {j.force_completed_reason && (
         <div className="bg-warning/10 border border-warning/40 rounded-xl p-4 text-sm">
           <p className="font-semibold">Conclusão forçada por admin</p>
