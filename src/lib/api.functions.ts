@@ -139,6 +139,25 @@ export const withdrawCandidacy = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const rejectCandidacy = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ candidacy_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: cand } = await context.supabase.from("candidacies")
+      .select("id,freight_id,status").eq("id", data.candidacy_id).maybeSingle();
+    if (!cand || cand.status !== "PENDING") throw new Error("Proposta indisponível");
+    const { data: freight } = await context.supabase.from("freights")
+      .select("id,contractor_id").eq("id", cand.freight_id).maybeSingle();
+    if (!freight) throw new Error("Frete não encontrado");
+    const { data: c } = await context.supabase.from("contractors")
+      .select("id").eq("id", freight.contractor_id).eq("user_id", context.userId).maybeSingle();
+    if (!c) throw new Error("Sem permissão");
+    const { error } = await context.supabase.from("candidacies")
+      .update({ status: "REJECTED" }).eq("id", cand.id).eq("status", "PENDING");
+    if (error) throw error;
+    return { ok: true };
+  });
+
 // ============================================================
 // ACEITAR PROPOSTA (fecha frete, cria job + payment)
 // ============================================================
