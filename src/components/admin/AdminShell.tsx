@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminMe, listValidationQueue } from "@/lib/admin.functions";
+import { adminMe, listValidationQueue, countProviderValidationPending } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import logoAsset from "@/assets/freela-fretes-logo.png.asset.json";
 import {
