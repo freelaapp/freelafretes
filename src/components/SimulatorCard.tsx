@@ -18,8 +18,8 @@ function fmtMoneySigned(cents: number) {
 }
 
 export type SimulatorFormState = {
-  originCity: string; originUf: string;
-  destCity: string; destUf: string;
+  originCep: string; originCity: string; originUf: string;
+  destCep: string; destCity: string; destUf: string;
   distanceKm: string;
   vehicleType: string; cargoType: string;
   pesoKg: string; volumeM3: string; valorCarga: string;
@@ -29,7 +29,8 @@ export type SimulatorFormState = {
 };
 
 const emptyForm: SimulatorFormState = {
-  originCity: "", originUf: "", destCity: "", destUf: "",
+  originCep: "", originCity: "", originUf: "",
+  destCep: "", destCity: "", destUf: "",
   distanceKm: "", vehicleType: "", cargoType: "",
   pesoKg: "", volumeM3: "", valorCarga: "",
   temPedagio: false, coletaNoturna: false,
@@ -37,8 +38,30 @@ const emptyForm: SimulatorFormState = {
   dataColeta: "",
 };
 
+type CepLookupState = { loading: boolean; error?: string };
+
+function maskCep(v: string) {
+  return v.replace(/\D/g, "").slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+async function fetchViaCep(cep: string): Promise<{ localidade: string; uf: string } | null> {
+  const clean = cep.replace(/\D/g, "");
+  if (clean.length !== 8) return null;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.erro) return null;
+    return { localidade: data.localidade as string, uf: data.uf as string };
+  } catch {
+    return null;
+  }
+}
+
 export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   const [form, setForm] = useState<SimulatorFormState>(emptyForm);
+  const [originCepState, setOriginCepState] = useState<CepLookupState>({ loading: false });
+  const [destCepState, setDestCepState] = useState<CepLookupState>({ loading: false });
   const [expandBreakdown, setExpandBreakdown] = useState(true);
   const simulate = useServerFn(simulatePricing);
 
@@ -50,6 +73,28 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
 
   function set<K extends keyof SimulatorFormState>(k: K, v: SimulatorFormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function handleCepChange(kind: "origin" | "dest", raw: string) {
+    const masked = maskCep(raw);
+    if (kind === "origin") set("originCep", masked);
+    else set("destCep", masked);
+    const clean = masked.replace(/\D/g, "");
+    const setState = kind === "origin" ? setOriginCepState : setDestCepState;
+    if (clean.length !== 8) {
+      setState({ loading: false });
+      return;
+    }
+    setState({ loading: true });
+    const found = await fetchViaCep(clean);
+    if (!found) {
+      setState({ loading: false, error: "CEP não encontrado" });
+      return;
+    }
+    setState({ loading: false });
+    setForm((f) => kind === "origin"
+      ? { ...f, originCity: found.localidade, originUf: found.uf }
+      : { ...f, destCity: found.localidade, destUf: found.uf });
   }
 
   function saveAndGoPublish() {
