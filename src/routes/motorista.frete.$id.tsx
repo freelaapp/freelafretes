@@ -7,7 +7,7 @@ import { submitCandidacy } from "@/lib/api.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
-import { Field, TextArea, SelectField, ButtonPrimary } from "@/components/ui-kit";
+import { Field, TextArea, ButtonPrimary } from "@/components/ui-kit";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, Package, Truck } from "lucide-react";
