@@ -7,6 +7,7 @@ import { generatePickupCode, generateDeliveryCode, submitFeedback, cancelFreight
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge, ButtonPrimary, ButtonOutline, TextArea } from "@/components/ui-kit";
+import { TripChecklist, TripEventLog, useTripEvents } from "@/components/TripTimeline";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, ShieldCheck, Star } from "lucide-react";
@@ -58,6 +59,8 @@ function TripDetail() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  const evQ = useTripEvents(id);
+
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
   const f = job.freights as { id: string; title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
   const p = job.providers as { full_name: string };
@@ -77,6 +80,15 @@ function TripDetail() {
           <p className="text-xs text-muted-foreground">Motorista: {p.full_name} · Coleta: {formatDateBR(f.pickup_at)}</p>
           <p className="mt-2 text-primary font-bold">{formatBRL(job.agreed_amount_in_cents)}</p>
         </div>
+
+        <TripChecklist events={evQ.data ?? []} jobStatus={job.status} />
+
+        {job.disputed && (
+          <div className="rounded-2xl bg-destructive/10 border border-destructive p-4 text-sm">
+            <p className="font-semibold text-destructive">Viagem em disputa</p>
+            <p className="text-xs text-muted-foreground mt-1">Uma ocorrência foi reportada. O pagamento está retido até análise.</p>
+          </div>
+        )}
 
         {job.status === "SCHEDULED" && !paid && (
           <div className="rounded-2xl bg-warning/10 border border-warning p-4">
@@ -134,6 +146,8 @@ function TripDetail() {
             </div>
           </>
         )}
+
+        <TripEventLog events={evQ.data ?? []} />
       </div>
     </div>
   );

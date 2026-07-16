@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getJobAdmin, forceCompleteJob, cancelJobAdmin, toggleJobDispute } from "@/lib/admin.functions";
 import { PageHeader, StatusBadge, ConfirmModal } from "@/components/admin/ui";
+import { TripEventLog, useTripEvents } from "@/components/TripTimeline";
 import { formatBRL, formatDateTimeBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Clock, Package, Truck, Star } from "lucide-react";
@@ -20,6 +21,7 @@ function JobDetail() {
   const cancel = useServerFn(cancelJobAdmin);
   const dispute = useServerFn(toggleJobDispute);
   const q = useQuery({ queryKey: ["job-admin", id], queryFn: () => get({ data: { id } }) });
+  const evQ = useTripEvents(id);
   const qc = useQueryClient();
   const [forceOpen, setForceOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -58,6 +60,9 @@ function JobDetail() {
           <TimelineItem icon={Star} done={(q.data?.feedbacks ?? []).length > 0} label={`Avaliações (${q.data?.feedbacks.length ?? 0}/2)`} at={q.data?.feedbacks?.[0]?.created_at} />
         </ol>
       </div>
+
+      <TripEventLog events={evQ.data ?? []} />
+
 
       {j.force_completed_reason && (
         <div className="bg-warning/10 border border-warning/40 rounded-xl p-4 text-sm">
