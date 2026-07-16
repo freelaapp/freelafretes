@@ -7,6 +7,7 @@ import { addVehicle } from "@/lib/api.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
+import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Field, SelectField, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
 import { VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
