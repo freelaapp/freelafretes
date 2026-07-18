@@ -272,7 +272,8 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,contractor_id,provider_id,freights(title)").eq("id", data.job_id).maybeSingle();
+      .select("id,contractor_id,provider_id,freight_mode,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode)")
+      .eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     const { data: c } = await context.supabase.from("contractors")
       .select("id,user_id").eq("id", job.contractor_id).eq("user_id", context.userId).maybeSingle();
@@ -283,12 +284,24 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
       .eq("job_id", data.job_id);
     if (error) throw error;
 
+    // Emiteaí — emite documentação fiscal simulada
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.emitTripDocuments(job as any);
+    } catch (e) {
+      console.error("[documents] emissão falhou", e);
+    }
+
     const { data: p } = await context.supabase.from("providers").select("user_id").eq("id", job.provider_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
     await notifyMany([
       { user_id: c.user_id, title: "Pagamento confirmado", body: `O valor de ${title} está em custódia.`, link: `/embarcador/viagem/${data.job_id}` },
-      ...(p?.user_id ? [{ user_id: p.user_id, title: "Pagamento confirmado ✓", body: "Você já pode gerar o código de coleta.", link: `/motorista/viagem/${data.job_id}` }] : []),
+      { user_id: c.user_id, title: "Documentação fiscal emitida ✓", body: "CT-e, MDF-e e averbação já estão disponíveis.", link: `/embarcador/viagem/${data.job_id}` },
+      ...(p?.user_id ? [
+        { user_id: p.user_id, title: "Pagamento confirmado ✓", body: "Você já pode gerar o código de coleta.", link: `/motorista/viagem/${data.job_id}` },
+        { user_id: p.user_id, title: "Seus documentos de viagem estão prontos", body: "CT-e, MDF-e e averbação foram emitidos.", link: `/motorista/viagem/${data.job_id}` },
+      ] : []),
     ]);
     return { ok: true };
   });
