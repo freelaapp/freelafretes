@@ -391,6 +391,7 @@ export type Database = {
           base_amount_in_cents: number
           body_types: string[]
           cargo_type: string
+          cargo_volume_m3: number | null
           cargo_weight_kg: number
           contractor_id: string
           created_at: string
@@ -401,7 +402,10 @@ export type Database = {
           destination_city: string
           destination_uf: string
           distance_km: number
+          freight_mode: string
           id: string
+          mode_override: boolean
+          mode_suggested: string | null
           origin_address: string | null
           origin_cep: string | null
           origin_city: string
@@ -422,6 +426,7 @@ export type Database = {
           base_amount_in_cents: number
           body_types?: string[]
           cargo_type: string
+          cargo_volume_m3?: number | null
           cargo_weight_kg: number
           contractor_id: string
           created_at?: string
@@ -432,7 +437,10 @@ export type Database = {
           destination_city: string
           destination_uf: string
           distance_km: number
+          freight_mode?: string
           id?: string
+          mode_override?: boolean
+          mode_suggested?: string | null
           origin_address?: string | null
           origin_cep?: string | null
           origin_city: string
@@ -453,6 +461,7 @@ export type Database = {
           base_amount_in_cents?: number
           body_types?: string[]
           cargo_type?: string
+          cargo_volume_m3?: number | null
           cargo_weight_kg?: number
           contractor_id?: string
           created_at?: string
@@ -463,7 +472,10 @@ export type Database = {
           destination_city?: string
           destination_uf?: string
           distance_km?: number
+          freight_mode?: string
           id?: string
+          mode_override?: boolean
+          mode_suggested?: string | null
           origin_address?: string | null
           origin_cep?: string | null
           origin_city?: string
@@ -721,6 +733,7 @@ export type Database = {
       pricing_vehicle_costs: {
         Row: {
           capacidade_kg: number
+          capacidade_m3: number | null
           ckm_cents_por_km: number
           frete_minimo_cents: number
           updated_at: string
@@ -728,6 +741,7 @@ export type Database = {
         }
         Insert: {
           capacidade_kg: number
+          capacidade_m3?: number | null
           ckm_cents_por_km: number
           frete_minimo_cents: number
           updated_at?: string
@@ -735,6 +749,7 @@ export type Database = {
         }
         Update: {
           capacidade_kg?: number
+          capacidade_m3?: number | null
           ckm_cents_por_km?: number
           frete_minimo_cents?: number
           updated_at?: string
@@ -947,12 +962,14 @@ export type Database = {
         Row: {
           body_types: string[] | null
           cargo_type: string | null
+          cargo_volume_m3: number | null
           cargo_weight_kg: number | null
           created_at: string | null
           delivery_expected_at: string | null
           destination_city: string | null
           destination_uf: string | null
           distance_km: number | null
+          freight_mode: string | null
           id: string | null
           origin_city: string | null
           origin_uf: string | null
@@ -964,12 +981,14 @@ export type Database = {
         Insert: {
           body_types?: string[] | null
           cargo_type?: string | null
+          cargo_volume_m3?: number | null
           cargo_weight_kg?: number | null
           created_at?: string | null
           delivery_expected_at?: string | null
           destination_city?: string | null
           destination_uf?: string | null
           distance_km?: number | null
+          freight_mode?: string | null
           id?: string | null
           origin_city?: string | null
           origin_uf?: string | null
@@ -981,12 +1000,14 @@ export type Database = {
         Update: {
           body_types?: string[] | null
           cargo_type?: string | null
+          cargo_volume_m3?: number | null
           cargo_weight_kg?: number | null
           created_at?: string | null
           delivery_expected_at?: string | null
           destination_city?: string | null
           destination_uf?: string | null
           distance_km?: number | null
+          freight_mode?: string | null
           id?: string | null
           origin_city?: string | null
           origin_uf?: string | null
