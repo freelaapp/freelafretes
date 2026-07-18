@@ -341,7 +341,7 @@ export const reopenFreight = createServerFn({ method: "POST" })
     const { data: job } = await s.from("jobs").select("*").eq("freight_id", data.id).maybeSingle();
     if (!job || job.status !== "SCHEDULED") throw new Error("Viagem já iniciada");
     const { data: pay } = await s.from("payments").select("*").eq("job_id", job.id).maybeSingle();
-    if (pay && pay.status === "COMPLETED") throw new Error("Já existe pagamento em custódia");
+    if (pay && (pay.status === "HELD" || pay.status === "COMPLETED")) throw new Error("Já existe pagamento em custódia");
 
     if (pay) await s.from("payments").delete().eq("id", pay.id);
     await s.from("jobs").delete().eq("id", job.id);
