@@ -136,14 +136,40 @@ function DriverTripDetail() {
 
         {job.status === "SCHEDULED" && (
           <>
-            <ButtonPrimary onClick={onArrivedPickup}>📍 Cheguei para carregar</ButtonPrimary>
+            <PaymentTimeline pay={pay} />
+            {!paidHeld && (
+              <div className="rounded-2xl bg-warning/10 border border-warning p-4 text-sm">
+                Aguardando o embarcador confirmar o pagamento em custódia.
+              </div>
+            )}
+            {paidHeld && !ackAt && (
+              <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+                <p className="text-sm font-bold">Confirme os dados do carregamento</p>
+                <div className="mt-3 space-y-1.5 text-sm">
+                  <p><span className="text-muted-foreground">Local:</span> {f.origin_city}/{f.origin_uf}</p>
+                  {f.origin_address && <p><span className="text-muted-foreground">Endereço:</span> {f.origin_address}</p>}
+                  <p><span className="text-muted-foreground">Data/horário:</span> {formatDateBR(f.pickup_at)}</p>
+                  <p><span className="text-muted-foreground">Tipo de carga:</span> {f.cargo_type} · {f.cargo_weight_kg} kg</p>
+                  <p><span className="text-muted-foreground">Contato:</span> {c.company_name}</p>
+                </div>
+                <div className="mt-3"><TextArea label="Observações (opcional)" value={ackNotes} onChange={setAckNotes} /></div>
+                <div className="mt-3"><ButtonPrimary onClick={submitAck}>Está tudo certo ✓</ButtonPrimary></div>
+              </div>
+            )}
+            {ackAt && (
+              <div className="rounded-2xl bg-success/10 border border-success p-3 text-xs">
+                ✓ Ciência confirmada em {formatDateBR(ackAt)}
+              </div>
+            )}
+            <ButtonPrimary onClick={onArrivedPickup} disabled={!ackAt}>📍 Cheguei para carregar</ButtonPrimary>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Confirmar coleta</p>
               <p className="text-xs text-muted-foreground">Digite o código de 6 caracteres recebido do embarcador.</p>
               <div className="mt-3">
                 <Field label="Código de coleta" value={pcode} onChange={(v) => setPcode(normalizeCode(v))} placeholder="ABC123" />
               </div>
-              <div className="mt-3"><ButtonPrimary onClick={onPickup} disabled={pcode.length !== 6}>Confirmar coleta</ButtonPrimary></div>
+              <div className="mt-3"><ButtonPrimary onClick={onPickup} disabled={pcode.length !== 6 || !ackAt}>Confirmar coleta</ButtonPrimary></div>
+              {!ackAt && <p className="mt-2 text-[11px] text-muted-foreground">Confirme a ciência acima antes de coletar.</p>}
             </div>
             <ButtonOutline onClick={onWithdraw}>Desistir</ButtonOutline>
           </>
