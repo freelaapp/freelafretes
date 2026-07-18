@@ -89,7 +89,9 @@ function PublishPage() {
       origemUf: origin_uf, destinoUf: destination_uf,
       distanciaKm: distance_km, vehicleType: vehicleTypeForCalc || "Truck",
       pesoKg: cargo_weight_kg, cargoType: cargo_type,
+      volumeM3: cargo_volume_m3 || undefined,
       temPedagio: toll_included, dataColeta: pickup_at || undefined,
+      freightMode: freight_mode,
     } }),
     onSuccess: (r) => setSuggestion(r),
   });
