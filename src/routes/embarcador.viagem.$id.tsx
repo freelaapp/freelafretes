@@ -65,8 +65,9 @@ function TripDetail() {
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
   const f = job.freights as { id: string; title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
   const p = job.providers as { full_name: string };
-  const pay = (Array.isArray(job.payments) ? job.payments[0] : job.payments) as { status: string } | null;
-  const paid = pay?.status === "COMPLETED";
+  const pay = (Array.isArray(job.payments) ? job.payments[0] : job.payments) as { status: string; paid_at?: string; held_at?: string; released_at?: string } | null;
+  const paid = pay?.status === "HELD" || pay?.status === "COMPLETED" || pay?.status === "RELEASED";
+  const ackAt = (job as any).driver_ack_at as string | null;
 
   return (
     <div className="pb-10">
