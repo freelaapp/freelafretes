@@ -67,6 +67,13 @@ export const publishFreight = createServerFn({ method: "POST" })
       }
     }
 
+    // Resolver lat/lng de origem/destino via base de municípios
+    const normCity = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+    const { data: cities } = await context.supabase.from("br_cities").select("city_normalized,uf,lat,lng").in("uf", [data.origin_uf.toUpperCase(), data.destination_uf.toUpperCase()]);
+    const findCity = (city: string, uf: string) => (cities ?? []).find((c: any) => c.uf === uf.toUpperCase() && c.city_normalized === normCity(city));
+    const oCoord = findCity(data.origin_city, data.origin_uf);
+    const dCoord = findCity(data.destination_city, data.destination_uf);
+
     const { data: freight, error } = await context.supabase.from("freights").insert({
       contractor_id: contractor.id,
       title: data.title,
@@ -83,15 +90,18 @@ export const publishFreight = createServerFn({ method: "POST" })
       origin_uf: data.origin_uf,
       origin_address: data.origin_address ?? null,
       origin_cep: data.origin_cep ?? null,
+      origin_lat: oCoord?.lat ?? null,
+      origin_lng: oCoord?.lng ?? null,
       destination_city: data.destination_city,
       destination_uf: data.destination_uf,
       destination_address: data.destination_address ?? null,
       destination_cep: data.destination_cep ?? null,
+      destination_lat: dCoord?.lat ?? null,
+      destination_lng: dCoord?.lng ?? null,
       distance_km: data.distance_km,
       pickup_at: data.pickup_at,
       delivery_expected_at: data.delivery_expected_at ?? null,
       toll_included: data.toll_included,
-      // `payment` é sempre derivado de base_amount_in_cents (fonte única de verdade)
       payment: base_amount_in_cents / 100,
       base_amount_in_cents,
       suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
@@ -100,6 +110,45 @@ export const publishFreight = createServerFn({ method: "POST" })
       status: "OPEN",
     }).select("id").single();
     if (error) throw error;
+
+    // Notificar motoristas com base dentro do raio e veículo compatível
+    if (oCoord) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        let q = supabaseAdmin.from("providers")
+          .select("user_id,base_lat,base_lng,search_radius_km,vehicles(vehicle_type,body_type)")
+          .eq("validation_status", "APPROVED")
+          .not("base_lat", "is", null);
+        const { data: provs } = await q;
+        const targets: { user_id: string; km: number }[] = [];
+        for (const p of (provs ?? []) as any[]) {
+          if (!p.user_id || !p.base_lat) continue;
+          const R = 6371;
+          const toRad = (v: number) => (v * Math.PI) / 180;
+          const dLat = toRad(Number(oCoord.lat) - Number(p.base_lat));
+          const dLng = toRad(Number(oCoord.lng) - Number(p.base_lng));
+          const a = Math.sin(dLat/2)**2 + Math.cos(toRad(Number(p.base_lat)))*Math.cos(toRad(Number(oCoord.lat)))*Math.sin(dLng/2)**2;
+          const km = 2*R*Math.asin(Math.sqrt(a));
+          if (km > (p.search_radius_km ?? 300)) continue;
+          const vts = new Set((p.vehicles ?? []).map((v: any) => v.vehicle_type));
+          const bts = new Set((p.vehicles ?? []).map((v: any) => v.body_type));
+          const vtOk = !data.vehicle_types?.length || data.vehicle_types.some((t) => vts.has(t));
+          const btOk = !data.body_types?.length || data.body_types.some((t) => bts.has(t));
+          if (!vtOk || !btOk) continue;
+          targets.push({ user_id: p.user_id, km });
+        }
+        if (targets.length) {
+          const { notifyMany } = await import("./notify.server");
+          await notifyMany(targets.map((t) => ({
+            user_id: t.user_id,
+            title: "Novo frete perto de você 🚛",
+            body: `${data.origin_city}/${data.origin_uf} → ${data.destination_city}/${data.destination_uf} · a ${Math.round(t.km)} km da sua base`,
+            link: `/motorista/frete/${freight.id}`,
+          })));
+        }
+      } catch (e) { console.error("[notify radar]", e); }
+    }
+
     return { id: freight.id };
   });
 
