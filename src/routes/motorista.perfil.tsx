@@ -47,6 +47,32 @@ function DriverProfile() {
   const [plate, setPlate] = useState("");
   const [cap, setCap] = useState(0);
 
+  const [baseUf, setBaseUf] = useState("");
+  const [baseCity, setBaseCity] = useState("");
+  const [radius, setRadius] = useState(300);
+  const [cityOpts, setCityOpts] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    if (p) { setBaseUf(p.uf ?? ""); setBaseCity(p.city ?? ""); setRadius(p.search_radius_km ?? 300); }
+  }, [p]);
+
+  useEffect(() => {
+    if (!baseUf) { setCityOpts([]); return; }
+    listCities({ data: { uf: baseUf } }).then((rows) => {
+      setCityOpts((rows as { city: string }[]).map((r) => ({ label: r.city, value: r.city })));
+    }).catch(() => setCityOpts([]));
+  }, [baseUf, listCities]);
+
+  async function saveBase() {
+    if (!baseUf || !baseCity) return toast.error("Selecione UF e cidade");
+    try {
+      await setBase({ data: { city: baseCity, uf: baseUf, search_radius_km: radius } });
+      toast.success("Cidade-base atualizada ✓");
+      qc.invalidateQueries();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
+
   async function logout() {
     await supabase.auth.signOut();
     nav({ to: "/" });
