@@ -98,6 +98,7 @@ function CompanySignup() {
                 <span className="text-sm">Sou sócio da empresa</span>
               </label>
               <Field label="Senha" type="password" value={password} onChange={setPassword} />
+              <p className="mt-1 text-[11px] text-muted-foreground">Mínimo 8 caracteres, com letras e números. Evite senhas óbvias (ex.: 12345678, senha, qwerty).</p>
               <label className="flex items-start gap-2 mt-3">
                 <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} className="h-4 w-4 mt-0.5" />
                 <span className="text-xs">Li e aceito os <span className="underline">Termos de Uso</span> e <span className="underline">Política de Privacidade</span>.</span>
