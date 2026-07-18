@@ -22,14 +22,17 @@ function JobDetail() {
   const force = useServerFn(forceCompleteJob);
   const cancel = useServerFn(cancelJobAdmin);
   const dispute = useServerFn(toggleJobDispute);
+  const reissue = useServerFn(adminReissueTripDocuments);
   const q = useQuery({ queryKey: ["job-admin", id], queryFn: () => get({ data: { id } }) });
   const evQ = useTripEvents(id);
   const qc = useQueryClient();
   const [forceOpen, setForceOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [dispOpen, setDispOpen] = useState(false);
+  const [reissueOpen, setReissueOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [reissueReason, setReissueReason] = useState("");
 
   const j = q.data?.job;
   const p = q.data?.payment;
