@@ -400,6 +400,14 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now }).eq("id", job.id);
     await context.supabase.from("trip_events").insert({ job_id: job.id, type: "UNLOADING_FINISHED", created_by: context.userId });
 
+    // Encerra MDF-e no check-out
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.markMdfeClosed(job.id);
+    } catch (e) {
+      console.error("[documents] encerrar MDF-e falhou", e);
+    }
+
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
