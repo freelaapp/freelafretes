@@ -53,6 +53,7 @@ function DriverTripDetail() {
   const [incidentOpen, setIncidentOpen] = useState(false);
   const [incKind, setIncKind] = useState<typeof INCIDENTS[number]["value"]>("BREAKDOWN");
   const [incNotes, setIncNotes] = useState("");
+  const [ackNotes, setAckNotes] = useState("");
 
   async function pushEvent(type: string, notes?: string, extra?: Record<string, unknown>) {
     try {
