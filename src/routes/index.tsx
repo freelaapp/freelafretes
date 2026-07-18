@@ -10,6 +10,7 @@ import { Logo } from "@/components/Logo";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import { formatDateBR } from "@/lib/format";
 import { SimulatorCard } from "@/components/SimulatorCard";
+import { FreelaNews } from "@/components/FreelaNews";
 import truckPhoto from "@/assets/freela-truck.png.asset.json";
 import truckVideo from "@/assets/freela-trucks-parade.mp4.asset.json";
 
@@ -57,6 +58,7 @@ function Landing() {
         <Hero />
         <StatsBar />
         <PublicFreights />
+        <FreelaNews />
         <HowItWorks />
         <Simulator />
       </main>
