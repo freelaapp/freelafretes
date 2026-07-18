@@ -38,7 +38,7 @@ export const adminDashboard = createServerFn({ method: "GET" })
       s.from("jobs").select("id", { count: "exact", head: true }).eq("status", "IN_PROGRESS"),
       s.from("contractors").select("id", { count: "exact", head: true }).eq("validation_status", "PENDING_VALIDATION"),
       s.from("jobs").select("agreed_amount_in_cents").eq("status", "COMPLETED").gte("ended_at", startOfMonth()),
-      s.from("payments").select("amount_in_cents,job_id,status,jobs!inner(status)").eq("status", "COMPLETED"),
+      s.from("payments").select("amount_in_cents,job_id,status,jobs!inner(status)").in("status", ["HELD","COMPLETED"]),
       s.from("freights").select("created_at").gte("created_at", daysAgo(30)),
       s.from("jobs").select("status,updated_at,ended_at").gte("updated_at", daysAgo(84)).in("status", ["COMPLETED","CANCELLED"]),
       s.from("jobs").select("id,started_at,freight_id,contractor_id,provider_id").eq("status", "IN_PROGRESS").lt("started_at", daysAgo(7)),
