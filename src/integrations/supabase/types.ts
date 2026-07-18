@@ -421,6 +421,56 @@ export type Database = {
           },
         ]
       }
+      freight_documents: {
+        Row: {
+          access_key: string | null
+          created_at: string
+          doc_number: string | null
+          doc_type: string
+          id: string
+          issued_at: string | null
+          job_id: string
+          payload: Json
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_key?: string | null
+          created_at?: string
+          doc_number?: string | null
+          doc_type: string
+          id?: string
+          issued_at?: string | null
+          job_id: string
+          payload?: Json
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_key?: string | null
+          created_at?: string
+          doc_number?: string | null
+          doc_type?: string
+          id?: string
+          issued_at?: string | null
+          job_id?: string
+          payload?: Json
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freight_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freights: {
         Row: {
           agreed_amount_in_cents: number | null
