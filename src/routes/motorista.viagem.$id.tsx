@@ -35,12 +35,13 @@ function DriverTripDetail() {
   const doDelivery = useServerFn(confirmDelivery);
   const fb = useServerFn(submitFeedback);
   const withdraw = useServerFn(driverWithdrawFromJob);
+  const ackFn = useServerFn(driverAckJob);
   const recordEv = useServerFn(recordTripEvent);
 
   const { data: job } = useQuery({
     queryKey: ["driver-job", id],
     queryFn: async () => (await supabase.from("jobs")
-      .select("*, freights(*), contractors(company_name)")
+      .select("*, freights(*), contractors(company_name), payments(*)")
       .eq("id", id).maybeSingle()).data,
   });
   const evQ = useTripEvents(id);
