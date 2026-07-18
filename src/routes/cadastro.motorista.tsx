@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { createProviderProfile } from "@/lib/api.functions";
 import { Field, SelectField, ButtonPrimary, Stepper } from "@/components/ui-kit";
-import { isValidCPF, maskCPF, maskPhone, maskPlate, isValidPlate } from "@/lib/format";
+import { isValidCPF, maskCPF, maskPhone, maskPlate, isValidPlate, isStrongPassword, friendlyAuthError } from "@/lib/format";
 import { VEHICLE_TYPES, BODY_TYPES, CNH_CATEGORIES, UF_LIST, BANK_OPTIONS, PIX_KEY_TYPES } from "@/lib/constants";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, CheckCircle2, ShieldCheck } from "lucide-react";
