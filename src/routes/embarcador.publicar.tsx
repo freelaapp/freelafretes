@@ -7,13 +7,14 @@ import { simulatePricing } from "@/lib/pricing.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { ContractorNav } from "@/components/RoleNav";
-import { Field, SelectField, TextArea, ButtonPrimary, Stepper } from "@/components/ui-kit";
+import { Field, SelectField, TextArea, ButtonPrimary, Stepper, Badge } from "@/components/ui-kit";
 import { CARGO_TYPES, VEHICLE_TYPES, BODY_TYPES, UF_LIST } from "@/lib/constants";
 import { maskCEP } from "@/lib/format";
 import { readSavedSimulation, clearSavedSimulation, type SimulatorFormState } from "@/components/SimulatorCard";
 import type { PricingResult } from "@/lib/pricing";
+import { classifyFreight, freightModeLabel, type FreightMode } from "@/lib/freight-classifier";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Truck } from "lucide-react";
 
 export const Route = createFileRoute("/embarcador/publicar")({
   head: () => ({ meta: [{ title: "Publicar Frete — Freela Fretes" }] }),
@@ -31,6 +32,9 @@ function PublishPage() {
   const [title, setTitle] = useState("");
   const [cargo_type, setCargoType] = useState("");
   const [cargo_weight_kg, setWeight] = useState(0);
+  const [cargo_volume_m3, setVolume] = useState<number>(0);
+  const [mode_override, setModeOverride] = useState(false);
+  const [mode_manual, setModeManual] = useState<FreightMode | null>(null);
   const [description, setDescription] = useState("");
   // Rota
   const [origin_cep, setOCep] = useState("");
@@ -103,7 +107,12 @@ function PublishPage() {
     try {
       await publish({ data: {
         title, description: description || null, cargo_type,
-        cargo_weight_kg, vehicle_types, body_types,
+        cargo_weight_kg,
+        cargo_volume_m3: cargo_volume_m3 || null,
+        freight_mode,
+        mode_suggested: classification.mode,
+        mode_override,
+        vehicle_types, body_types,
         origin_city, origin_uf, origin_address: origin_address || null, origin_cep: origin_cep || null,
         destination_city, destination_uf, destination_address: destination_address || null, destination_cep: destination_cep || null,
         distance_km, pickup_at: new Date(pickup_at).toISOString(),
@@ -122,8 +131,17 @@ function PublishPage() {
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
+  // Classificador Lotação × Fracionada (reativo)
+  const classification = useMemo(() => classifyFreight({
+    pesoKg: cargo_weight_kg,
+    volumeM3: cargo_volume_m3 || null,
+    vehicleType: vehicleTypeForCalc || null,
+  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
+  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
+
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
 
 
 
@@ -136,8 +154,22 @@ function PublishPage() {
           <>
             <Field label="Título do frete" value={title} onChange={setTitle} placeholder="Ex.: Soja Sorriso → Santos" />
             <SelectField label="Tipo de carga" value={cargo_type} onChange={setCargoType} options={CARGO_TYPES} />
-            <Field label="Peso (kg)" type="number" value={String(cargo_weight_kg || "")} onChange={(v) => setWeight(parseInt(v) || 0)} />
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="Peso (kg)" type="number" value={String(cargo_weight_kg || "")} onChange={(v) => setWeight(parseInt(v) || 0)} />
+              <Field label="Volume (m³) — opcional" type="number" value={String(cargo_volume_m3 || "")} onChange={(v) => setVolume(parseFloat(v) || 0)} />
+            </div>
             <TextArea label="Descrição (opcional)" value={description} onChange={setDescription} />
+            {cargo_weight_kg > 0 && (
+              <ClassifierCard
+                classification={classification}
+                mode={freight_mode}
+                override={mode_override}
+                onToggleOverride={(on) => { setModeOverride(on); if (on) setModeManual(classification.mode); }}
+                onPickManual={(m) => setModeManual(m)}
+                manual={mode_manual}
+                hasVehicle={!!vehicleTypeForCalc}
+              />
+            )}
             <ButtonPrimary onClick={() => {
               if (!title || !cargo_type || !cargo_weight_kg) return toast.error("Preencha os campos");
               setStep(2);
@@ -178,6 +210,17 @@ function PublishPage() {
             <Chips options={VEHICLE_TYPES} selected={vehicle_types} onToggle={(v) => setVts(toggle(vehicle_types, v))} />
             <p className="text-sm font-semibold mt-4">Carrocerias</p>
             <Chips options={BODY_TYPES} selected={body_types} onToggle={(v) => setBts(toggle(body_types, v))} />
+            {cargo_weight_kg > 0 && (
+              <ClassifierCard
+                classification={classification}
+                mode={freight_mode}
+                override={mode_override}
+                onToggleOverride={(on) => { setModeOverride(on); if (on) setModeManual(classification.mode); }}
+                onPickManual={(m) => setModeManual(m)}
+                manual={mode_manual}
+                hasVehicle={!!vehicleTypeForCalc}
+              />
+            )}
             <ButtonPrimary onClick={() => setStep(4)}>Continuar</ButtonPrimary>
           </>
         )}
@@ -239,8 +282,9 @@ function PublishPage() {
 
             <div className="mt-4 rounded-xl bg-secondary p-4 text-sm">
               <p className="font-semibold">Revisão</p>
-              <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg</p>
+              <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg{cargo_volume_m3 ? ` · ${cargo_volume_m3} m³` : ""}</p>
               <p>{origin_city}/{origin_uf} → {destination_city}/{destination_uf} · {distance_km} km</p>
+              <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
               <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
             <ButtonPrimary onClick={submit} disabled={loading}>{loading ? "Publicando..." : "Publicar frete"}</ButtonPrimary>
@@ -263,6 +307,62 @@ function Chips({ options, selected, onToggle }: { options: readonly string[]; se
           </button>
         );
       })}
+    </div>
+  );
+}
+
+type ClassifyOut = ReturnType<typeof classifyFreight>;
+function ClassifierCard(props: {
+  classification: ClassifyOut;
+  mode: FreightMode;
+  override: boolean;
+  onToggleOverride: (on: boolean) => void;
+  onPickManual: (m: FreightMode) => void;
+  manual: FreightMode | null;
+  hasVehicle: boolean;
+}) {
+  const { classification, mode, override, onToggleOverride, onPickManual, manual, hasVehicle } = props;
+  const pct = classification.occupancyPct != null ? Math.min(100, Math.round(classification.occupancyPct * 100)) : null;
+  const isLot = mode === "LOTACAO";
+  return (
+    <div className={`rounded-xl border p-3 space-y-2 ${isLot ? "border-primary/40 bg-primary/5" : "border-accent/40 bg-accent/5"}`}>
+      <div className="flex items-center gap-2">
+        <Truck className="h-4 w-4 text-foreground" />
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">Modo do frete</span>
+        <Badge tone={isLot ? "primary" : "accent"}>{freightModeLabel(mode)}</Badge>
+        {override && <span className="text-[10px] text-muted-foreground">manual</span>}
+      </div>
+      <p className="text-xs text-foreground">{classification.reason}</p>
+      {!hasVehicle && (
+        <p className="text-[11px] text-muted-foreground">Escolha um tipo de veículo na etapa 3 para uma estimativa mais precisa de ocupação.</p>
+      )}
+      {pct != null && (
+        <div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div className={`h-full ${pct >= 70 ? "bg-primary" : "bg-accent"}`} style={{ width: `${pct}%` }} />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">Ocupação estimada: {pct}%</p>
+        </div>
+      )}
+      {classification.warning && (
+        <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1 flex items-start gap-1">
+          <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" /> {classification.warning}
+        </p>
+      )}
+      <label className="flex items-center gap-2 pt-1 border-t border-border/60">
+        <input type="checkbox" checked={override} onChange={(e) => onToggleOverride(e.target.checked)} className="h-3.5 w-3.5" />
+        <span className="text-[11px]">Escolher manualmente o modo</span>
+      </label>
+      {override && (
+        <div className="flex gap-2">
+          {(["LOTACAO", "FRACIONADO"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => onPickManual(m)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${(manual ?? mode) === m ? "bg-foreground text-background border-foreground" : "bg-card border-border"}`}>
+              {freightModeLabel(m)}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
