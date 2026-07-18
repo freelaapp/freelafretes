@@ -210,6 +210,17 @@ function PublishPage() {
             <Chips options={VEHICLE_TYPES} selected={vehicle_types} onToggle={(v) => setVts(toggle(vehicle_types, v))} />
             <p className="text-sm font-semibold mt-4">Carrocerias</p>
             <Chips options={BODY_TYPES} selected={body_types} onToggle={(v) => setBts(toggle(body_types, v))} />
+            {cargo_weight_kg > 0 && (
+              <ClassifierCard
+                classification={classification}
+                mode={freight_mode}
+                override={mode_override}
+                onToggleOverride={(on) => { setModeOverride(on); if (on) setModeManual(classification.mode); }}
+                onPickManual={(m) => setModeManual(m)}
+                manual={mode_manual}
+                hasVehicle={!!vehicleTypeForCalc}
+              />
+            )}
             <ButtonPrimary onClick={() => setStep(4)}>Continuar</ButtonPrimary>
           </>
         )}
