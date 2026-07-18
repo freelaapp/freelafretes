@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getJobAdmin, forceCompleteJob, cancelJobAdmin, toggleJobDispute } from "@/lib/admin.functions";
+import { adminReissueTripDocuments } from "@/lib/documents.functions";
 import { PageHeader, StatusBadge, ConfirmModal } from "@/components/admin/ui";
 import { TripEventLog, useTripEvents } from "@/components/TripTimeline";
+import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateTimeBR } from "@/lib/format";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Clock, Package, Truck, Star } from "lucide-react";
+import { ArrowLeft, Check, Clock, Package, Truck, Star, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/admin/jobs/$id")({
   head: () => ({ meta: [{ title: "Viagem — Admin" }, { name: "robots", content: "noindex" }] }),
