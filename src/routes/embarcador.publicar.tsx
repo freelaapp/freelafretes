@@ -107,7 +107,12 @@ function PublishPage() {
     try {
       await publish({ data: {
         title, description: description || null, cargo_type,
-        cargo_weight_kg, vehicle_types, body_types,
+        cargo_weight_kg,
+        cargo_volume_m3: cargo_volume_m3 || null,
+        freight_mode,
+        mode_suggested: classification.mode,
+        mode_override,
+        vehicle_types, body_types,
         origin_city, origin_uf, origin_address: origin_address || null, origin_cep: origin_cep || null,
         destination_city, destination_uf, destination_address: destination_address || null, destination_cep: destination_cep || null,
         distance_km, pickup_at: new Date(pickup_at).toISOString(),
