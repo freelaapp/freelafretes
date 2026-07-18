@@ -11,7 +11,7 @@ import { Badge, ButtonPrimary, ButtonOutline, Field, TextArea } from "@/componen
 import { TripChecklist, TripEventLog, useTripEvents } from "@/components/TripTimeline";
 import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateBR, normalizeCode } from "@/lib/format";
-import { Stars } from "./embarcador.viagem.$id";
+import { Stars, PaymentTimeline } from "./embarcador.viagem.$id";
 import { toast } from "sonner";
 import { ArrowLeft, Truck, MapPin, Pause, Play, AlertTriangle, Navigation2, X } from "lucide-react";
 
