@@ -328,8 +328,9 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
       .select("id,user_id").eq("id", job.contractor_id).eq("user_id", context.userId).maybeSingle();
     if (!c) throw new Error("Sem permissão");
 
+    const nowIso = new Date().toISOString();
     const { error } = await context.supabase.from("payments")
-      .update({ status: "COMPLETED", paid_at: new Date().toISOString() })
+      .update({ status: "HELD", paid_at: nowIso, held_at: nowIso })
       .eq("job_id", data.job_id);
     if (error) throw error;
 
