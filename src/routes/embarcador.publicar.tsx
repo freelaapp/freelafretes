@@ -32,6 +32,9 @@ function PublishPage() {
   const [title, setTitle] = useState("");
   const [cargo_type, setCargoType] = useState("");
   const [cargo_weight_kg, setWeight] = useState(0);
+  const [cargo_volume_m3, setVolume] = useState<number>(0);
+  const [mode_override, setModeOverride] = useState(false);
+  const [mode_manual, setModeManual] = useState<FreightMode | null>(null);
   const [description, setDescription] = useState("");
   // Rota
   const [origin_cep, setOCep] = useState("");
