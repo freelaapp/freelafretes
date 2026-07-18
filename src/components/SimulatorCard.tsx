@@ -18,6 +18,8 @@ function fmtMoneySigned(cents: number) {
   return `${s}${fmtMoney(Math.abs(cents))}`;
 }
 
+export type FreightModeChoice = "AUTO" | "LOTACAO" | "FRACIONADO";
+
 export type SimulatorFormState = {
   originCep: string; originCity: string; originUf: string;
   destCep: string; destCity: string; destUf: string;
@@ -27,6 +29,7 @@ export type SimulatorFormState = {
   temPedagio: boolean; coletaNoturna: boolean;
   ajudantes: boolean; cargaDescarga: boolean;
   dataColeta: string;
+  freightMode: FreightModeChoice;
 };
 
 const emptyForm: SimulatorFormState = {
@@ -37,6 +40,7 @@ const emptyForm: SimulatorFormState = {
   temPedagio: false, coletaNoturna: false,
   ajudantes: false, cargaDescarga: false,
   dataColeta: "",
+  freightMode: "AUTO",
 };
 
 type CepLookupState = { loading: boolean; error?: string };
@@ -126,11 +130,38 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
+      <div>
+        <label className="block text-xs font-semibold text-foreground/80 mb-1.5">Modo do frete</label>
+        <div className="flex flex-wrap gap-2">
+          {([
+            { v: "AUTO", label: "Detectar automaticamente", hint: "Classifica pela carga" },
+            { v: "LOTACAO", label: "Frete lotação (FTL)", hint: "Caminhão dedicado" },
+            { v: "FRACIONADO", label: "Frete fracionado (LTL)", hint: "Divide espaço com outras cargas" },
+          ] as const).map((opt) => {
+            const active = form.freightMode === opt.v;
+            return (
+              <button key={opt.v} type="button" onClick={() => set("freightMode", opt.v)}
+                className={`px-3 py-2 rounded-xl text-xs font-semibold border transition text-left ${active ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-secondary"}`}>
+                <span className="block">{opt.label}</span>
+                <span className={`block text-[10px] font-medium ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{opt.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-2 pt-1">
         <Toggle label="Rota com pedágio" checked={form.temPedagio} onChange={(v) => set("temPedagio", v)} />
         <Toggle label="Coleta noturna (20h–6h)" checked={form.coletaNoturna} onChange={(v) => set("coletaNoturna", v)} />
         <Toggle label="Preciso de ajudante" checked={form.ajudantes} onChange={(v) => set("ajudantes", v)} />
         <Toggle label="Carga/descarga" checked={form.cargaDescarga} onChange={(v) => set("cargaDescarga", v)} />
+      </div>
+
+      <div className="flex items-start gap-2 rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 px-3 py-2 text-xs">
+        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+        <p>
+          <b>Este é um valor simulado.</b> O valor real do frete é definido após a contratação, com base na negociação entre embarcador e motorista e nas condições finais da viagem.
+        </p>
       </div>
 
       <button
@@ -257,7 +288,8 @@ export function buildInput(form: SimulatorFormState) {
   };
   const pesoKg = num(form.pesoKg);
   const volumeM3 = form.volumeM3 ? num(form.volumeM3) : undefined;
-  const mode = classifyFreight({ pesoKg, volumeM3: volumeM3 ?? null, vehicleType: form.vehicleType || null }).mode;
+  const auto = classifyFreight({ pesoKg, volumeM3: volumeM3 ?? null, vehicleType: form.vehicleType || null }).mode;
+  const mode = form.freightMode && form.freightMode !== "AUTO" ? form.freightMode : auto;
   return {
     origemCidade: form.originCity || undefined,
     origemUf: form.originUf || undefined,
