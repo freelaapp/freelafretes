@@ -5,7 +5,8 @@ import { Link } from "@tanstack/react-router";
 import { simulatePricing } from "@/lib/pricing.functions";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import type { PricingResult } from "@/lib/pricing";
-import { ChevronDown, ChevronUp, ArrowRight, TruckIcon } from "lucide-react";
+import { classifyFreight, freightModeLabel } from "@/lib/freight-classifier";
+import { ChevronDown, ChevronUp, ArrowRight, TruckIcon, AlertTriangle } from "lucide-react";
 
 const SIMULATION_STORAGE_KEY = "freela.simulacao";
 
