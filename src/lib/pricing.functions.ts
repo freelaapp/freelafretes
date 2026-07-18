@@ -174,16 +174,18 @@ export const loadPricingConfig = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await requireAdmin(context);
     const s = context.supabase;
-    const [settings, vcosts, cfactors, history] = await Promise.all([
+    const [settings, vcosts, cfactors, antt, history] = await Promise.all([
       s.from("pricing_settings").select("*").eq("id", 1).maybeSingle(),
       s.from("pricing_vehicle_costs").select("*").order("ckm_cents_por_km"),
       s.from("pricing_cargo_factors").select("*").order("cargo_type"),
+      s.from("antt_floor_rates").select("*").order("vehicle_axles").order("cargo_category").order("valid_from", { ascending: false }),
       s.from("pricing_settings_history").select("*").order("changed_at", { ascending: false }).limit(50),
     ]);
     return {
       settings: (settings.data?.settings as any) ?? DEFAULT_SETTINGS,
       vehicleCosts: vcosts.data ?? [],
       cargoFactors: cfactors.data ?? [],
+      anttRates: antt.data ?? [],
       history: history.data ?? [],
     };
   });
