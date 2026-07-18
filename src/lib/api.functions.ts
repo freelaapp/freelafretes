@@ -272,7 +272,8 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,contractor_id,provider_id,freights(title)").eq("id", data.job_id).maybeSingle();
+      .select("id,contractor_id,provider_id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode)")
+      .eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     const { data: c } = await context.supabase.from("contractors")
       .select("id,user_id").eq("id", job.contractor_id).eq("user_id", context.userId).maybeSingle();
@@ -283,12 +284,24 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
       .eq("job_id", data.job_id);
     if (error) throw error;
 
+    // Emiteaí — emite documentação fiscal simulada
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.emitTripDocuments(job as any);
+    } catch (e) {
+      console.error("[documents] emissão falhou", e);
+    }
+
     const { data: p } = await context.supabase.from("providers").select("user_id").eq("id", job.provider_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
     await notifyMany([
       { user_id: c.user_id, title: "Pagamento confirmado", body: `O valor de ${title} está em custódia.`, link: `/embarcador/viagem/${data.job_id}` },
-      ...(p?.user_id ? [{ user_id: p.user_id, title: "Pagamento confirmado ✓", body: "Você já pode gerar o código de coleta.", link: `/motorista/viagem/${data.job_id}` }] : []),
+      { user_id: c.user_id, title: "Documentação fiscal emitida ✓", body: "CT-e, MDF-e e averbação já estão disponíveis.", link: `/embarcador/viagem/${data.job_id}` },
+      ...(p?.user_id ? [
+        { user_id: p.user_id, title: "Pagamento confirmado ✓", body: "Você já pode gerar o código de coleta.", link: `/motorista/viagem/${data.job_id}` },
+        { user_id: p.user_id, title: "Seus documentos de viagem estão prontos", body: "CT-e, MDF-e e averbação foram emitidos.", link: `/motorista/viagem/${data.job_id}` },
+      ] : []),
     ]);
     return { ok: true };
   });
@@ -387,6 +400,14 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now }).eq("id", job.id);
     await context.supabase.from("trip_events").insert({ job_id: job.id, type: "UNLOADING_FINISHED", created_by: context.userId });
 
+    // Encerra MDF-e no check-out
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.markMdfeClosed(job.id);
+    } catch (e) {
+      console.error("[documents] encerrar MDF-e falhou", e);
+    }
+
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
@@ -410,16 +431,26 @@ export const cancelFreight = createServerFn({ method: "POST" })
     const { data: c } = await context.supabase.from("contractors")
       .select("id").eq("id", freight.contractor_id).eq("user_id", context.userId).maybeSingle();
     if (!c) throw new Error("Sem permissão");
+    let cancelledJobId: string | null = null;
     if (freight.status === "CLOSED") {
       // só se viagem ainda SCHEDULED
       const { data: job } = await context.supabase.from("jobs")
         .select("id,status").eq("freight_id", freight.id).maybeSingle();
       if (job && job.status !== "SCHEDULED") throw new Error("Já coletado, não pode cancelar");
-      if (job) await context.supabase.from("jobs").update({ status: "CANCELLED" }).eq("id", job.id);
+      if (job) {
+        await context.supabase.from("jobs").update({ status: "CANCELLED" }).eq("id", job.id);
+        cancelledJobId = job.id;
+      }
     }
     await context.supabase.from("freights").update({ status: "CANCELLED_BY_CONTRACTOR" }).eq("id", freight.id);
     await context.supabase.from("candidacies").update({ status: "CANCELLED_BY_CONTRACTOR" })
       .eq("freight_id", freight.id).in("status", ["PENDING", "ACCEPTED"]);
+    if (cancelledJobId) {
+      try {
+        const { documentProvider } = await import("./document-emission.server");
+        await documentProvider.cancelDocuments(cancelledJobId);
+      } catch (e) { console.error("[documents] cancel falhou", e); }
+    }
     return { ok: true };
   });
 
@@ -438,6 +469,10 @@ export const driverWithdrawFromJob = createServerFn({ method: "POST" })
     await context.supabase.from("freights").update({ status: "OPEN", agreed_amount_in_cents: null }).eq("id", job.freight_id);
     await context.supabase.from("candidacies").update({ status: "WITHDRAWN" })
       .eq("freight_id", job.freight_id).eq("provider_id", prov.id).eq("status", "ACCEPTED");
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.cancelDocuments(job.id);
+    } catch (e) { console.error("[documents] cancel falhou", e); }
     return { ok: true };
   });
 

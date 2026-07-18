@@ -9,6 +9,7 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge, ButtonPrimary, ButtonOutline, Field, TextArea } from "@/components/ui-kit";
 import { TripChecklist, TripEventLog, useTripEvents } from "@/components/TripTimeline";
+import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateBR, normalizeCode } from "@/lib/format";
 import { Stars } from "./embarcador.viagem.$id";
 import { toast } from "sonner";
@@ -174,6 +175,7 @@ function DriverTripDetail() {
           </>
         )}
 
+        <TripDocumentsCard jobId={id} />
         <TripEventLog events={evQ.data ?? []} />
 
         {(job.status === "SCHEDULED" || job.status === "IN_PROGRESS") && (

@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getJobAdmin, forceCompleteJob, cancelJobAdmin, toggleJobDispute } from "@/lib/admin.functions";
+import { adminReissueTripDocuments } from "@/lib/documents.functions";
 import { PageHeader, StatusBadge, ConfirmModal } from "@/components/admin/ui";
 import { TripEventLog, useTripEvents } from "@/components/TripTimeline";
+import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateTimeBR } from "@/lib/format";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Clock, Package, Truck, Star } from "lucide-react";
+import { ArrowLeft, Check, Clock, Package, Truck, Star, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/admin/jobs/$id")({
   head: () => ({ meta: [{ title: "Viagem — Admin" }, { name: "robots", content: "noindex" }] }),
@@ -20,14 +22,17 @@ function JobDetail() {
   const force = useServerFn(forceCompleteJob);
   const cancel = useServerFn(cancelJobAdmin);
   const dispute = useServerFn(toggleJobDispute);
+  const reissue = useServerFn(adminReissueTripDocuments);
   const q = useQuery({ queryKey: ["job-admin", id], queryFn: () => get({ data: { id } }) });
   const evQ = useTripEvents(id);
   const qc = useQueryClient();
   const [forceOpen, setForceOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [dispOpen, setDispOpen] = useState(false);
+  const [reissueOpen, setReissueOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [reissueReason, setReissueReason] = useState("");
 
   const j = q.data?.job;
   const p = q.data?.payment;
@@ -60,6 +65,18 @@ function JobDetail() {
           <TimelineItem icon={Star} done={(q.data?.feedbacks ?? []).length > 0} label={`Avaliações (${q.data?.feedbacks.length ?? 0}/2)`} at={q.data?.feedbacks?.[0]?.created_at} />
         </ol>
       </div>
+
+      <TripDocumentsCard
+        jobId={id}
+        actions={
+          <button
+            onClick={() => { setReissueReason(""); setReissueOpen(true); }}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-semibold hover:bg-muted"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Reemitir
+          </button>
+        }
+      />
 
       <TripEventLog events={evQ.data ?? []} />
 
@@ -108,6 +125,19 @@ function JobDetail() {
           qc.invalidateQueries({ queryKey: ["job-admin", id] });
         }}>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas da disputa" rows={4} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
+      </ConfirmModal>
+
+      <ConfirmModal open={reissueOpen} onClose={() => setReissueOpen(false)}
+        title="Reemitir documentos fiscais"
+        description="Cancela os documentos atuais e emite um novo conjunto (CT-e, MDF-e, averbação e CIOT quando aplicável)."
+        tone="primary" confirmLabel="Reemitir"
+        onConfirm={async () => {
+          if (reissueReason.trim().length < 3) { toast.error("Motivo obrigatório"); throw new Error("motivo"); }
+          await reissue({ data: { job_id: id, reason: reissueReason.trim() } });
+          toast.success("Documentos reemitidos");
+          qc.invalidateQueries({ queryKey: ["trip-documents", id] });
+        }}>
+        <textarea value={reissueReason} onChange={(e) => setReissueReason(e.target.value)} placeholder="Motivo da reemissão" rows={3} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
       </ConfirmModal>
     </div>
   );

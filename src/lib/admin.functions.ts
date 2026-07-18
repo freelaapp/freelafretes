@@ -429,6 +429,10 @@ export const cancelJobAdmin = createServerFn({ method: "POST" })
     if (data.refund_type !== "NONE") {
       await s.from("payments").update({ status: "REFUNDED", refunded_at: new Date().toISOString(), refund_reason: data.reason }).eq("job_id", data.id);
     }
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.cancelDocuments(data.id);
+    } catch (e) { console.error("[documents] cancel falhou", e); }
     await audit(context, admin.id, "CANCEL_JOB", "job", data.id, { reason: data.reason, refund_type: data.refund_type });
     return { ok: true };
   });
