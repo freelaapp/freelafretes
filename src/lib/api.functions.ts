@@ -469,6 +469,10 @@ export const driverWithdrawFromJob = createServerFn({ method: "POST" })
     await context.supabase.from("freights").update({ status: "OPEN", agreed_amount_in_cents: null }).eq("id", job.freight_id);
     await context.supabase.from("candidacies").update({ status: "WITHDRAWN" })
       .eq("freight_id", job.freight_id).eq("provider_id", prov.id).eq("status", "ACCEPTED");
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      await documentProvider.cancelDocuments(job.id);
+    } catch (e) { console.error("[documents] cancel falhou", e); }
     return { ok: true };
   });
 
