@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge, ButtonPrimary, ButtonOutline, TextArea } from "@/components/ui-kit";
 import { TripChecklist, TripEventLog, useTripEvents } from "@/components/TripTimeline";
+import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
 import { ArrowLeft, ShieldCheck, Star } from "lucide-react";
