@@ -113,6 +113,22 @@ function DriverProfile() {
         )}
 
         <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+          <p className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Cidade-base e raio</p>
+          <p className="text-xs text-muted-foreground mt-1">Usamos para ordenar os fretes mais próximos e te avisar quando algo publicar perto de você.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <SelectField label="UF" value={baseUf} onChange={(v) => { setBaseUf(v); setBaseCity(""); }} options={UF_LIST} placeholder="UF" />
+            <SelectField label="Cidade" value={baseCity} onChange={setBaseCity} options={cityOpts} placeholder="Selecione" />
+          </div>
+          <div className="mt-2">
+            <label className="text-xs text-muted-foreground">Raio de atuação: <strong className="text-foreground">{radius} km</strong></label>
+            <input type="range" min={50} max={2000} step={50} value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} className="w-full accent-primary" />
+          </div>
+          <div className="mt-3"><ButtonPrimary onClick={saveBase}>Salvar cidade-base</ButtonPrimary></div>
+        </div>
+
+
+
+        <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
           <div className="flex items-center justify-between">
             <p className="font-semibold">Meus veículos</p>
             <button onClick={() => setShowAdd((s) => !s)} className="text-primary text-xs font-semibold inline-flex items-center gap-1">
