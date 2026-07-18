@@ -27,6 +27,8 @@ function DriverProfile() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const add = useServerFn(addVehicle);
+  const listCities = useServerFn(listCitiesByUf);
+  const setBase = useServerFn(updateDriverBase);
 
   const { data: p } = useQuery({
     enabled: !!auth.user,
