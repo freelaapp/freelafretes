@@ -431,16 +431,26 @@ export const cancelFreight = createServerFn({ method: "POST" })
     const { data: c } = await context.supabase.from("contractors")
       .select("id").eq("id", freight.contractor_id).eq("user_id", context.userId).maybeSingle();
     if (!c) throw new Error("Sem permissão");
+    let cancelledJobId: string | null = null;
     if (freight.status === "CLOSED") {
       // só se viagem ainda SCHEDULED
       const { data: job } = await context.supabase.from("jobs")
         .select("id,status").eq("freight_id", freight.id).maybeSingle();
       if (job && job.status !== "SCHEDULED") throw new Error("Já coletado, não pode cancelar");
-      if (job) await context.supabase.from("jobs").update({ status: "CANCELLED" }).eq("id", job.id);
+      if (job) {
+        await context.supabase.from("jobs").update({ status: "CANCELLED" }).eq("id", job.id);
+        cancelledJobId = job.id;
+      }
     }
     await context.supabase.from("freights").update({ status: "CANCELLED_BY_CONTRACTOR" }).eq("id", freight.id);
     await context.supabase.from("candidacies").update({ status: "CANCELLED_BY_CONTRACTOR" })
       .eq("freight_id", freight.id).in("status", ["PENDING", "ACCEPTED"]);
+    if (cancelledJobId) {
+      try {
+        const { documentProvider } = await import("./document-emission.server");
+        await documentProvider.cancelDocuments(cancelledJobId);
+      } catch (e) { console.error("[documents] cancel falhou", e); }
+    }
     return { ok: true };
   });
 
