@@ -100,7 +100,8 @@ function PaymentsAdmin() {
 
 function paymentBadge(s?: string) {
   if (s === "PENDING") return <StatusBadge tone="warning">Aguardando</StatusBadge>;
-  if (s === "COMPLETED") return <StatusBadge tone="primary">🔒 Custódia</StatusBadge>;
+  if (s === "HELD") return <StatusBadge tone="primary">🔒 Custódia</StatusBadge>;
+  if (s === "COMPLETED") return <StatusBadge tone="primary">🔒 Custódia (legado)</StatusBadge>;
   if (s === "RELEASED") return <StatusBadge tone="success">✓ Liberado</StatusBadge>;
   if (s === "REFUNDED") return <StatusBadge tone="danger">Estornado</StatusBadge>;
   return <StatusBadge tone="muted">{s}</StatusBadge>;
