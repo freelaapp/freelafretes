@@ -451,7 +451,7 @@ export const toggleJobDispute = createServerFn({ method: "POST" })
 export const listPaymentsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    status: z.enum(["ALL","PENDING","COMPLETED","RELEASED","REFUNDED"]).default("ALL"),
+    status: z.enum(["ALL","PENDING","HELD","COMPLETED","RELEASED","REFUNDED"]).default("ALL"),
     page: z.number().int().default(1),
   }).parse(d))
   .handler(async ({ data, context }) => {
