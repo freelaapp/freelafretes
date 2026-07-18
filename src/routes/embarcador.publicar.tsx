@@ -310,3 +310,59 @@ function Chips({ options, selected, onToggle }: { options: readonly string[]; se
     </div>
   );
 }
+
+type ClassifyOut = ReturnType<typeof classifyFreight>;
+function ClassifierCard(props: {
+  classification: ClassifyOut;
+  mode: FreightMode;
+  override: boolean;
+  onToggleOverride: (on: boolean) => void;
+  onPickManual: (m: FreightMode) => void;
+  manual: FreightMode | null;
+  hasVehicle: boolean;
+}) {
+  const { classification, mode, override, onToggleOverride, onPickManual, manual, hasVehicle } = props;
+  const pct = classification.occupancyPct != null ? Math.min(100, Math.round(classification.occupancyPct * 100)) : null;
+  const isLot = mode === "LOTACAO";
+  return (
+    <div className={`rounded-xl border p-3 space-y-2 ${isLot ? "border-primary/40 bg-primary/5" : "border-accent/40 bg-accent/5"}`}>
+      <div className="flex items-center gap-2">
+        <Truck className="h-4 w-4 text-foreground" />
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">Modo do frete</span>
+        <Badge tone={isLot ? "primary" : "accent"}>{freightModeLabel(mode)}</Badge>
+        {override && <span className="text-[10px] text-muted-foreground">manual</span>}
+      </div>
+      <p className="text-xs text-foreground">{classification.reason}</p>
+      {!hasVehicle && (
+        <p className="text-[11px] text-muted-foreground">Escolha um tipo de veículo na etapa 3 para uma estimativa mais precisa de ocupação.</p>
+      )}
+      {pct != null && (
+        <div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div className={`h-full ${pct >= 70 ? "bg-primary" : "bg-accent"}`} style={{ width: `${pct}%` }} />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">Ocupação estimada: {pct}%</p>
+        </div>
+      )}
+      {classification.warning && (
+        <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1 flex items-start gap-1">
+          <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" /> {classification.warning}
+        </p>
+      )}
+      <label className="flex items-center gap-2 pt-1 border-t border-border/60">
+        <input type="checkbox" checked={override} onChange={(e) => onToggleOverride(e.target.checked)} className="h-3.5 w-3.5" />
+        <span className="text-[11px]">Escolher manualmente o modo</span>
+      </label>
+      {override && (
+        <div className="flex gap-2">
+          {(["LOTACAO", "FRACIONADO"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => onPickManual(m)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${(manual ?? mode) === m ? "bg-foreground text-background border-foreground" : "bg-card border-border"}`}>
+              {freightModeLabel(m)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
