@@ -44,6 +44,19 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
   const cargoFactors: Record<string, number> = { ...DEFAULT_CARGO_FACTORS };
   for (const r of cfactorsQ.data ?? []) cargoFactors[r.cargo_type] = Number(r.factor);
 
+  const anttRates: AnttRate[] = (anttQ.data ?? []).map((r: any) => ({
+    vehicle_axles: r.vehicle_axles,
+    cargo_category: r.cargo_category,
+    rate_per_km_cents: r.rate_per_km_cents,
+    load_unload_cents: r.load_unload_cents ?? 0,
+    valid_from: r.valid_from,
+    valid_to: r.valid_to,
+  }));
+
+  // eixos por veículo (do catálogo)
+  const axlesByVehicle: Record<string, number> = {};
+  for (const r of vcostsQ.data ?? []) if (r.axles) axlesByVehicle[r.vehicle_type] = r.axles;
+
   // Contexto de mercado
   let fretesAbertosNaRota = 0;
   let motoristasAtivos = 0;
@@ -54,7 +67,6 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
   }
   if (vehicleType) {
     const vKey = vehicleLabelToKey(vehicleType);
-    // Match by label variations
     const labels = Object.entries({
       vlc: "VLC", toco: "Toco", truck: "Truck", bitruck: "Bitruck",
       carreta: "Carreta", bitrem: "Bitrem", rodotrem: "Rodotrem",
@@ -66,7 +78,24 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
       void labels;
     }
   }
-  return { settings, vehicleCosts, cargoFactors, fretesAbertosNaRota, motoristasAtivos };
+  return { settings, vehicleCosts, cargoFactors, anttRates, axlesByVehicle, fretesAbertosNaRota, motoristasAtivos };
+}
+
+// Helper reutilizável para computar piso ANTT server-side
+export async function computeAnttFloor(args: {
+  vehicle_type: string; cargo_type: string; distance_km: number;
+  freight_mode: FreightMode; peso_kg?: number; volume_m3?: number | null;
+}) {
+  const cfg = await loadConfig(undefined, args.vehicle_type);
+  const axles = cfg.axlesByVehicle[vehicleLabelToKey(args.vehicle_type)] ?? null;
+  return anttFloor({
+    vehicle_type: args.vehicle_type,
+    cargo_type: args.cargo_type,
+    distance_km: args.distance_km,
+    freight_mode: args.freight_mode,
+    axles,
+    rates: cfg.anttRates,
+  });
 }
 
 // ============================================================
