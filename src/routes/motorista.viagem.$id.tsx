@@ -95,9 +95,21 @@ function DriverTripDetail() {
   }
 
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
-  const f = job.freights as { title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
+  const f = job.freights as { title: string; origin_city: string; origin_uf: string; origin_address: string | null; destination_city: string; destination_uf: string; pickup_at: string; cargo_type: string; cargo_weight_kg: number };
   const c = job.contractors as { company_name: string };
+  const pay = (Array.isArray(job.payments) ? job.payments[0] : (job as any).payments) as { status: string; paid_at?: string; held_at?: string; released_at?: string; amount_in_cents: number; service_fee_in_cents?: number } | null;
+  const paidHeld = pay?.status === "HELD" || pay?.status === "COMPLETED";
+  const ackAt = (job as any).driver_ack_at as string | null;
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${f.destination_city}, ${f.destination_uf}`)}&navigate=yes`;
+
+  async function submitAck() {
+    try {
+      await ackFn({ data: { job_id: id, notes: ackNotes.trim() || null } });
+      toast.success("Ciência confirmada ✓");
+      setAckNotes("");
+      qc.invalidateQueries();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
 
   return (
     <div className="pb-10">
