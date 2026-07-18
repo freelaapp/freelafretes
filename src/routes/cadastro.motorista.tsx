@@ -186,8 +186,10 @@ function DriverSignup() {
             <Field label="Celular" value={phone} onChange={(v) => setPhone(maskPhone(v))} placeholder="(00) 00000-0000" />
             <Field label="Data de nascimento" type="date" value={birthdate} onChange={setBirthdate} />
             <Field label="Senha" type="password" value={password} onChange={setPassword} />
+            <p className="mt-1 text-[11px] text-muted-foreground">Mínimo 8 caracteres, com letras e números. Evite senhas óbvias.</p>
             <ButtonPrimary onClick={() => {
-              if (!full_name || !email || !phone || !birthdate || password.length < 6) return toast.error("Preencha todos os campos (senha 6+)");
+              if (!full_name || !email || !phone || !birthdate) return toast.error("Preencha todos os campos");
+              if (!isStrongPassword(password)) return toast.error("Senha fraca: use no mínimo 8 caracteres, misturando letras e números.");
               setStep(3);
             }}>Continuar</ButtonPrimary>
           </>
