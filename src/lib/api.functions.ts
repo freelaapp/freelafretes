@@ -451,6 +451,11 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now }).eq("id", job.id);
     await context.supabase.from("trip_events").insert({ job_id: job.id, type: "UNLOADING_FINISHED", created_by: context.userId });
 
+    // Libera pagamento do escrow automaticamente (checkout validado)
+    const { data: releasedPay } = await context.supabase.from("payments")
+      .update({ status: "RELEASED", released_at: now })
+      .eq("job_id", job.id).eq("status", "HELD").select("amount_in_cents,service_fee_in_cents").maybeSingle();
+
     // Encerra MDF-e no check-out
     try {
       const { documentProvider } = await import("./document-emission.server");
@@ -462,10 +467,44 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
+    const netCents = releasedPay ? (releasedPay.amount_in_cents - (releasedPay.service_fee_in_cents ?? 0)) : 0;
+    const brl = (c: number) => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     await notifyMany([
-      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue.`, link: `/embarcador/viagem/${job.id}` }] : []),
-      { user_id: prov.user_id, title: "Viagem concluída ✓", body: "O pagamento será liberado em breve.", link: `/motorista/viagem/${job.id}` },
+      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue. Pagamento liberado ao motorista.`, link: `/embarcador/viagem/${job.id}` }] : []),
+      { user_id: prov.user_id, title: "Pagamento liberado ✓", body: releasedPay ? `${brl(netCents)} liberado via PIX.` : "Sua viagem foi concluída.", link: `/motorista/viagem/${job.id}` },
     ]);
+    return { ok: true };
+  });
+
+// ============================================================
+// CIÊNCIA DO MOTORISTA (BLOCO 6)
+// ============================================================
+export const driverAckJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    job_id: z.string().uuid(),
+    notes: z.string().max(1000).optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: job } = await context.supabase.from("jobs")
+      .select("id,status,provider_id,contractor_id,driver_ack_at,freights(title)").eq("id", data.job_id).maybeSingle();
+    if (!job) throw new Error("Viagem não encontrada");
+    if (job.status !== "SCHEDULED") throw new Error("Viagem não está mais agendada");
+    if (job.driver_ack_at) throw new Error("Ciência já registrada");
+    const { data: prov } = await context.supabase.from("providers")
+      .select("id").eq("id", job.provider_id).eq("user_id", context.userId).maybeSingle();
+    if (!prov) throw new Error("Sem permissão");
+    // pagamento precisa estar em custódia
+    const { data: pay } = await context.supabase.from("payments").select("status").eq("job_id", job.id).maybeSingle();
+    if (pay?.status !== "HELD") throw new Error("Aguarde a confirmação do pagamento pelo embarcador");
+    const now = new Date().toISOString();
+    const { error } = await context.supabase.from("jobs").update({ driver_ack_at: now, ack_notes: data.notes ?? null }).eq("id", job.id);
+    if (error) throw error;
+    const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
+    if (c?.user_id) {
+      const { notify } = await import("./notify.server");
+      await notify(c.user_id, "Motorista confirmou ciência ✓", `O motorista confirmou os dados de "${(job as any).freights?.title ?? "sua viagem"}".`, `/embarcador/viagem/${job.id}`);
+    }
     return { ok: true };
   });
 
