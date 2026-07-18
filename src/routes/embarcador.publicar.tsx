@@ -80,9 +80,18 @@ function PublishPage() {
 
   // Auto-sugestão no step 4
   const vehicleTypeForCalc = vehicle_types[0] ?? "";
+
+  // Classificador Lotação × Fracionada (reativo) — declarado antes do uso
+  const classification = useMemo(() => classifyFreight({
+    pesoKg: cargo_weight_kg,
+    volumeM3: cargo_volume_m3 || null,
+    vehicleType: vehicleTypeForCalc || null,
+  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
+  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
+
   const suggestKey = useMemo(
-    () => `${distance_km}|${vehicleTypeForCalc}|${cargo_type}|${cargo_weight_kg}|${origin_uf}|${toll_included}|${pickup_at}`,
-    [distance_km, vehicleTypeForCalc, cargo_type, cargo_weight_kg, origin_uf, toll_included, pickup_at],
+    () => `${distance_km}|${vehicleTypeForCalc}|${cargo_type}|${cargo_weight_kg}|${cargo_volume_m3}|${origin_uf}|${toll_included}|${pickup_at}|${freight_mode}`,
+    [distance_km, vehicleTypeForCalc, cargo_type, cargo_weight_kg, cargo_volume_m3, origin_uf, toll_included, pickup_at, freight_mode],
   );
   const suggestMut = useMutation({
     mutationFn: async () => simulateFn({ data: {
@@ -102,9 +111,15 @@ function PublishPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, suggestKey]);
 
+  const antt = (suggestion as any)?.antt as { is_applicable: boolean; floor_cents: number; reason: string } | undefined;
+  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && payment * 100 < antt.floor_cents);
+
   async function submit() {
     if (payment <= 0) return toast.error("Informe o valor");
     if (!pickup_at) return toast.error("Data de coleta obrigatória");
+    if (belowFloor && antt) {
+      return toast.error(`Valor abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
+    }
     setLoading(true);
     try {
       await publish({ data: {
@@ -133,16 +148,9 @@ function PublishPage() {
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
-  // Classificador Lotação × Fracionada (reativo)
-  const classification = useMemo(() => classifyFreight({
-    pesoKg: cargo_weight_kg,
-    volumeM3: cargo_volume_m3 || null,
-    vehicleType: vehicleTypeForCalc || null,
-  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
-  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
-
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
 
 
 
