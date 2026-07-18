@@ -126,8 +126,17 @@ function PublishPage() {
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
+  // Classificador Lotação × Fracionada (reativo)
+  const classification = useMemo(() => classifyFreight({
+    pesoKg: cargo_weight_kg,
+    volumeM3: cargo_volume_m3 || null,
+    vehicleType: vehicleTypeForCalc || null,
+  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
+  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
+
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
 
 
 
