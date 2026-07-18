@@ -59,7 +59,7 @@ function DriverProfile() {
   useEffect(() => {
     if (!baseUf) { setCityOpts([]); return; }
     listCities({ data: { uf: baseUf } }).then((rows) => {
-      setCityOpts((rows as { city: string }[]).map((r) => ({ label: r.city, value: r.city })));
+      setCityOpts((rows as { city: string }[]).map((r) => r.city));
     }).catch(() => setCityOpts([]));
   }, [baseUf, listCities]);
 
