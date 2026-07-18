@@ -148,6 +148,7 @@ function TripDetail() {
           </>
         )}
 
+        {paid && <TripDocumentsCard jobId={id} />}
         <TripEventLog events={evQ.data ?? []} />
       </div>
     </div>
