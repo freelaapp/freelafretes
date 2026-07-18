@@ -13,7 +13,7 @@ export const Route = createFileRoute("/admin/payments")({
 });
 
 function PaymentsAdmin() {
-  const [status, setStatus] = useState<"ALL"|"PENDING"|"COMPLETED"|"RELEASED"|"REFUNDED">("ALL");
+  const [status, setStatus] = useState<"ALL"|"PENDING"|"HELD"|"COMPLETED"|"RELEASED"|"REFUNDED">("ALL");
   const [page, setPage] = useState(1);
   const list = useServerFn(listPaymentsAdmin);
   const summary = useServerFn(paymentsSummary);
@@ -41,7 +41,8 @@ function PaymentsAdmin() {
         <select value={status} onChange={(e) => { setStatus(e.target.value as any); setPage(1); }} className="rounded-md border border-border px-3 py-2 text-sm bg-card">
           <option value="ALL">Todos</option>
           <option value="PENDING">Pendente</option>
-          <option value="COMPLETED">Em custódia</option>
+          <option value="HELD">Em custódia (HELD)</option>
+          <option value="COMPLETED">Em custódia (legado)</option>
           <option value="RELEASED">Liberado</option>
           <option value="REFUNDED">Estornado</option>
         </select>
@@ -65,8 +66,8 @@ function PaymentsAdmin() {
           { key: "d", header: "Data", render: (p: any) => <span className="text-xs">{formatDateBR(p.paid_at ?? p.created_at)}</span> },
           { key: "a", header: "", render: (p: any) => (
             <div className="flex gap-1 justify-end">
-              {p.status === "COMPLETED" && <button onClick={() => setReleaseId(p.id)} className="px-2 py-1 rounded bg-success/20 text-success text-xs font-semibold">Liberar</button>}
-              {(p.status === "PENDING" || p.status === "COMPLETED") && <button onClick={() => { setRefundId(p.id); setRefundReason(""); }} className="px-2 py-1 rounded bg-destructive/20 text-destructive text-xs font-semibold">Estornar</button>}
+              {(p.status === "HELD" || p.status === "COMPLETED") && <button onClick={() => setReleaseId(p.id)} className="px-2 py-1 rounded bg-success/20 text-success text-xs font-semibold">Liberar</button>}
+              {(p.status === "PENDING" || p.status === "HELD" || p.status === "COMPLETED") && <button onClick={() => { setRefundId(p.id); setRefundReason(""); }} className="px-2 py-1 rounded bg-destructive/20 text-destructive text-xs font-semibold">Estornar</button>}
             </div>
           ) },
         ]}
@@ -99,7 +100,8 @@ function PaymentsAdmin() {
 
 function paymentBadge(s?: string) {
   if (s === "PENDING") return <StatusBadge tone="warning">Aguardando</StatusBadge>;
-  if (s === "COMPLETED") return <StatusBadge tone="primary">🔒 Custódia</StatusBadge>;
+  if (s === "HELD") return <StatusBadge tone="primary">🔒 Custódia</StatusBadge>;
+  if (s === "COMPLETED") return <StatusBadge tone="primary">🔒 Custódia (legado)</StatusBadge>;
   if (s === "RELEASED") return <StatusBadge tone="success">✓ Liberado</StatusBadge>;
   if (s === "REFUNDED") return <StatusBadge tone="danger">Estornado</StatusBadge>;
   return <StatusBadge tone="muted">{s}</StatusBadge>;

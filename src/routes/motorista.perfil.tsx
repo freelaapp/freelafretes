@@ -1,19 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { addVehicle } from "@/lib/api.functions";
+import { listCitiesByUf, updateDriverBase } from "@/lib/geo.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Field, SelectField, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
-import { VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
+import { UF_LIST, VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
 import { maskPlate, isValidPlate } from "@/lib/format";
 import { toast } from "sonner";
-import { Truck, Plus } from "lucide-react";
+import { Truck, Plus, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/motorista/perfil")({
   head: () => ({ meta: [{ title: "Perfil — Freela Fretes" }] }),
@@ -26,6 +27,8 @@ function DriverProfile() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const add = useServerFn(addVehicle);
+  const listCities = useServerFn(listCitiesByUf);
+  const setBase = useServerFn(updateDriverBase);
 
   const { data: p } = useQuery({
     enabled: !!auth.user,
@@ -43,6 +46,32 @@ function DriverProfile() {
   const [bt, setBt] = useState("Baú");
   const [plate, setPlate] = useState("");
   const [cap, setCap] = useState(0);
+
+  const [baseUf, setBaseUf] = useState("");
+  const [baseCity, setBaseCity] = useState("");
+  const [radius, setRadius] = useState(300);
+  const [cityOpts, setCityOpts] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (p) { setBaseUf(p.uf ?? ""); setBaseCity(p.city ?? ""); setRadius(p.search_radius_km ?? 300); }
+  }, [p]);
+
+  useEffect(() => {
+    if (!baseUf) { setCityOpts([]); return; }
+    listCities({ data: { uf: baseUf } }).then((rows) => {
+      setCityOpts((rows as { city: string }[]).map((r) => r.city));
+    }).catch(() => setCityOpts([]));
+  }, [baseUf, listCities]);
+
+  async function saveBase() {
+    if (!baseUf || !baseCity) return toast.error("Selecione UF e cidade");
+    try {
+      await setBase({ data: { city: baseCity, uf: baseUf, search_radius_km: radius } });
+      toast.success("Cidade-base atualizada ✓");
+      qc.invalidateQueries();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
 
   async function logout() {
     await supabase.auth.signOut();
@@ -82,6 +111,22 @@ function DriverProfile() {
             </div>
           </div>
         )}
+
+        <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+          <p className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Cidade-base e raio</p>
+          <p className="text-xs text-muted-foreground mt-1">Usamos para ordenar os fretes mais próximos e te avisar quando algo publicar perto de você.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <SelectField label="UF" value={baseUf} onChange={(v) => { setBaseUf(v); setBaseCity(""); }} options={UF_LIST} placeholder="UF" />
+            <SelectField label="Cidade" value={baseCity} onChange={setBaseCity} options={cityOpts} placeholder="Selecione" />
+          </div>
+          <div className="mt-2">
+            <label className="text-xs text-muted-foreground">Raio de atuação: <strong className="text-foreground">{radius} km</strong></label>
+            <input type="range" min={50} max={2000} step={50} value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} className="w-full accent-primary" />
+          </div>
+          <div className="mt-3"><ButtonPrimary onClick={saveBase}>Salvar cidade-base</ButtonPrimary></div>
+        </div>
+
+
 
         <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
           <div className="flex items-center justify-between">

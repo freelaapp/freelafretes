@@ -67,6 +67,13 @@ export const publishFreight = createServerFn({ method: "POST" })
       }
     }
 
+    // Resolver lat/lng de origem/destino via base de municípios
+    const normCity = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+    const { data: cities } = await context.supabase.from("br_cities").select("city_normalized,uf,lat,lng").in("uf", [data.origin_uf.toUpperCase(), data.destination_uf.toUpperCase()]);
+    const findCity = (city: string, uf: string) => (cities ?? []).find((c: any) => c.uf === uf.toUpperCase() && c.city_normalized === normCity(city));
+    const oCoord = findCity(data.origin_city, data.origin_uf);
+    const dCoord = findCity(data.destination_city, data.destination_uf);
+
     const { data: freight, error } = await context.supabase.from("freights").insert({
       contractor_id: contractor.id,
       title: data.title,
@@ -83,15 +90,18 @@ export const publishFreight = createServerFn({ method: "POST" })
       origin_uf: data.origin_uf,
       origin_address: data.origin_address ?? null,
       origin_cep: data.origin_cep ?? null,
+      origin_lat: oCoord?.lat ?? null,
+      origin_lng: oCoord?.lng ?? null,
       destination_city: data.destination_city,
       destination_uf: data.destination_uf,
       destination_address: data.destination_address ?? null,
       destination_cep: data.destination_cep ?? null,
+      destination_lat: dCoord?.lat ?? null,
+      destination_lng: dCoord?.lng ?? null,
       distance_km: data.distance_km,
       pickup_at: data.pickup_at,
       delivery_expected_at: data.delivery_expected_at ?? null,
       toll_included: data.toll_included,
-      // `payment` é sempre derivado de base_amount_in_cents (fonte única de verdade)
       payment: base_amount_in_cents / 100,
       base_amount_in_cents,
       suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
@@ -100,6 +110,45 @@ export const publishFreight = createServerFn({ method: "POST" })
       status: "OPEN",
     }).select("id").single();
     if (error) throw error;
+
+    // Notificar motoristas com base dentro do raio e veículo compatível
+    if (oCoord) {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        let q = supabaseAdmin.from("providers")
+          .select("user_id,base_lat,base_lng,search_radius_km,vehicles(vehicle_type,body_type)")
+          .eq("validation_status", "APPROVED")
+          .not("base_lat", "is", null);
+        const { data: provs } = await q;
+        const targets: { user_id: string; km: number }[] = [];
+        for (const p of (provs ?? []) as any[]) {
+          if (!p.user_id || !p.base_lat) continue;
+          const R = 6371;
+          const toRad = (v: number) => (v * Math.PI) / 180;
+          const dLat = toRad(Number(oCoord.lat) - Number(p.base_lat));
+          const dLng = toRad(Number(oCoord.lng) - Number(p.base_lng));
+          const a = Math.sin(dLat/2)**2 + Math.cos(toRad(Number(p.base_lat)))*Math.cos(toRad(Number(oCoord.lat)))*Math.sin(dLng/2)**2;
+          const km = 2*R*Math.asin(Math.sqrt(a));
+          if (km > (p.search_radius_km ?? 300)) continue;
+          const vts = new Set((p.vehicles ?? []).map((v: any) => v.vehicle_type));
+          const bts = new Set((p.vehicles ?? []).map((v: any) => v.body_type));
+          const vtOk = !data.vehicle_types?.length || data.vehicle_types.some((t) => vts.has(t));
+          const btOk = !data.body_types?.length || data.body_types.some((t) => bts.has(t));
+          if (!vtOk || !btOk) continue;
+          targets.push({ user_id: p.user_id, km });
+        }
+        if (targets.length) {
+          const { notifyMany } = await import("./notify.server");
+          await notifyMany(targets.map((t) => ({
+            user_id: t.user_id,
+            title: "Novo frete perto de você 🚛",
+            body: `${data.origin_city}/${data.origin_uf} → ${data.destination_city}/${data.destination_uf} · a ${Math.round(t.km)} km da sua base`,
+            link: `/motorista/frete/${freight.id}`,
+          })));
+        }
+      } catch (e) { console.error("[notify radar]", e); }
+    }
+
     return { id: freight.id };
   });
 
@@ -279,8 +328,9 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
       .select("id,user_id").eq("id", job.contractor_id).eq("user_id", context.userId).maybeSingle();
     if (!c) throw new Error("Sem permissão");
 
+    const nowIso = new Date().toISOString();
     const { error } = await context.supabase.from("payments")
-      .update({ status: "COMPLETED", paid_at: new Date().toISOString() })
+      .update({ status: "HELD", paid_at: nowIso, held_at: nowIso })
       .eq("job_id", data.job_id);
     if (error) throw error;
 
@@ -314,7 +364,7 @@ export const generatePickupCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,status,contractor_id").eq("id", data.job_id).maybeSingle();
+      .select("id,status,contractor_id,driver_ack_at").eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     if (job.status !== "SCHEDULED") throw new Error("Viagem não está agendada");
     const { data: c } = await context.supabase.from("contractors")
@@ -322,7 +372,8 @@ export const generatePickupCode = createServerFn({ method: "POST" })
     if (!c) throw new Error("Sem permissão");
     const { data: pay } = await context.supabase.from("payments")
       .select("status").eq("job_id", job.id).maybeSingle();
-    if (pay?.status !== "COMPLETED") throw new Error("Pagamento não confirmado");
+    if (pay?.status !== "HELD") throw new Error("Pagamento não confirmado em custódia");
+    if (!job.driver_ack_at) throw new Error("Motorista ainda não confirmou os dados do carregamento");
 
     const code = makeCode();
     // remove anterior
@@ -400,6 +451,11 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now }).eq("id", job.id);
     await context.supabase.from("trip_events").insert({ job_id: job.id, type: "UNLOADING_FINISHED", created_by: context.userId });
 
+    // Libera pagamento do escrow automaticamente (checkout validado)
+    const { data: releasedPay } = await context.supabase.from("payments")
+      .update({ status: "RELEASED", released_at: now })
+      .eq("job_id", job.id).eq("status", "HELD").select("amount_in_cents,service_fee_in_cents").maybeSingle();
+
     // Encerra MDF-e no check-out
     try {
       const { documentProvider } = await import("./document-emission.server");
@@ -411,10 +467,44 @@ export const confirmDelivery = createServerFn({ method: "POST" })
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
+    const netCents = releasedPay ? (releasedPay.amount_in_cents - (releasedPay.service_fee_in_cents ?? 0)) : 0;
+    const brl = (c: number) => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     await notifyMany([
-      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue.`, link: `/embarcador/viagem/${job.id}` }] : []),
-      { user_id: prov.user_id, title: "Viagem concluída ✓", body: "O pagamento será liberado em breve.", link: `/motorista/viagem/${job.id}` },
+      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue. Pagamento liberado ao motorista.`, link: `/embarcador/viagem/${job.id}` }] : []),
+      { user_id: prov.user_id, title: "Pagamento liberado ✓", body: releasedPay ? `${brl(netCents)} liberado via PIX.` : "Sua viagem foi concluída.", link: `/motorista/viagem/${job.id}` },
     ]);
+    return { ok: true };
+  });
+
+// ============================================================
+// CIÊNCIA DO MOTORISTA (BLOCO 6)
+// ============================================================
+export const driverAckJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    job_id: z.string().uuid(),
+    notes: z.string().max(1000).optional().nullable(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: job } = await context.supabase.from("jobs")
+      .select("id,status,provider_id,contractor_id,driver_ack_at,freights(title)").eq("id", data.job_id).maybeSingle();
+    if (!job) throw new Error("Viagem não encontrada");
+    if (job.status !== "SCHEDULED") throw new Error("Viagem não está mais agendada");
+    if (job.driver_ack_at) throw new Error("Ciência já registrada");
+    const { data: prov } = await context.supabase.from("providers")
+      .select("id").eq("id", job.provider_id).eq("user_id", context.userId).maybeSingle();
+    if (!prov) throw new Error("Sem permissão");
+    // pagamento precisa estar em custódia
+    const { data: pay } = await context.supabase.from("payments").select("status").eq("job_id", job.id).maybeSingle();
+    if (pay?.status !== "HELD") throw new Error("Aguarde a confirmação do pagamento pelo embarcador");
+    const now = new Date().toISOString();
+    const { error } = await context.supabase.from("jobs").update({ driver_ack_at: now, ack_notes: data.notes ?? null }).eq("id", job.id);
+    if (error) throw error;
+    const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
+    if (c?.user_id) {
+      const { notify } = await import("./notify.server");
+      await notify(c.user_id, "Motorista confirmou ciência ✓", `O motorista confirmou os dados de "${(job as any).freights?.title ?? "sua viagem"}".`, `/embarcador/viagem/${job.id}`);
+    }
     return { ok: true };
   });
 

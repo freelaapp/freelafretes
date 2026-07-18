@@ -65,8 +65,9 @@ function TripDetail() {
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
   const f = job.freights as { id: string; title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
   const p = job.providers as { full_name: string };
-  const pay = (Array.isArray(job.payments) ? job.payments[0] : job.payments) as { status: string } | null;
-  const paid = pay?.status === "COMPLETED";
+  const pay = (Array.isArray(job.payments) ? job.payments[0] : job.payments) as { status: string; paid_at?: string; held_at?: string; released_at?: string } | null;
+  const paid = pay?.status === "HELD" || pay?.status === "COMPLETED" || pay?.status === "RELEASED";
+  const ackAt = (job as any).driver_ack_at as string | null;
 
   return (
     <div className="pb-10">
@@ -105,9 +106,14 @@ function TripDetail() {
 
         {job.status === "SCHEDULED" && paid && (
           <>
-            <div className="rounded-2xl bg-success/10 border border-success p-4 flex gap-3">
-              <ShieldCheck className="h-6 w-6 text-success shrink-0" />
-              <p className="text-sm">Pagamento em custódia. Será liberado após a entrega.</p>
+            <PaymentTimeline pay={pay} />
+            <div className="rounded-2xl bg-card border border-border p-4">
+              <p className="text-sm font-semibold">Ciência do motorista</p>
+              {ackAt ? (
+                <p className="mt-1 text-xs text-success">✓ Motorista confirmou os dados em {formatDateBR(ackAt)}</p>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">Aguardando o motorista confirmar os dados do carregamento antes da coleta.</p>
+              )}
             </div>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Código de coleta</p>
@@ -115,8 +121,9 @@ function TripDetail() {
               {pickupCode ? (
                 <p className="mt-3 text-3xl font-black tracking-widest text-primary text-center py-2">{pickupCode}</p>
               ) : (
-                <div className="mt-3"><ButtonPrimary onClick={onGenPickup}>Gerar código de COLETA</ButtonPrimary></div>
+                <div className="mt-3"><ButtonPrimary onClick={onGenPickup} disabled={!ackAt}>Gerar código de COLETA</ButtonPrimary></div>
               )}
+              {!ackAt && <p className="mt-2 text-[11px] text-muted-foreground">Disponível após a ciência do motorista.</p>}
             </div>
             <ButtonOutline onClick={onCancel}>Cancelar viagem</ButtonOutline>
           </>
@@ -136,9 +143,7 @@ function TripDetail() {
 
         {job.status === "COMPLETED" && (
           <>
-            <div className="rounded-2xl bg-success/10 border border-success p-4">
-              <p className="text-sm font-semibold">Pagamento liberado ao motorista ✓</p>
-            </div>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Avaliar motorista</p>
               <Stars value={rating} onChange={setRating} />
@@ -174,6 +179,31 @@ export function Stars({ value, onChange }: { value: number; onChange: (n: number
           <Star className={`h-7 w-7 ${i <= value ? "fill-accent text-accent" : "text-border"}`} />
         </button>
       ))}
+    </div>
+  );
+}
+
+export function PaymentTimeline({ pay }: { pay: { status: string; paid_at?: string; held_at?: string; released_at?: string } | null }) {
+  if (!pay) return null;
+  const steps = [
+    { key: "paid", label: "PIX pago", at: pay.paid_at, done: !!pay.paid_at },
+    { key: "held", label: "Retido em garantia", at: pay.held_at, done: !!pay.held_at || pay.status === "HELD" || pay.status === "COMPLETED" || pay.status === "RELEASED" },
+    { key: "released", label: "Liberado ao motorista", at: pay.released_at, done: pay.status === "RELEASED" },
+  ];
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+      <p className="text-sm font-semibold mb-3">Linha do tempo do pagamento</p>
+      <ol className="space-y-2">
+        {steps.map((s) => (
+          <li key={s.key} className="flex items-start gap-3">
+            <span className={`mt-1 h-3 w-3 rounded-full ${s.done ? "bg-success" : "bg-border"}`} />
+            <div className="flex-1">
+              <p className={`text-sm ${s.done ? "font-semibold" : "text-muted-foreground"}`}>{s.label}</p>
+              {s.at && <p className="text-[11px] text-muted-foreground">{new Date(s.at).toLocaleString("pt-BR")}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

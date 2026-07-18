@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmPickup, confirmDelivery, submitFeedback, driverWithdrawFromJob } from "@/lib/api.functions";
+import { confirmPickup, confirmDelivery, submitFeedback, driverWithdrawFromJob, driverAckJob } from "@/lib/api.functions";
 import { recordTripEvent } from "@/lib/trip-events.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
@@ -11,7 +11,7 @@ import { Badge, ButtonPrimary, ButtonOutline, Field, TextArea } from "@/componen
 import { TripChecklist, TripEventLog, useTripEvents } from "@/components/TripTimeline";
 import { TripDocumentsCard } from "@/components/TripDocumentsCard";
 import { formatBRL, formatDateBR, normalizeCode } from "@/lib/format";
-import { Stars } from "./embarcador.viagem.$id";
+import { Stars, PaymentTimeline } from "./embarcador.viagem.$id";
 import { toast } from "sonner";
 import { ArrowLeft, Truck, MapPin, Pause, Play, AlertTriangle, Navigation2, X } from "lucide-react";
 
@@ -35,12 +35,13 @@ function DriverTripDetail() {
   const doDelivery = useServerFn(confirmDelivery);
   const fb = useServerFn(submitFeedback);
   const withdraw = useServerFn(driverWithdrawFromJob);
+  const ackFn = useServerFn(driverAckJob);
   const recordEv = useServerFn(recordTripEvent);
 
   const { data: job } = useQuery({
     queryKey: ["driver-job", id],
     queryFn: async () => (await supabase.from("jobs")
-      .select("*, freights(*), contractors(company_name)")
+      .select("*, freights(*), contractors(company_name), payments(*)")
       .eq("id", id).maybeSingle()).data,
   });
   const evQ = useTripEvents(id);
@@ -52,6 +53,7 @@ function DriverTripDetail() {
   const [incidentOpen, setIncidentOpen] = useState(false);
   const [incKind, setIncKind] = useState<typeof INCIDENTS[number]["value"]>("BREAKDOWN");
   const [incNotes, setIncNotes] = useState("");
+  const [ackNotes, setAckNotes] = useState("");
 
   async function pushEvent(type: string, notes?: string, extra?: Record<string, unknown>) {
     try {
@@ -93,9 +95,21 @@ function DriverTripDetail() {
   }
 
   if (!job) return <div className="p-6 text-sm">Carregando...</div>;
-  const f = job.freights as { title: string; origin_city: string; origin_uf: string; destination_city: string; destination_uf: string; pickup_at: string };
+  const f = job.freights as { title: string; origin_city: string; origin_uf: string; origin_address: string | null; destination_city: string; destination_uf: string; pickup_at: string; cargo_type: string; cargo_weight_kg: number };
   const c = job.contractors as { company_name: string };
+  const pay = (Array.isArray(job.payments) ? job.payments[0] : (job as any).payments) as { status: string; paid_at?: string; held_at?: string; released_at?: string; amount_in_cents: number; service_fee_in_cents?: number } | null;
+  const paidHeld = pay?.status === "HELD" || pay?.status === "COMPLETED";
+  const ackAt = (job as any).driver_ack_at as string | null;
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(`${f.destination_city}, ${f.destination_uf}`)}&navigate=yes`;
+
+  async function submitAck() {
+    try {
+      await ackFn({ data: { job_id: id, notes: ackNotes.trim() || null } });
+      toast.success("Ciência confirmada ✓");
+      setAckNotes("");
+      qc.invalidateQueries();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
 
   return (
     <div className="pb-10">
@@ -122,14 +136,40 @@ function DriverTripDetail() {
 
         {job.status === "SCHEDULED" && (
           <>
-            <ButtonPrimary onClick={onArrivedPickup}>📍 Cheguei para carregar</ButtonPrimary>
+            <PaymentTimeline pay={pay} />
+            {!paidHeld && (
+              <div className="rounded-2xl bg-warning/10 border border-warning p-4 text-sm">
+                Aguardando o embarcador confirmar o pagamento em custódia.
+              </div>
+            )}
+            {paidHeld && !ackAt && (
+              <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+                <p className="text-sm font-bold">Confirme os dados do carregamento</p>
+                <div className="mt-3 space-y-1.5 text-sm">
+                  <p><span className="text-muted-foreground">Local:</span> {f.origin_city}/{f.origin_uf}</p>
+                  {f.origin_address && <p><span className="text-muted-foreground">Endereço:</span> {f.origin_address}</p>}
+                  <p><span className="text-muted-foreground">Data/horário:</span> {formatDateBR(f.pickup_at)}</p>
+                  <p><span className="text-muted-foreground">Tipo de carga:</span> {f.cargo_type} · {f.cargo_weight_kg} kg</p>
+                  <p><span className="text-muted-foreground">Contato:</span> {c.company_name}</p>
+                </div>
+                <div className="mt-3"><TextArea label="Observações (opcional)" value={ackNotes} onChange={setAckNotes} /></div>
+                <div className="mt-3"><ButtonPrimary onClick={submitAck}>Está tudo certo ✓</ButtonPrimary></div>
+              </div>
+            )}
+            {ackAt && (
+              <div className="rounded-2xl bg-success/10 border border-success p-3 text-xs">
+                ✓ Ciência confirmada em {formatDateBR(ackAt)}
+              </div>
+            )}
+            <ButtonPrimary onClick={onArrivedPickup} disabled={!ackAt}>📍 Cheguei para carregar</ButtonPrimary>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Confirmar coleta</p>
               <p className="text-xs text-muted-foreground">Digite o código de 6 caracteres recebido do embarcador.</p>
               <div className="mt-3">
                 <Field label="Código de coleta" value={pcode} onChange={(v) => setPcode(normalizeCode(v))} placeholder="ABC123" />
               </div>
-              <div className="mt-3"><ButtonPrimary onClick={onPickup} disabled={pcode.length !== 6}>Confirmar coleta</ButtonPrimary></div>
+              <div className="mt-3"><ButtonPrimary onClick={onPickup} disabled={pcode.length !== 6 || !ackAt}>Confirmar coleta</ButtonPrimary></div>
+              {!ackAt && <p className="mt-2 text-[11px] text-muted-foreground">Confirme a ciência acima antes de coletar.</p>}
             </div>
             <ButtonOutline onClick={onWithdraw}>Desistir</ButtonOutline>
           </>
@@ -137,6 +177,7 @@ function DriverTripDetail() {
 
         {job.status === "IN_PROGRESS" && (
           <>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-accent/10 border border-accent p-4 flex gap-3">
               <Truck className="h-6 w-6 text-accent shrink-0" />
               <p className="text-sm font-semibold">Carga em trânsito 🚛</p>
@@ -162,9 +203,10 @@ function DriverTripDetail() {
 
         {job.status === "COMPLETED" && (
           <>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-success/10 border border-success p-4">
               <p className="text-sm font-semibold">Frete concluído!</p>
-              <p className="text-xs text-muted-foreground">O pagamento de {formatBRL(job.agreed_amount_in_cents)} será transferido via PIX ✓</p>
+              <p className="text-xs text-muted-foreground">Pagamento de {formatBRL(job.agreed_amount_in_cents - (pay?.service_fee_in_cents ?? 0))} liberado via PIX ✓</p>
             </div>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Avaliar empresa</p>

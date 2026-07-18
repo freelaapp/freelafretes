@@ -38,7 +38,7 @@ export const adminDashboard = createServerFn({ method: "GET" })
       s.from("jobs").select("id", { count: "exact", head: true }).eq("status", "IN_PROGRESS"),
       s.from("contractors").select("id", { count: "exact", head: true }).eq("validation_status", "PENDING_VALIDATION"),
       s.from("jobs").select("agreed_amount_in_cents").eq("status", "COMPLETED").gte("ended_at", startOfMonth()),
-      s.from("payments").select("amount_in_cents,job_id,status,jobs!inner(status)").eq("status", "COMPLETED"),
+      s.from("payments").select("amount_in_cents,job_id,status,jobs!inner(status)").in("status", ["HELD","COMPLETED"]),
       s.from("freights").select("created_at").gte("created_at", daysAgo(30)),
       s.from("jobs").select("status,updated_at,ended_at").gte("updated_at", daysAgo(84)).in("status", ["COMPLETED","CANCELLED"]),
       s.from("jobs").select("id,started_at,freight_id,contractor_id,provider_id").eq("status", "IN_PROGRESS").lt("started_at", daysAgo(7)),
@@ -341,7 +341,7 @@ export const reopenFreight = createServerFn({ method: "POST" })
     const { data: job } = await s.from("jobs").select("*").eq("freight_id", data.id).maybeSingle();
     if (!job || job.status !== "SCHEDULED") throw new Error("Viagem já iniciada");
     const { data: pay } = await s.from("payments").select("*").eq("job_id", job.id).maybeSingle();
-    if (pay && pay.status === "COMPLETED") throw new Error("Já existe pagamento em custódia");
+    if (pay && (pay.status === "HELD" || pay.status === "COMPLETED")) throw new Error("Já existe pagamento em custódia");
 
     if (pay) await s.from("payments").delete().eq("id", pay.id);
     await s.from("jobs").delete().eq("id", job.id);
@@ -397,7 +397,7 @@ export const forceCompleteJob = createServerFn({ method: "POST" })
     if (job?.disputed) throw new Error("Viagem em disputa. Encerre a disputa antes de forçar a conclusão.");
     const now = new Date().toISOString();
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now, force_completed_by: admin.id, force_completed_reason: data.reason }).eq("id", data.id);
-    await context.supabase.from("payments").update({ status: "RELEASED", released_at: now }).eq("job_id", data.id).eq("status", "COMPLETED");
+    await context.supabase.from("payments").update({ status: "RELEASED", released_at: now }).eq("job_id", data.id).in("status", ["HELD","COMPLETED"]);
     await audit(context, admin.id, "FORCE_COMPLETE_JOB", "job", data.id, { reason: data.reason });
     if (job) {
       const [{ data: p }, { data: c }] = await Promise.all([
@@ -451,7 +451,7 @@ export const toggleJobDispute = createServerFn({ method: "POST" })
 export const listPaymentsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    status: z.enum(["ALL","PENDING","COMPLETED","RELEASED","REFUNDED"]).default("ALL"),
+    status: z.enum(["ALL","PENDING","HELD","COMPLETED","RELEASED","REFUNDED"]).default("ALL"),
     page: z.number().int().default(1),
   }).parse(d))
   .handler(async ({ data, context }) => {
@@ -473,7 +473,7 @@ export const paymentsSummary = createServerFn({ method: "GET" })
     const s = context.supabase;
     const monthStart = (() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString(); })();
     const [escrow, released, refunded] = await Promise.all([
-      s.from("payments").select("amount_in_cents,jobs!inner(status)").eq("status", "COMPLETED"),
+      s.from("payments").select("amount_in_cents,jobs!inner(status)").in("status", ["HELD","COMPLETED"]),
       s.from("payments").select("amount_in_cents").eq("status", "RELEASED").gte("released_at", monthStart),
       s.from("payments").select("amount_in_cents").eq("status", "REFUNDED").gte("refunded_at", monthStart),
     ]);
