@@ -41,7 +41,8 @@ function PaymentsAdmin() {
         <select value={status} onChange={(e) => { setStatus(e.target.value as any); setPage(1); }} className="rounded-md border border-border px-3 py-2 text-sm bg-card">
           <option value="ALL">Todos</option>
           <option value="PENDING">Pendente</option>
-          <option value="COMPLETED">Em custódia</option>
+          <option value="HELD">Em custódia (HELD)</option>
+          <option value="COMPLETED">Em custódia (legado)</option>
           <option value="RELEASED">Liberado</option>
           <option value="REFUNDED">Estornado</option>
         </select>
