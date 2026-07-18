@@ -54,6 +54,7 @@ function FreightsAdmin() {
             </Link>
           ) },
           { key: "e", header: "Empresa", render: (f: any) => <span className="text-xs">{f.contractors?.company_name}</span> },
+          { key: "m", header: "Modo", render: (f: any) => modeBadge(f.freight_mode) },
           { key: "c", header: "Carga", render: (f: any) => <span className="text-xs">{f.cargo_type} · {f.cargo_weight_kg}kg</span> },
           { key: "va", header: "Anunciado", render: (f: any) => <span className="text-sm font-semibold">{formatBRL(f.base_amount_in_cents)}</span> },
           { key: "vg", header: "Acordado", render: (f: any) => f.agreed_amount_in_cents ? <span className="text-sm text-primary font-semibold">{formatBRL(f.agreed_amount_in_cents)}</span> : <span className="text-xs text-muted-foreground">—</span> },
@@ -71,4 +72,10 @@ function statusBadge(s: string) {
   if (s === "OPEN") return <StatusBadge tone="primary">Aberto</StatusBadge>;
   if (s === "CLOSED") return <StatusBadge tone="success">Fechado</StatusBadge>;
   return <StatusBadge tone="muted">Cancelado</StatusBadge>;
+}
+
+function modeBadge(m: string | null | undefined) {
+  if (m === "FRACIONADO") return <StatusBadge tone="info">Fracionado</StatusBadge>;
+  if (m === "LOTACAO") return <StatusBadge tone="primary">Lotação</StatusBadge>;
+  return <span className="text-xs text-muted-foreground">—</span>;
 }

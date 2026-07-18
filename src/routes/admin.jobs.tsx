@@ -36,6 +36,7 @@ function JobsAdmin() {
             </Link>
           ) },
           { key: "e", header: "Empresa", render: (j: any) => <span className="text-xs">{j.contractors?.company_name}</span> },
+          { key: "mo", header: "Modo", render: (j: any) => modeBadge(j.freights?.freight_mode) },
           { key: "m", header: "Motorista", render: (j: any) => <span className="text-xs">{j.providers?.full_name}</span> },
           { key: "v", header: "Valor", render: (j: any) => <span className="text-sm font-semibold">{formatBRL(j.agreed_amount_in_cents)}</span> },
           { key: "p", header: "Pagamento", render: (j: any) => paymentBadge(j.payments?.[0]?.status) },
@@ -56,4 +57,10 @@ function paymentBadge(s?: string) {
   if (s === "RELEASED") return <StatusBadge tone="success">✓ Liberado</StatusBadge>;
   if (s === "REFUNDED") return <StatusBadge tone="danger">Estornado</StatusBadge>;
   return <StatusBadge tone="muted">{s}</StatusBadge>;
+}
+
+function modeBadge(m: string | null | undefined) {
+  if (m === "FRACIONADO") return <StatusBadge tone="info">Fracionado</StatusBadge>;
+  if (m === "LOTACAO") return <StatusBadge tone="primary">Lotação</StatusBadge>;
+  return <span className="text-xs text-muted-foreground">—</span>;
 }

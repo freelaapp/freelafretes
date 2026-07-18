@@ -20,13 +20,18 @@ function Dashboard() {
     <div className="space-y-6">
       <PageHeader title="Dashboard" subtitle="Visão geral da operação Freela Fretes" />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
         <KpiCard label="Fretes abertos" value={d?.kpis.openFreights ?? "—"} />
         <KpiCard label="Viagens em andamento" value={d?.kpis.inProgress ?? "—"} />
         <KpiCard label="Empresas p/ validar" value={d?.kpis.pendingValidation ?? "—"} tone={(d?.kpis.pendingValidation ?? 0) > 0 ? "warning" : "default"} />
         <KpiCard label="GMV do mês" value={formatBRL(d?.kpis.gmvMonthCents ?? 0)} />
         <KpiCard label="Receita do mês (10%)" value={formatBRL(d?.kpis.revenueMonthCents ?? 0)} />
         <KpiCard label="Em custódia" value={formatBRL(d?.kpis.escrowCents ?? 0)} />
+        <KpiCard
+          label="Documentos emitidos (mês)"
+          value={d?.kpis.docsIssuedMonth ?? "—"}
+          hint={d?.kpis.docsByType ? Object.entries(d.kpis.docsByType).map(([k, v]) => `${k}: ${v}`).join(" · ") : undefined}
+        />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
