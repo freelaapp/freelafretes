@@ -143,9 +143,7 @@ function TripDetail() {
 
         {job.status === "COMPLETED" && (
           <>
-            <div className="rounded-2xl bg-success/10 border border-success p-4">
-              <p className="text-sm font-semibold">Pagamento liberado ao motorista ✓</p>
-            </div>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Avaliar motorista</p>
               <Stars value={rating} onChange={setRating} />
