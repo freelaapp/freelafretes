@@ -126,6 +126,21 @@ function JobDetail() {
         }}>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas da disputa" rows={4} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
       </ConfirmModal>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas da disputa" rows={4} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
+      </ConfirmModal>
+
+      <ConfirmModal open={reissueOpen} onClose={() => setReissueOpen(false)}
+        title="Reemitir documentos fiscais"
+        description="Cancela os documentos atuais e emite um novo conjunto (CT-e, MDF-e, averbação e CIOT quando aplicável)."
+        tone="primary" confirmLabel="Reemitir"
+        onConfirm={async () => {
+          if (reissueReason.trim().length < 3) { toast.error("Motivo obrigatório"); throw new Error("motivo"); }
+          await reissue({ data: { job_id: id, reason: reissueReason.trim() } });
+          toast.success("Documentos reemitidos");
+          qc.invalidateQueries({ queryKey: ["trip-documents", id] });
+        }}>
+        <textarea value={reissueReason} onChange={(e) => setReissueReason(e.target.value)} placeholder="Motivo da reemissão" rows={3} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
+      </ConfirmModal>
     </div>
   );
 }
