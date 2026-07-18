@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { SERVICE_FEE_BPS, makeCode } from "./server-helpers.server";
+import { computeAnttFloor } from "./pricing.functions";
 
 
 // ============================================================
@@ -51,6 +52,21 @@ export const publishFreight = createServerFn({ method: "POST" })
     if (cErr || !contractor) throw new Error("Cadastro de empresa não encontrado");
 
     const base_amount_in_cents = Math.round(data.payment_reais * 100);
+
+    // Piso mínimo ANTT — obrigatório para LOTAÇÃO (Lei 13.703/2018)
+    if (data.freight_mode === "LOTACAO" && data.vehicle_types.length > 0) {
+      const antt = await computeAnttFloor({
+        vehicle_type: data.vehicle_types[0],
+        cargo_type: data.cargo_type,
+        distance_km: data.distance_km,
+        freight_mode: "LOTACAO",
+      });
+      if (antt.is_applicable && antt.floor_cents > 0 && base_amount_in_cents < antt.floor_cents) {
+        const floorReais = (antt.floor_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        throw new Error(`O valor está abaixo do piso mínimo ANTT de ${floorReais} — fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
+      }
+    }
+
     const { data: freight, error } = await context.supabase.from("freights").insert({
       contractor_id: contractor.id,
       title: data.title,

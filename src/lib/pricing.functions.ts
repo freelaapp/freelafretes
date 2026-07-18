@@ -12,6 +12,8 @@ import {
   type VehicleCost,
   type PricingInput,
 } from "./pricing";
+import { anttFloor, type AnttRate } from "./antt-floor";
+import { classifyFreight, type FreightMode } from "./freight-classifier";
 
 // ============================================================
 // Carrega toda a config e o contexto de mercado
@@ -21,10 +23,11 @@ import {
 async function loadConfig(originUf?: string, vehicleType?: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const s = supabaseAdmin;
-  const [settingsQ, vcostsQ, cfactorsQ] = await Promise.all([
+  const [settingsQ, vcostsQ, cfactorsQ, anttQ] = await Promise.all([
     s.from("pricing_settings").select("settings").eq("id", 1).maybeSingle(),
     s.from("pricing_vehicle_costs").select("*"),
     s.from("pricing_cargo_factors").select("*"),
+    s.from("antt_floor_rates").select("*"),
   ]);
 
 
@@ -41,6 +44,19 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
   const cargoFactors: Record<string, number> = { ...DEFAULT_CARGO_FACTORS };
   for (const r of cfactorsQ.data ?? []) cargoFactors[r.cargo_type] = Number(r.factor);
 
+  const anttRates: AnttRate[] = (anttQ.data ?? []).map((r: any) => ({
+    vehicle_axles: r.vehicle_axles,
+    cargo_category: r.cargo_category,
+    rate_per_km_cents: r.rate_per_km_cents,
+    load_unload_cents: r.load_unload_cents ?? 0,
+    valid_from: r.valid_from,
+    valid_to: r.valid_to,
+  }));
+
+  // eixos por veículo (do catálogo)
+  const axlesByVehicle: Record<string, number> = {};
+  for (const r of vcostsQ.data ?? []) if (r.axles) axlesByVehicle[r.vehicle_type] = r.axles;
+
   // Contexto de mercado
   let fretesAbertosNaRota = 0;
   let motoristasAtivos = 0;
@@ -51,7 +67,6 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
   }
   if (vehicleType) {
     const vKey = vehicleLabelToKey(vehicleType);
-    // Match by label variations
     const labels = Object.entries({
       vlc: "VLC", toco: "Toco", truck: "Truck", bitruck: "Bitruck",
       carreta: "Carreta", bitrem: "Bitrem", rodotrem: "Rodotrem",
@@ -63,7 +78,24 @@ async function loadConfig(originUf?: string, vehicleType?: string) {
       void labels;
     }
   }
-  return { settings, vehicleCosts, cargoFactors, fretesAbertosNaRota, motoristasAtivos };
+  return { settings, vehicleCosts, cargoFactors, anttRates, axlesByVehicle, fretesAbertosNaRota, motoristasAtivos };
+}
+
+// Helper reutilizável para computar piso ANTT server-side
+export async function computeAnttFloor(args: {
+  vehicle_type: string; cargo_type: string; distance_km: number;
+  freight_mode: FreightMode; peso_kg?: number; volume_m3?: number | null;
+}) {
+  const cfg = await loadConfig(undefined, args.vehicle_type);
+  const axles = cfg.axlesByVehicle[vehicleLabelToKey(args.vehicle_type)] ?? null;
+  return anttFloor({
+    vehicle_type: args.vehicle_type,
+    cargo_type: args.cargo_type,
+    distance_km: args.distance_km,
+    freight_mode: args.freight_mode,
+    axles,
+    rates: cfg.anttRates,
+  });
 }
 
 // ============================================================
@@ -88,6 +120,7 @@ const pricingInputSchema = z.object({
   precisaCargaDescarga: z.boolean().optional(),
   horasEsperaExtra: z.number().nonnegative().optional(),
   precisaEquipamento: z.boolean().optional(),
+  freightMode: z.enum(["LOTACAO", "FRACIONADO"]).optional(),
 });
 
 // ============================================================
@@ -102,11 +135,28 @@ export const simulatePricing = createServerFn({ method: "POST" })
       fretesAbertosNaRota: cfg.fretesAbertosNaRota,
       motoristasAtivos: cfg.motoristasAtivos,
     };
-    return calcularFrete(input, {
+    const result = calcularFrete(input, {
       settings: cfg.settings,
       vehicleCosts: cfg.vehicleCosts,
       cargoFactors: cfg.cargoFactors,
     });
+    // Classificação automática caso não venha do cliente
+    const classification = classifyFreight({
+      pesoKg: data.pesoKg,
+      volumeM3: data.volumeM3 ?? null,
+      vehicleType: data.vehicleType,
+    });
+    const mode: FreightMode = data.freightMode ?? classification.mode;
+    const axles = cfg.axlesByVehicle[vehicleLabelToKey(data.vehicleType)] ?? null;
+    const antt = anttFloor({
+      vehicle_type: data.vehicleType,
+      cargo_type: data.cargoType,
+      distance_km: data.distanciaKm,
+      freight_mode: mode,
+      axles,
+      rates: cfg.anttRates,
+    });
+    return { ...result, antt, freight_mode: mode };
   });
 
 // ============================================================
@@ -124,16 +174,18 @@ export const loadPricingConfig = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await requireAdmin(context);
     const s = context.supabase;
-    const [settings, vcosts, cfactors, history] = await Promise.all([
+    const [settings, vcosts, cfactors, antt, history] = await Promise.all([
       s.from("pricing_settings").select("*").eq("id", 1).maybeSingle(),
       s.from("pricing_vehicle_costs").select("*").order("ckm_cents_por_km"),
       s.from("pricing_cargo_factors").select("*").order("cargo_type"),
+      s.from("antt_floor_rates").select("*").order("vehicle_axles").order("cargo_category").order("valid_from", { ascending: false }),
       s.from("pricing_settings_history").select("*").order("changed_at", { ascending: false }).limit(50),
     ]);
     return {
       settings: (settings.data?.settings as any) ?? DEFAULT_SETTINGS,
       vehicleCosts: vcosts.data ?? [],
       cargoFactors: cfactors.data ?? [],
+      anttRates: antt.data ?? [],
       history: history.data ?? [],
     };
   });
@@ -161,6 +213,7 @@ export const updatePricingVehicleCost = createServerFn({ method: "POST" })
     ckm_cents_por_km: z.number().int().positive(),
     frete_minimo_cents: z.number().int().nonnegative(),
     capacidade_kg: z.number().int().positive(),
+    axles: z.number().int().positive().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
@@ -188,6 +241,60 @@ export const updatePricingCargoFactor = createServerFn({ method: "POST" })
     await s.from("pricing_settings_history").insert({
       changed_by: context.userId, entity: "cargo_factors", entity_key: data.cargo_type,
       before: prev ?? null, after: data,
+    });
+    return { ok: true };
+  });
+
+// ============================================================
+// ANTT floor CRUD (admin)
+// ============================================================
+export const upsertAnttRate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    vehicle_axles: z.number().int().positive(),
+    cargo_category: z.string().min(1),
+    rate_per_km_cents: z.number().int().positive(),
+    load_unload_cents: z.number().int().nonnegative().default(0),
+    valid_from: z.string().optional(),
+    valid_to: z.string().nullable().optional(),
+    notes: z.string().nullable().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const s = context.supabase;
+    let prev: any = null;
+    if (data.id) {
+      const r = await s.from("antt_floor_rates").select("*").eq("id", data.id).maybeSingle();
+      prev = r.data;
+    }
+    const row = { ...data };
+    if (!row.id) delete (row as any).id;
+    const res = data.id
+      ? await s.from("antt_floor_rates").update(row).eq("id", data.id).select("*").maybeSingle()
+      : await s.from("antt_floor_rates").insert(row).select("*").maybeSingle();
+    if (res.error) throw res.error;
+    await s.from("pricing_settings_history").insert({
+      changed_by: context.userId, entity: "antt_floor",
+      entity_key: `${data.vehicle_axles}/${data.cargo_category}`,
+      before: prev ?? null, after: res.data,
+    });
+    return { ok: true, row: res.data };
+  });
+
+export const deleteAnttRate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const s = context.supabase;
+    const { data: prev } = await s.from("antt_floor_rates").select("*").eq("id", data.id).maybeSingle();
+    const { error } = await s.from("antt_floor_rates").delete().eq("id", data.id);
+    if (error) throw error;
+    await s.from("pricing_settings_history").insert({
+      changed_by: context.userId, entity: "antt_floor",
+      entity_key: prev ? `${prev.vehicle_axles}/${prev.cargo_category}` : data.id,
+      before: prev ?? null, after: null,
     });
     return { ok: true };
   });

@@ -137,6 +137,42 @@ export type Database = {
         }
         Relationships: []
       }
+      antt_floor_rates: {
+        Row: {
+          cargo_category: string
+          created_at: string
+          id: string
+          load_unload_cents: number
+          notes: string | null
+          rate_per_km_cents: number
+          valid_from: string
+          valid_to: string | null
+          vehicle_axles: number
+        }
+        Insert: {
+          cargo_category: string
+          created_at?: string
+          id?: string
+          load_unload_cents?: number
+          notes?: string | null
+          rate_per_km_cents: number
+          valid_from?: string
+          valid_to?: string | null
+          vehicle_axles: number
+        }
+        Update: {
+          cargo_category?: string
+          created_at?: string
+          id?: string
+          load_unload_cents?: number
+          notes?: string | null
+          rate_per_km_cents?: number
+          valid_from?: string
+          valid_to?: string | null
+          vehicle_axles?: number
+        }
+        Relationships: []
+      }
       candidacies: {
         Row: {
           created_at: string
@@ -732,6 +768,7 @@ export type Database = {
       }
       pricing_vehicle_costs: {
         Row: {
+          axles: number | null
           capacidade_kg: number
           capacidade_m3: number | null
           ckm_cents_por_km: number
@@ -740,6 +777,7 @@ export type Database = {
           vehicle_type: string
         }
         Insert: {
+          axles?: number | null
           capacidade_kg: number
           capacidade_m3?: number | null
           ckm_cents_por_km: number
@@ -748,6 +786,7 @@ export type Database = {
           vehicle_type: string
         }
         Update: {
+          axles?: number | null
           capacidade_kg?: number
           capacidade_m3?: number | null
           ckm_cents_por_km?: number

@@ -80,16 +80,27 @@ function PublishPage() {
 
   // Auto-sugestão no step 4
   const vehicleTypeForCalc = vehicle_types[0] ?? "";
+
+  // Classificador Lotação × Fracionada (reativo) — declarado antes do uso
+  const classification = useMemo(() => classifyFreight({
+    pesoKg: cargo_weight_kg,
+    volumeM3: cargo_volume_m3 || null,
+    vehicleType: vehicleTypeForCalc || null,
+  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
+  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
+
   const suggestKey = useMemo(
-    () => `${distance_km}|${vehicleTypeForCalc}|${cargo_type}|${cargo_weight_kg}|${origin_uf}|${toll_included}|${pickup_at}`,
-    [distance_km, vehicleTypeForCalc, cargo_type, cargo_weight_kg, origin_uf, toll_included, pickup_at],
+    () => `${distance_km}|${vehicleTypeForCalc}|${cargo_type}|${cargo_weight_kg}|${cargo_volume_m3}|${origin_uf}|${toll_included}|${pickup_at}|${freight_mode}`,
+    [distance_km, vehicleTypeForCalc, cargo_type, cargo_weight_kg, cargo_volume_m3, origin_uf, toll_included, pickup_at, freight_mode],
   );
   const suggestMut = useMutation({
     mutationFn: async () => simulateFn({ data: {
       origemUf: origin_uf, destinoUf: destination_uf,
       distanciaKm: distance_km, vehicleType: vehicleTypeForCalc || "Truck",
       pesoKg: cargo_weight_kg, cargoType: cargo_type,
+      volumeM3: cargo_volume_m3 || undefined,
       temPedagio: toll_included, dataColeta: pickup_at || undefined,
+      freightMode: freight_mode,
     } }),
     onSuccess: (r) => setSuggestion(r),
   });
@@ -100,9 +111,15 @@ function PublishPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, suggestKey]);
 
+  const antt = (suggestion as any)?.antt as { is_applicable: boolean; floor_cents: number; reason: string } | undefined;
+  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && payment * 100 < antt.floor_cents);
+
   async function submit() {
     if (payment <= 0) return toast.error("Informe o valor");
     if (!pickup_at) return toast.error("Data de coleta obrigatória");
+    if (belowFloor && antt) {
+      return toast.error(`Valor abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
+    }
     setLoading(true);
     try {
       await publish({ data: {
@@ -131,16 +148,9 @@ function PublishPage() {
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
-  // Classificador Lotação × Fracionada (reativo)
-  const classification = useMemo(() => classifyFreight({
-    pesoKg: cargo_weight_kg,
-    volumeM3: cargo_volume_m3 || null,
-    vehicleType: vehicleTypeForCalc || null,
-  }), [cargo_weight_kg, cargo_volume_m3, vehicleTypeForCalc]);
-  const freight_mode: FreightMode = mode_override && mode_manual ? mode_manual : classification.mode;
-
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
 
 
 
@@ -268,7 +278,28 @@ function PublishPage() {
             )}
 
             <Field label="Valor oferecido (R$)" type="number" value={String(payment || "")} onChange={(v) => setPayment(parseFloat(v) || 0)} />
-            {belowMin && (
+
+            {antt && antt.is_applicable && antt.floor_cents > 0 && (
+              <div className={`rounded-lg border px-3 py-2 text-xs ${belowFloor ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-primary/30 bg-primary/5 text-foreground"}`}>
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Piso mínimo ANTT: R$ {(antt.floor_cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </div>
+                <p className="mt-1 opacity-90">{antt.reason}</p>
+                {belowFloor && (
+                  <p className="mt-1 font-semibold">
+                    O valor está abaixo do piso — fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).
+                  </p>
+                )}
+              </div>
+            )}
+            {antt && !antt.is_applicable && (
+              <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3 py-2">
+                Frete fracionado — isento de piso mínimo ANTT.
+              </p>
+            )}
+
+            {belowMin && !belowFloor && (
               <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 Valor abaixo do mercado — seu frete pode demorar a receber propostas.
               </p>
@@ -287,7 +318,8 @@ function PublishPage() {
               <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
               <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <ButtonPrimary onClick={submit} disabled={loading}>{loading ? "Publicando..." : "Publicar frete"}</ButtonPrimary>
+            <ButtonPrimary onClick={submit} disabled={loading || belowFloor}>{loading ? "Publicando..." : belowFloor ? "Ajuste o valor para publicar" : "Publicar frete"}</ButtonPrimary>
+
           </>
         )}
       </div>

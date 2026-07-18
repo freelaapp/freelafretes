@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   loadPricingConfig, updatePricingSettings,
   updatePricingVehicleCost, updatePricingCargoFactor,
+  upsertAnttRate, deleteAnttRate,
 } from "@/lib/pricing.functions";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ function PricingAdmin() {
       </div>
 
       <VehicleCostsPanel rows={q.data.vehicleCosts} onSaved={() => q.refetch()} />
+      <AnttPanel rows={q.data.anttRates ?? []} onSaved={() => q.refetch()} />
       <CargoFactorsPanel rows={q.data.cargoFactors} onSaved={() => q.refetch()} />
       <SettingsPanel settings={q.data.settings} onSaved={() => q.refetch()} />
       <HistoryPanel entries={q.data.history} />
@@ -167,6 +169,102 @@ function HistoryPanel({ entries }: { entries: any[] }) {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+// ------- Piso ANTT -------
+const ANTT_CATEGORIES = ["geral", "granel_solido", "granel_liquido", "frigorificada", "conteineirizada", "perigosa_geral"] as const;
+const AXLES_OPTIONS = [2, 3, 4, 5, 7, 9];
+
+function AnttPanel({ rows, onSaved }: { rows: any[]; onSaved: () => void }) {
+  const upsert = useServerFn(upsertAnttRate);
+  const del = useServerFn(deleteAnttRate);
+  const upMut = useMutation({ mutationFn: (v: any) => upsert({ data: v }), onSuccess: () => { toast.success("Piso ANTT salvo"); onSaved(); }, onError: (e: any) => toast.error(e?.message ?? "Erro") });
+  const delMut = useMutation({ mutationFn: (id: string) => del({ data: { id } }), onSuccess: () => { toast.success("Removido"); onSaved(); } });
+
+  const [nAxles, setNAxles] = useState(3);
+  const [nCat, setNCat] = useState<string>("geral");
+  const [nRate, setNRate] = useState("");
+  const [nLoad, setNLoad] = useState("200");
+  const [nFrom, setNFrom] = useState(new Date().toISOString().slice(0, 10));
+
+  return (
+    <section className="rounded-2xl bg-card border border-border p-5">
+      <h2 className="font-display text-xl mb-1">Piso mínimo ANTT (Lei 13.703/2018)</h2>
+      <p className="text-xs text-muted-foreground mb-3">
+        Aplica-se apenas a fretes <b>lotação</b>. Fracionados são isentos. Valores em R$ por km e taxa fixa de carga/descarga.
+      </p>
+
+      {/* Formulário nova vigência */}
+      <div className="grid sm:grid-cols-6 gap-2 items-end mb-4 border-b pb-4">
+        <label className="text-xs">
+          <span className="block text-muted-foreground mb-1">Eixos</span>
+          <select value={nAxles} onChange={(e) => setNAxles(parseInt(e.target.value))} className="w-full border rounded px-2 py-2 text-sm">
+            {AXLES_OPTIONS.map((n) => <option key={n} value={n}>{n} eixos</option>)}
+          </select>
+        </label>
+        <label className="text-xs">
+          <span className="block text-muted-foreground mb-1">Categoria</span>
+          <select value={nCat} onChange={(e) => setNCat(e.target.value)} className="w-full border rounded px-2 py-2 text-sm">
+            {ANTT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="text-xs">
+          <span className="block text-muted-foreground mb-1">R$/km</span>
+          <input value={nRate} onChange={(e) => setNRate(e.target.value)} placeholder="3,20" className="w-full border rounded px-2 py-2 text-sm" />
+        </label>
+        <label className="text-xs">
+          <span className="block text-muted-foreground mb-1">Carga/descarga (R$)</span>
+          <input value={nLoad} onChange={(e) => setNLoad(e.target.value)} className="w-full border rounded px-2 py-2 text-sm" />
+        </label>
+        <label className="text-xs">
+          <span className="block text-muted-foreground mb-1">Vigente desde</span>
+          <input type="date" value={nFrom} onChange={(e) => setNFrom(e.target.value)} className="w-full border rounded px-2 py-2 text-sm" />
+        </label>
+        <button disabled={upMut.isPending || !nRate}
+          onClick={() => upMut.mutate({
+            vehicle_axles: nAxles, cargo_category: nCat,
+            rate_per_km_cents: Math.round(parseFloat(nRate.replace(",", ".")) * 100),
+            load_unload_cents: Math.round(parseFloat(nLoad.replace(",", ".") || "0") * 100),
+            valid_from: nFrom,
+          })}
+          className="px-3 py-2 rounded bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50">
+          Adicionar vigência
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-muted-foreground border-b">
+            <tr>
+              <th className="py-2">Eixos</th><th>Categoria</th><th>R$/km</th>
+              <th>Carga/descarga</th><th>Vigência</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">Nenhuma tarifa cadastrada.</td></tr>
+            )}
+            {rows.map((r) => (
+              <tr key={r.id} className="border-b last:border-0">
+                <td className="py-2 font-semibold">{r.vehicle_axles}</td>
+                <td>{r.cargo_category}</td>
+                <td>R$ {(r.rate_per_km_cents / 100).toFixed(2)}</td>
+                <td>R$ {((r.load_unload_cents ?? 0) / 100).toFixed(2)}</td>
+                <td className="text-xs">
+                  {r.valid_from}{r.valid_to ? ` → ${r.valid_to}` : " (atual)"}
+                  {r.notes && <div className="text-[10px] text-muted-foreground italic">{r.notes}</div>}
+                </td>
+                <td>
+                  <button disabled={delMut.isPending} onClick={() => delMut.mutate(r.id)}
+                    className="px-2 py-1 rounded border border-border text-xs">Remover</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

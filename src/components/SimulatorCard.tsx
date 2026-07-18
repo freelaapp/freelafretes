@@ -5,7 +5,8 @@ import { Link } from "@tanstack/react-router";
 import { simulatePricing } from "@/lib/pricing.functions";
 import { VEHICLE_TYPES, CARGO_TYPES, UF_LIST } from "@/lib/constants";
 import type { PricingResult } from "@/lib/pricing";
-import { ChevronDown, ChevronUp, ArrowRight, TruckIcon } from "lucide-react";
+import { classifyFreight, freightModeLabel } from "@/lib/freight-classifier";
+import { ChevronDown, ChevronUp, ArrowRight, TruckIcon, AlertTriangle } from "lucide-react";
 
 const SIMULATION_STORAGE_KEY = "freela.simulacao";
 
@@ -66,7 +67,7 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   const simulate = useServerFn(simulatePricing);
 
   const mut = useMutation({
-    mutationFn: async () => simulate({ data: buildInput(form) }),
+    mutationFn: async () => simulate({ data: buildInput(form) }) as Promise<PricingResult & { antt?: any; freight_mode?: "LOTACAO" | "FRACIONADO" }>,
   });
 
   const canSubmit = form.originUf && form.destUf && form.distanceKm && form.vehicleType && form.cargoType && form.pesoKg;
@@ -159,10 +160,19 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
 
 // ---------- Result ----------
 function ResultPanel({ result, expanded, onToggle, onPublish }: {
-  result: PricingResult; expanded: boolean; onToggle: () => void; onPublish: () => void;
+  result: PricingResult & { antt?: { is_applicable: boolean; floor_cents: number; reason: string }; freight_mode?: "LOTACAO" | "FRACIONADO" };
+  expanded: boolean; onToggle: () => void; onPublish: () => void;
 }) {
+  const antt = result.antt;
+  const mode = result.freight_mode;
+  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && result.freteCents < antt.floor_cents);
   return (
     <div className="mt-2 p-4 md:p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {mode && (
+        <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+          Modo: <b className="text-foreground">{freightModeLabel(mode)}</b>
+        </p>
+      )}
       <p className="text-xs uppercase tracking-widest text-muted-foreground">Valor sugerido do frete</p>
       <p className="font-display font-mono text-4xl md:text-5xl text-accent leading-none">
         {fmtMoney(result.freteCents)}
@@ -171,6 +181,25 @@ function ResultPanel({ result, expanded, onToggle, onPublish }: {
         Faixa de mercado entre <b className="text-foreground">{fmtMoney(result.faixaMinCents)}</b> e{" "}
         <b className="text-foreground">{fmtMoney(result.faixaMaxCents)}</b>.
       </p>
+
+      {antt && antt.is_applicable && antt.floor_cents > 0 && (
+        <div className={`rounded-lg border px-3 py-2 text-xs ${belowFloor ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-primary/30 bg-primary/5 text-foreground"}`}>
+          <div className="flex items-center gap-2 font-semibold">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Piso mínimo ANTT: {fmtMoney(antt.floor_cents)}
+          </div>
+          <p className="mt-1 opacity-90">{antt.reason}</p>
+          {belowFloor && (
+            <p className="mt-1 font-semibold">
+              Valor sugerido abaixo do piso — fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).
+            </p>
+          )}
+        </div>
+      )}
+      {antt && !antt.is_applicable && (
+        <p className="text-xs text-muted-foreground">Frete fracionado — isento de piso mínimo ANTT.</p>
+      )}
+
       <div className="text-sm bg-card rounded-lg px-3 py-2 border border-border flex flex-wrap gap-x-4 gap-y-1">
         <span>Taxa da plataforma (10%): <b>{fmtMoney(result.taxaPlataformaCents)}</b></span>
         <span className="text-muted-foreground">·</span>
@@ -226,6 +255,9 @@ export function buildInput(form: SimulatorFormState) {
     const n = parseFloat(String(s).replace(/\./g, "").replace(",", "."));
     return isFinite(n) ? n : 0;
   };
+  const pesoKg = num(form.pesoKg);
+  const volumeM3 = form.volumeM3 ? num(form.volumeM3) : undefined;
+  const mode = classifyFreight({ pesoKg, volumeM3: volumeM3 ?? null, vehicleType: form.vehicleType || null }).mode;
   return {
     origemCidade: form.originCity || undefined,
     origemUf: form.originUf || undefined,
@@ -233,8 +265,8 @@ export function buildInput(form: SimulatorFormState) {
     destinoUf: form.destUf || undefined,
     distanciaKm: num(form.distanceKm),
     vehicleType: form.vehicleType,
-    pesoKg: num(form.pesoKg),
-    volumeM3: form.volumeM3 ? num(form.volumeM3) : undefined,
+    pesoKg,
+    volumeM3,
     cargoType: form.cargoType,
     valorCargaDeclarado: form.valorCarga ? num(form.valorCarga) : undefined,
     temPedagio: form.temPedagio,
@@ -242,6 +274,7 @@ export function buildInput(form: SimulatorFormState) {
     ajudantes: form.ajudantes ? 1 : 0,
     precisaCargaDescarga: form.cargaDescarga,
     dataColeta: form.dataColeta || undefined,
+    freightMode: mode,
   };
 }
 
