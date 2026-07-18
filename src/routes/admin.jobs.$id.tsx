@@ -66,6 +66,18 @@ function JobDetail() {
         </ol>
       </div>
 
+      <TripDocumentsCard
+        jobId={id}
+        actions={
+          <button
+            onClick={() => { setReissueReason(""); setReissueOpen(true); }}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-semibold hover:bg-muted"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Reemitir
+          </button>
+        }
+      />
+
       <TripEventLog events={evQ.data ?? []} />
 
 
