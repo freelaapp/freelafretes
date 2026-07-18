@@ -154,8 +154,22 @@ function PublishPage() {
           <>
             <Field label="Título do frete" value={title} onChange={setTitle} placeholder="Ex.: Soja Sorriso → Santos" />
             <SelectField label="Tipo de carga" value={cargo_type} onChange={setCargoType} options={CARGO_TYPES} />
-            <Field label="Peso (kg)" type="number" value={String(cargo_weight_kg || "")} onChange={(v) => setWeight(parseInt(v) || 0)} />
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="Peso (kg)" type="number" value={String(cargo_weight_kg || "")} onChange={(v) => setWeight(parseInt(v) || 0)} />
+              <Field label="Volume (m³) — opcional" type="number" value={String(cargo_volume_m3 || "")} onChange={(v) => setVolume(parseFloat(v) || 0)} />
+            </div>
             <TextArea label="Descrição (opcional)" value={description} onChange={setDescription} />
+            {cargo_weight_kg > 0 && (
+              <ClassifierCard
+                classification={classification}
+                mode={freight_mode}
+                override={mode_override}
+                onToggleOverride={(on) => { setModeOverride(on); if (on) setModeManual(classification.mode); }}
+                onPickManual={(m) => setModeManual(m)}
+                manual={mode_manual}
+                hasVehicle={!!vehicleTypeForCalc}
+              />
+            )}
             <ButtonPrimary onClick={() => {
               if (!title || !cargo_type || !cargo_weight_kg) return toast.error("Preencha os campos");
               setStep(2);
