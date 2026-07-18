@@ -183,7 +183,7 @@ export function Stars({ value, onChange }: { value: number; onChange: (n: number
   );
 }
 
-function PaymentTimeline({ pay }: { pay: { status: string; paid_at?: string; held_at?: string; released_at?: string } | null }) {
+export function PaymentTimeline({ pay }: { pay: { status: string; paid_at?: string; held_at?: string; released_at?: string } | null }) {
   if (!pay) return null;
   const steps = [
     { key: "paid", label: "PIX pago", at: pay.paid_at, done: !!pay.paid_at },
