@@ -227,6 +227,9 @@ export function buildInput(form: SimulatorFormState) {
     const n = parseFloat(String(s).replace(/\./g, "").replace(",", "."));
     return isFinite(n) ? n : 0;
   };
+  const pesoKg = num(form.pesoKg);
+  const volumeM3 = form.volumeM3 ? num(form.volumeM3) : undefined;
+  const mode = classifyFreight({ pesoKg, volumeM3: volumeM3 ?? null, vehicleType: form.vehicleType || null }).mode;
   return {
     origemCidade: form.originCity || undefined,
     origemUf: form.originUf || undefined,
@@ -234,8 +237,8 @@ export function buildInput(form: SimulatorFormState) {
     destinoUf: form.destUf || undefined,
     distanciaKm: num(form.distanceKm),
     vehicleType: form.vehicleType,
-    pesoKg: num(form.pesoKg),
-    volumeM3: form.volumeM3 ? num(form.volumeM3) : undefined,
+    pesoKg,
+    volumeM3,
     cargoType: form.cargoType,
     valorCargaDeclarado: form.valorCarga ? num(form.valorCarga) : undefined,
     temPedagio: form.temPedagio,
@@ -243,6 +246,7 @@ export function buildInput(form: SimulatorFormState) {
     ajudantes: form.ajudantes ? 1 : 0,
     precisaCargaDescarga: form.cargaDescarga,
     dataColeta: form.dataColeta || undefined,
+    freightMode: mode,
   };
 }
 
