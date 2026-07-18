@@ -272,7 +272,7 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,contractor_id,provider_id,freight_mode,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode)")
+      .select("id,contractor_id,provider_id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode)")
       .eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     const { data: c } = await context.supabase.from("contractors")
