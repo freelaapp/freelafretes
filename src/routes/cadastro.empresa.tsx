@@ -37,7 +37,9 @@ function CompanySignup() {
     if (!isValidCNPJ(cnpj)) return toast.error("CNPJ inválido");
     if (!isValidCPF(cpf)) return toast.error("CPF do responsável inválido");
     if (!accept) return toast.error("Aceite os termos");
-    if (password.length < 6) return toast.error("Senha muito curta");
+    if (!isStrongPassword(password)) {
+      return toast.error("Senha fraca: use no mínimo 8 caracteres, misturando letras e números.");
+    }
     setLoading(true);
     try {
       const { data: signUp, error: sErr } = await supabase.auth.signUp({
@@ -59,7 +61,7 @@ function CompanySignup() {
       setDone(true);
       setStep(2);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao cadastrar");
+      toast.error(friendlyAuthError(e));
     } finally {
       setLoading(false);
     }
