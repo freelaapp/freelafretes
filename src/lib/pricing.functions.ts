@@ -244,3 +244,57 @@ export const updatePricingCargoFactor = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+// ============================================================
+// ANTT floor CRUD (admin)
+// ============================================================
+export const upsertAnttRate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.string().uuid().optional(),
+    vehicle_axles: z.number().int().positive(),
+    cargo_category: z.string().min(1),
+    rate_per_km_cents: z.number().int().positive(),
+    load_unload_cents: z.number().int().nonnegative().default(0),
+    valid_from: z.string().optional(),
+    valid_to: z.string().nullable().optional(),
+    notes: z.string().nullable().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const s = context.supabase;
+    let prev: any = null;
+    if (data.id) {
+      const r = await s.from("antt_floor_rates").select("*").eq("id", data.id).maybeSingle();
+      prev = r.data;
+    }
+    const row = { ...data };
+    if (!row.id) delete (row as any).id;
+    const res = data.id
+      ? await s.from("antt_floor_rates").update(row).eq("id", data.id).select("*").maybeSingle()
+      : await s.from("antt_floor_rates").insert(row).select("*").maybeSingle();
+    if (res.error) throw res.error;
+    await s.from("pricing_settings_history").insert({
+      changed_by: context.userId, entity: "antt_floor",
+      entity_key: `${data.vehicle_axles}/${data.cargo_category}`,
+      before: prev ?? null, after: res.data,
+    });
+    return { ok: true, row: res.data };
+  });
+
+export const deleteAnttRate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const s = context.supabase;
+    const { data: prev } = await s.from("antt_floor_rates").select("*").eq("id", data.id).maybeSingle();
+    const { error } = await s.from("antt_floor_rates").delete().eq("id", data.id);
+    if (error) throw error;
+    await s.from("pricing_settings_history").insert({
+      changed_by: context.userId, entity: "antt_floor",
+      entity_key: prev ? `${prev.vehicle_axles}/${prev.cargo_category}` : data.id,
+      before: prev ?? null, after: null,
+    });
+    return { ok: true };
+  });
