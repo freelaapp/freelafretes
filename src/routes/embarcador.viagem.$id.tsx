@@ -182,3 +182,28 @@ export function Stars({ value, onChange }: { value: number; onChange: (n: number
     </div>
   );
 }
+
+function PaymentTimeline({ pay }: { pay: { status: string; paid_at?: string; held_at?: string; released_at?: string } | null }) {
+  if (!pay) return null;
+  const steps = [
+    { key: "paid", label: "PIX pago", at: pay.paid_at, done: !!pay.paid_at },
+    { key: "held", label: "Retido em garantia", at: pay.held_at, done: !!pay.held_at || pay.status === "HELD" || pay.status === "COMPLETED" || pay.status === "RELEASED" },
+    { key: "released", label: "Liberado ao motorista", at: pay.released_at, done: pay.status === "RELEASED" },
+  ];
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4 shadow-card">
+      <p className="text-sm font-semibold mb-3">Linha do tempo do pagamento</p>
+      <ol className="space-y-2">
+        {steps.map((s) => (
+          <li key={s.key} className="flex items-start gap-3">
+            <span className={`mt-1 h-3 w-3 rounded-full ${s.done ? "bg-success" : "bg-border"}`} />
+            <div className="flex-1">
+              <p className={`text-sm ${s.done ? "font-semibold" : "text-muted-foreground"}`}>{s.label}</p>
+              {s.at && <p className="text-[11px] text-muted-foreground">{new Date(s.at).toLocaleString("pt-BR")}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
