@@ -33,7 +33,7 @@ export const adminDashboard = createServerFn({ method: "GET" })
     await requireAdmin(context);
     const s = context.supabase;
 
-    const [openFreights, inProgress, pendingValidation, gmvMonth, escrow, allJobs30, weeklyJobs, oldInProgress, oldPending] = await Promise.all([
+    const [openFreights, inProgress, pendingValidation, gmvMonth, escrow, allJobs30, weeklyJobs, oldInProgress, oldPending, docsMonth] = await Promise.all([
       s.from("freights").select("id", { count: "exact", head: true }).eq("status", "OPEN"),
       s.from("jobs").select("id", { count: "exact", head: true }).eq("status", "IN_PROGRESS"),
       s.from("contractors").select("id", { count: "exact", head: true }).eq("validation_status", "PENDING_VALIDATION"),
@@ -43,11 +43,14 @@ export const adminDashboard = createServerFn({ method: "GET" })
       s.from("jobs").select("status,updated_at,ended_at").gte("updated_at", daysAgo(84)).in("status", ["COMPLETED","CANCELLED"]),
       s.from("jobs").select("id,started_at,freight_id,contractor_id,provider_id").eq("status", "IN_PROGRESS").lt("started_at", daysAgo(7)),
       s.from("payments").select("id,status,created_at,job_id").eq("status", "PENDING").lt("created_at", hoursAgo(48)),
+      s.from("freight_documents").select("doc_type", { count: "exact" }).gte("issued_at", startOfMonth()),
     ]);
 
     const gmvMonthCents = (gmvMonth.data ?? []).reduce((a: number, r: any) => a + (r.agreed_amount_in_cents ?? 0), 0);
     const revenueMonthCents = Math.round(gmvMonthCents * 0.10);
     const escrowCents = (escrow.data ?? []).filter((r: any) => r.jobs?.status !== "COMPLETED").reduce((a: number, r: any) => a + r.amount_in_cents, 0);
+    const docsByType = (docsMonth.data ?? []).reduce<Record<string, number>>((a: any, r: any) => { a[r.doc_type] = (a[r.doc_type] ?? 0) + 1; return a; }, {});
+    const docsIssuedMonth = docsMonth.count ?? 0;
 
     // Fretes por dia (30d)
     const perDay: Record<string, number> = {};
