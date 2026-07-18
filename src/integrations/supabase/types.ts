@@ -173,6 +173,36 @@ export type Database = {
         }
         Relationships: []
       }
+      br_cities: {
+        Row: {
+          city: string
+          city_normalized: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          uf: string
+        }
+        Insert: {
+          city: string
+          city_normalized: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          uf: string
+        }
+        Update: {
+          city?: string
+          city_normalized?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          uf?: string
+        }
+        Relationships: []
+      }
       candidacies: {
         Row: {
           created_at: string
@@ -486,6 +516,8 @@ export type Database = {
           destination_address: string | null
           destination_cep: string | null
           destination_city: string
+          destination_lat: number | null
+          destination_lng: number | null
           destination_uf: string
           distance_km: number
           freight_mode: string
@@ -495,6 +527,8 @@ export type Database = {
           origin_address: string | null
           origin_cep: string | null
           origin_city: string
+          origin_lat: number | null
+          origin_lng: number | null
           origin_uf: string
           payment: number
           pickup_at: string
@@ -521,6 +555,8 @@ export type Database = {
           destination_address?: string | null
           destination_cep?: string | null
           destination_city: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           destination_uf: string
           distance_km: number
           freight_mode?: string
@@ -530,6 +566,8 @@ export type Database = {
           origin_address?: string | null
           origin_cep?: string | null
           origin_city: string
+          origin_lat?: number | null
+          origin_lng?: number | null
           origin_uf: string
           payment: number
           pickup_at: string
@@ -556,6 +594,8 @@ export type Database = {
           destination_address?: string | null
           destination_cep?: string | null
           destination_city?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           destination_uf?: string
           distance_km?: number
           freight_mode?: string
@@ -565,6 +605,8 @@ export type Database = {
           origin_address?: string | null
           origin_cep?: string | null
           origin_city?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
           origin_uf?: string
           payment?: number
           pickup_at?: string
@@ -589,11 +631,13 @@ export type Database = {
       }
       jobs: {
         Row: {
+          ack_notes: string | null
           agreed_amount_in_cents: number
           contractor_id: string
           created_at: string
           dispute_notes: string | null
           disputed: boolean
+          driver_ack_at: string | null
           ended_at: string | null
           force_completed_by: string | null
           force_completed_reason: string | null
@@ -605,11 +649,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ack_notes?: string | null
           agreed_amount_in_cents: number
           contractor_id: string
           created_at?: string
           dispute_notes?: string | null
           disputed?: boolean
+          driver_ack_at?: string | null
           ended_at?: string | null
           force_completed_by?: string | null
           force_completed_reason?: string | null
@@ -621,11 +667,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ack_notes?: string | null
           agreed_amount_in_cents?: number
           contractor_id?: string
           created_at?: string
           dispute_notes?: string | null
           disputed?: boolean
+          driver_ack_at?: string | null
           ended_at?: string | null
           force_completed_by?: string | null
           force_completed_reason?: string | null
@@ -701,6 +749,7 @@ export type Database = {
         Row: {
           amount_in_cents: number
           created_at: string
+          held_at: string | null
           id: string
           job_id: string
           method: Database["public"]["Enums"]["payment_method"]
@@ -714,6 +763,7 @@ export type Database = {
         Insert: {
           amount_in_cents: number
           created_at?: string
+          held_at?: string | null
           id?: string
           job_id: string
           method?: Database["public"]["Enums"]["payment_method"]
@@ -727,6 +777,7 @@ export type Database = {
         Update: {
           amount_in_cents?: number
           created_at?: string
+          held_at?: string | null
           id?: string
           job_id?: string
           method?: Database["public"]["Enums"]["payment_method"]
@@ -854,6 +905,8 @@ export type Database = {
           bank_account: string | null
           bank_agency: string | null
           bank_code: string | null
+          base_lat: number | null
+          base_lng: number | null
           birthdate: string
           city: string
           cnh_back_url: string | null
@@ -871,6 +924,7 @@ export type Database = {
           phone: string
           pix_key: string | null
           pix_key_type: string | null
+          search_radius_km: number
           selfie_url: string | null
           uf: string
           updated_at: string
@@ -886,6 +940,8 @@ export type Database = {
           bank_account?: string | null
           bank_agency?: string | null
           bank_code?: string | null
+          base_lat?: number | null
+          base_lng?: number | null
           birthdate: string
           city: string
           cnh_back_url?: string | null
@@ -903,6 +959,7 @@ export type Database = {
           phone: string
           pix_key?: string | null
           pix_key_type?: string | null
+          search_radius_km?: number
           selfie_url?: string | null
           uf: string
           updated_at?: string
@@ -918,6 +975,8 @@ export type Database = {
           bank_account?: string | null
           bank_agency?: string | null
           bank_code?: string | null
+          base_lat?: number | null
+          base_lng?: number | null
           birthdate?: string
           city?: string
           cnh_back_url?: string | null
@@ -935,6 +994,7 @@ export type Database = {
           phone?: string
           pix_key?: string | null
           pix_key_type?: string | null
+          search_radius_km?: number
           selfie_url?: string | null
           uf?: string
           updated_at?: string
@@ -1109,7 +1169,11 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      haversine_km: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      normalize_city_name: { Args: { t: string }; Returns: string }
     }
     Enums: {
       admin_role: "ADMIN" | "SUPER_ADMIN"
@@ -1127,7 +1191,7 @@ export type Database = {
         | "CANCELLED_BY_CONTRACTOR"
       job_status: "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
       payment_method: "PIX"
-      payment_status: "PENDING" | "COMPLETED" | "REFUNDED" | "RELEASED"
+      payment_status: "PENDING" | "COMPLETED" | "REFUNDED" | "RELEASED" | "HELD"
       refund_type: "FULL" | "PARTIAL" | "NONE"
       user_role: "contractor" | "provider"
       validation_status: "PENDING_VALIDATION" | "APPROVED" | "REJECTED"
@@ -1275,7 +1339,7 @@ export const Constants = {
       ],
       job_status: ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
       payment_method: ["PIX"],
-      payment_status: ["PENDING", "COMPLETED", "REFUNDED", "RELEASED"],
+      payment_status: ["PENDING", "COMPLETED", "REFUNDED", "RELEASED", "HELD"],
       refund_type: ["FULL", "PARTIAL", "NONE"],
       user_role: ["contractor", "provider"],
       validation_status: ["PENDING_VALIDATION", "APPROVED", "REJECTED"],
