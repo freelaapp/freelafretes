@@ -143,7 +143,7 @@ function DriverSignup() {
       } });
       setDone(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao cadastrar");
+      toast.error(friendlyAuthError(e));
     } finally { setLoading(false); }
   }
 
