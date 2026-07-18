@@ -29,6 +29,7 @@ function PricingAdmin() {
       </div>
 
       <VehicleCostsPanel rows={q.data.vehicleCosts} onSaved={() => q.refetch()} />
+      <AnttPanel rows={q.data.anttRates ?? []} onSaved={() => q.refetch()} />
       <CargoFactorsPanel rows={q.data.cargoFactors} onSaved={() => q.refetch()} />
       <SettingsPanel settings={q.data.settings} onSaved={() => q.refetch()} />
       <HistoryPanel entries={q.data.history} />
