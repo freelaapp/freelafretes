@@ -1,19 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { addVehicle } from "@/lib/api.functions";
+import { listCitiesByUf, updateDriverBase } from "@/lib/geo.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverStatusBanner } from "@/components/DriverStatusBanner";
 import { ProviderNav } from "@/components/RoleNav";
 import { Field, SelectField, ButtonPrimary, ButtonOutline } from "@/components/ui-kit";
-import { VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
+import { UF_LIST, VEHICLE_TYPES, BODY_TYPES } from "@/lib/constants";
 import { maskPlate, isValidPlate } from "@/lib/format";
 import { toast } from "sonner";
-import { Truck, Plus } from "lucide-react";
+import { Truck, Plus, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/motorista/perfil")({
   head: () => ({ meta: [{ title: "Perfil — Freela Fretes" }] }),
