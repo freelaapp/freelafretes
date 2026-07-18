@@ -203,9 +203,10 @@ function DriverTripDetail() {
 
         {job.status === "COMPLETED" && (
           <>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-success/10 border border-success p-4">
               <p className="text-sm font-semibold">Frete concluído!</p>
-              <p className="text-xs text-muted-foreground">O pagamento de {formatBRL(job.agreed_amount_in_cents)} será transferido via PIX ✓</p>
+              <p className="text-xs text-muted-foreground">Pagamento de {formatBRL(job.agreed_amount_in_cents - (pay?.service_fee_in_cents ?? 0))} liberado via PIX ✓</p>
             </div>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Avaliar empresa</p>
