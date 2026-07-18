@@ -126,8 +126,6 @@ function JobDetail() {
         }}>
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas da disputa" rows={4} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
       </ConfirmModal>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas da disputa" rows={4} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
-      </ConfirmModal>
 
       <ConfirmModal open={reissueOpen} onClose={() => setReissueOpen(false)}
         title="Reemitir documentos fiscais"
