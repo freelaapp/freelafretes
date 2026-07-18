@@ -278,7 +278,28 @@ function PublishPage() {
             )}
 
             <Field label="Valor oferecido (R$)" type="number" value={String(payment || "")} onChange={(v) => setPayment(parseFloat(v) || 0)} />
-            {belowMin && (
+
+            {antt && antt.is_applicable && antt.floor_cents > 0 && (
+              <div className={`rounded-lg border px-3 py-2 text-xs ${belowFloor ? "border-destructive/50 bg-destructive/10 text-destructive" : "border-primary/30 bg-primary/5 text-foreground"}`}>
+                <div className="flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Piso mínimo ANTT: R$ {(antt.floor_cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </div>
+                <p className="mt-1 opacity-90">{antt.reason}</p>
+                {belowFloor && (
+                  <p className="mt-1 font-semibold">
+                    O valor está abaixo do piso — fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).
+                  </p>
+                )}
+              </div>
+            )}
+            {antt && !antt.is_applicable && (
+              <p className="text-xs text-muted-foreground bg-secondary rounded-lg px-3 py-2">
+                Frete fracionado — isento de piso mínimo ANTT.
+              </p>
+            )}
+
+            {belowMin && !belowFloor && (
               <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                 Valor abaixo do mercado — seu frete pode demorar a receber propostas.
               </p>
@@ -297,7 +318,8 @@ function PublishPage() {
               <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
               <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
-            <ButtonPrimary onClick={submit} disabled={loading}>{loading ? "Publicando..." : "Publicar frete"}</ButtonPrimary>
+            <ButtonPrimary onClick={submit} disabled={loading || belowFloor}>{loading ? "Publicando..." : belowFloor ? "Ajuste o valor para publicar" : "Publicar frete"}</ButtonPrimary>
+
           </>
         )}
       </div>
