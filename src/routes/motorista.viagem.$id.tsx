@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmPickup, confirmDelivery, submitFeedback, driverWithdrawFromJob } from "@/lib/api.functions";
+import { confirmPickup, confirmDelivery, submitFeedback, driverWithdrawFromJob, driverAckJob } from "@/lib/api.functions";
 import { recordTripEvent } from "@/lib/trip-events.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
