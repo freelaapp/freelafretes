@@ -98,22 +98,30 @@ function SearchFreights() {
         <SelectField label="Carga" value={cargo} onChange={setCargo} options={CARGO_TYPES} placeholder="Tipo" />
         <SelectField label="Veículo" value={vt} onChange={setVt} options={VEHICLE_TYPES} placeholder="Tipo" />
       </div>
-      {myVehicles.length > 0 && (
-        <div className="px-4 pt-3">
+      {(me?.vehicles?.length ?? 0) > 0 && (
+        <div className="px-4 pt-3 space-y-1.5">
           <label className="flex items-center gap-2 text-sm select-none cursor-pointer">
-            <input
-              type="checkbox"
-              checked={onlyCompatible}
-              onChange={(e) => setOnlyCompatible(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
+            <input type="checkbox" checked={onlyCompatible} onChange={(e) => setOnlyCompatible(e.target.checked)} className="h-4 w-4 rounded border-border accent-primary" />
             <span>Somente compatíveis com meus veículos</span>
           </label>
+          {hasBase && (
+            <label className="flex items-center gap-2 text-sm select-none cursor-pointer">
+              <input type="checkbox" checked={onlyInRadius} onChange={(e) => setOnlyInRadius(e.target.checked)} className="h-4 w-4 rounded border-border accent-primary" />
+              <span>Somente dentro do meu raio ({me!.search_radius_km ?? 300} km)</span>
+            </label>
+          )}
+        </div>
+      )}
+      {!hasBase && (
+        <div className="px-4 pt-3">
+          <div className="rounded-xl border border-warning bg-warning/10 p-3 text-xs">
+            Defina sua <Link to="/motorista/perfil" className="font-semibold underline">cidade-base</Link> para ver os fretes mais próximos primeiro.
+          </div>
         </div>
       )}
       <div className="px-4 pt-4 space-y-3">
         {visible.length === 0 && <p className="text-sm text-muted-foreground text-center py-12">Nenhum frete encontrado.</p>}
-        {visible.map((f) => {
+        {visible.map(({ f, km }) => {
           const perKm = f.base_amount_in_cents && f.distance_km ? f.base_amount_in_cents / f.distance_km / 100 : 0;
           const c = compat(f);
           return (
@@ -127,7 +135,10 @@ function SearchFreights() {
                     <Package className="h-3 w-3" /> {f.cargo_type} · {f.cargo_weight_kg} kg · {f.distance_km} km
                   </p>
                   <p className="text-[11px] text-muted-foreground">Coleta: {formatDateBR(f.pickup_at)}</p>
-                  {myVehicles.length > 0 && (
+                  {km != null && (
+                    <p className="text-[11px] font-semibold text-primary mt-1">📍 a {Math.round(km)} km de você</p>
+                  )}
+                  {(me?.vehicles?.length ?? 0) > 0 && (
                     <div className="mt-2">
                       {c.ok ? (
                         <Badge tone="success">✓ Compatível com seu veículo</Badge>
