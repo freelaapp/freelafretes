@@ -12,6 +12,8 @@ import {
   type VehicleCost,
   type PricingInput,
 } from "./pricing";
+import { anttFloor, type AnttRate } from "./antt-floor";
+import { classifyFreight, type FreightMode } from "./freight-classifier";
 
 // ============================================================
 // Carrega toda a config e o contexto de mercado
@@ -21,10 +23,11 @@ import {
 async function loadConfig(originUf?: string, vehicleType?: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const s = supabaseAdmin;
-  const [settingsQ, vcostsQ, cfactorsQ] = await Promise.all([
+  const [settingsQ, vcostsQ, cfactorsQ, anttQ] = await Promise.all([
     s.from("pricing_settings").select("settings").eq("id", 1).maybeSingle(),
     s.from("pricing_vehicle_costs").select("*"),
     s.from("pricing_cargo_factors").select("*"),
+    s.from("antt_floor_rates").select("*"),
   ]);
 
 
