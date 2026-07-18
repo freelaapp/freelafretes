@@ -473,7 +473,7 @@ export const paymentsSummary = createServerFn({ method: "GET" })
     const s = context.supabase;
     const monthStart = (() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d.toISOString(); })();
     const [escrow, released, refunded] = await Promise.all([
-      s.from("payments").select("amount_in_cents,jobs!inner(status)").eq("status", "COMPLETED"),
+      s.from("payments").select("amount_in_cents,jobs!inner(status)").in("status", ["HELD","COMPLETED"]),
       s.from("payments").select("amount_in_cents").eq("status", "RELEASED").gte("released_at", monthStart),
       s.from("payments").select("amount_in_cents").eq("status", "REFUNDED").gte("refunded_at", monthStart),
     ]);
