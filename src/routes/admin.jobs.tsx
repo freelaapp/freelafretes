@@ -58,3 +58,9 @@ function paymentBadge(s?: string) {
   if (s === "REFUNDED") return <StatusBadge tone="danger">Estornado</StatusBadge>;
   return <StatusBadge tone="muted">{s}</StatusBadge>;
 }
+
+function modeBadge(m: string | null | undefined) {
+  if (m === "FRACIONADO") return <StatusBadge tone="info">Fracionado</StatusBadge>;
+  if (m === "LOTACAO") return <StatusBadge tone="primary">Lotação</StatusBadge>;
+  return <span className="text-xs text-muted-foreground">—</span>;
+}
