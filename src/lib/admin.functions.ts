@@ -75,6 +75,8 @@ export const adminDashboard = createServerFn({ method: "GET" })
         gmvMonthCents,
         revenueMonthCents,
         escrowCents,
+        docsIssuedMonth,
+        docsByType,
       },
       freightsPerDay: Object.entries(perDay).map(([date, count]) => ({ date, count })),
       jobsPerWeek: Object.entries(perWeek).map(([week, v]) => ({ week, ...v })),
