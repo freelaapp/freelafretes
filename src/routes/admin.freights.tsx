@@ -54,6 +54,7 @@ function FreightsAdmin() {
             </Link>
           ) },
           { key: "e", header: "Empresa", render: (f: any) => <span className="text-xs">{f.contractors?.company_name}</span> },
+          { key: "m", header: "Modo", render: (f: any) => modeBadge(f.freight_mode) },
           { key: "c", header: "Carga", render: (f: any) => <span className="text-xs">{f.cargo_type} · {f.cargo_weight_kg}kg</span> },
           { key: "va", header: "Anunciado", render: (f: any) => <span className="text-sm font-semibold">{formatBRL(f.base_amount_in_cents)}</span> },
           { key: "vg", header: "Acordado", render: (f: any) => f.agreed_amount_in_cents ? <span className="text-sm text-primary font-semibold">{formatBRL(f.agreed_amount_in_cents)}</span> : <span className="text-xs text-muted-foreground">—</span> },
