@@ -364,7 +364,7 @@ export const generatePickupCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,status,contractor_id").eq("id", data.job_id).maybeSingle();
+      .select("id,status,contractor_id,driver_ack_at").eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     if (job.status !== "SCHEDULED") throw new Error("Viagem não está agendada");
     const { data: c } = await context.supabase.from("contractors")
@@ -372,7 +372,8 @@ export const generatePickupCode = createServerFn({ method: "POST" })
     if (!c) throw new Error("Sem permissão");
     const { data: pay } = await context.supabase.from("payments")
       .select("status").eq("job_id", job.id).maybeSingle();
-    if (pay?.status !== "COMPLETED") throw new Error("Pagamento não confirmado");
+    if (pay?.status !== "HELD") throw new Error("Pagamento não confirmado em custódia");
+    if (!job.driver_ack_at) throw new Error("Motorista ainda não confirmou os dados do carregamento");
 
     const code = makeCode();
     // remove anterior
