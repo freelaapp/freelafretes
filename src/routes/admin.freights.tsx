@@ -73,3 +73,9 @@ function statusBadge(s: string) {
   if (s === "CLOSED") return <StatusBadge tone="success">Fechado</StatusBadge>;
   return <StatusBadge tone="muted">Cancelado</StatusBadge>;
 }
+
+function modeBadge(m: string | null | undefined) {
+  if (m === "FRACIONADO") return <StatusBadge tone="info">Fracionado</StatusBadge>;
+  if (m === "LOTACAO") return <StatusBadge tone="primary">Lotação</StatusBadge>;
+  return <span className="text-xs text-muted-foreground">—</span>;
+}
