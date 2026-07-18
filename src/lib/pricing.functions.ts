@@ -213,6 +213,7 @@ export const updatePricingVehicleCost = createServerFn({ method: "POST" })
     ckm_cents_por_km: z.number().int().positive(),
     frete_minimo_cents: z.number().int().nonnegative(),
     capacidade_kg: z.number().int().positive(),
+    axles: z.number().int().positive().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
