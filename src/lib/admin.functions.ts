@@ -397,7 +397,7 @@ export const forceCompleteJob = createServerFn({ method: "POST" })
     if (job?.disputed) throw new Error("Viagem em disputa. Encerre a disputa antes de forçar a conclusão.");
     const now = new Date().toISOString();
     await context.supabase.from("jobs").update({ status: "COMPLETED", ended_at: now, force_completed_by: admin.id, force_completed_reason: data.reason }).eq("id", data.id);
-    await context.supabase.from("payments").update({ status: "RELEASED", released_at: now }).eq("job_id", data.id).eq("status", "COMPLETED");
+    await context.supabase.from("payments").update({ status: "RELEASED", released_at: now }).eq("job_id", data.id).in("status", ["HELD","COMPLETED"]);
     await audit(context, admin.id, "FORCE_COMPLETE_JOB", "job", data.id, { reason: data.reason });
     if (job) {
       const [{ data: p }, { data: c }] = await Promise.all([
