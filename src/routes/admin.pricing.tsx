@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   loadPricingConfig, updatePricingSettings,
   updatePricingVehicleCost, updatePricingCargoFactor,
+  upsertAnttRate, deleteAnttRate,
 } from "@/lib/pricing.functions";
 import { toast } from "sonner";
 
