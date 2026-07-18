@@ -7,13 +7,14 @@ import { simulatePricing } from "@/lib/pricing.functions";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { ContractorNav } from "@/components/RoleNav";
-import { Field, SelectField, TextArea, ButtonPrimary, Stepper } from "@/components/ui-kit";
+import { Field, SelectField, TextArea, ButtonPrimary, Stepper, Badge } from "@/components/ui-kit";
 import { CARGO_TYPES, VEHICLE_TYPES, BODY_TYPES, UF_LIST } from "@/lib/constants";
 import { maskCEP } from "@/lib/format";
 import { readSavedSimulation, clearSavedSimulation, type SimulatorFormState } from "@/components/SimulatorCard";
 import type { PricingResult } from "@/lib/pricing";
+import { classifyFreight, freightModeLabel, type FreightMode } from "@/lib/freight-classifier";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Truck } from "lucide-react";
 
 export const Route = createFileRoute("/embarcador/publicar")({
   head: () => ({ meta: [{ title: "Publicar Frete — Freela Fretes" }] }),
