@@ -66,8 +66,8 @@ function PaymentsAdmin() {
           { key: "d", header: "Data", render: (p: any) => <span className="text-xs">{formatDateBR(p.paid_at ?? p.created_at)}</span> },
           { key: "a", header: "", render: (p: any) => (
             <div className="flex gap-1 justify-end">
-              {p.status === "COMPLETED" && <button onClick={() => setReleaseId(p.id)} className="px-2 py-1 rounded bg-success/20 text-success text-xs font-semibold">Liberar</button>}
-              {(p.status === "PENDING" || p.status === "COMPLETED") && <button onClick={() => { setRefundId(p.id); setRefundReason(""); }} className="px-2 py-1 rounded bg-destructive/20 text-destructive text-xs font-semibold">Estornar</button>}
+              {(p.status === "HELD" || p.status === "COMPLETED") && <button onClick={() => setReleaseId(p.id)} className="px-2 py-1 rounded bg-success/20 text-success text-xs font-semibold">Liberar</button>}
+              {(p.status === "PENDING" || p.status === "HELD" || p.status === "COMPLETED") && <button onClick={() => { setRefundId(p.id); setRefundReason(""); }} className="px-2 py-1 rounded bg-destructive/20 text-destructive text-xs font-semibold">Estornar</button>}
             </div>
           ) },
         ]}
