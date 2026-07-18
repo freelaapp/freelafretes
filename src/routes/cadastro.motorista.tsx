@@ -95,7 +95,7 @@ function DriverSignup() {
         setAuthedUserId(uid);
         return uid;
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Erro ao autenticar");
+        toast.error(friendlyAuthError(e));
         return null;
       } finally {
         setSigningUp(false);
