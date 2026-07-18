@@ -120,6 +120,7 @@ const pricingInputSchema = z.object({
   precisaCargaDescarga: z.boolean().optional(),
   horasEsperaExtra: z.number().nonnegative().optional(),
   precisaEquipamento: z.boolean().optional(),
+  freightMode: z.enum(["LOTACAO", "FRACIONADO"]).optional(),
 });
 
 // ============================================================
@@ -134,11 +135,28 @@ export const simulatePricing = createServerFn({ method: "POST" })
       fretesAbertosNaRota: cfg.fretesAbertosNaRota,
       motoristasAtivos: cfg.motoristasAtivos,
     };
-    return calcularFrete(input, {
+    const result = calcularFrete(input, {
       settings: cfg.settings,
       vehicleCosts: cfg.vehicleCosts,
       cargoFactors: cfg.cargoFactors,
     });
+    // Classificação automática caso não venha do cliente
+    const classification = classifyFreight({
+      pesoKg: data.pesoKg,
+      volumeM3: data.volumeM3 ?? null,
+      vehicleType: data.vehicleType,
+    });
+    const mode: FreightMode = data.freightMode ?? classification.mode;
+    const axles = cfg.axlesByVehicle[vehicleLabelToKey(data.vehicleType)] ?? null;
+    const antt = anttFloor({
+      vehicle_type: data.vehicleType,
+      cargo_type: data.cargoType,
+      distance_km: data.distanciaKm,
+      freight_mode: mode,
+      axles,
+      rates: cfg.anttRates,
+    });
+    return { ...result, antt, freight_mode: mode };
   });
 
 // ============================================================
