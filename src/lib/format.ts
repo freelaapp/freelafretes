@@ -106,3 +106,34 @@ export function generateCode(len = 6): string {
 export function normalizeCode(v: string): string {
   return v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
 }
+
+// ---- Senha ----
+export function isStrongPassword(pw: string): boolean {
+  if (pw.length < 8) return false;
+  const hasLetter = /[A-Za-z]/.test(pw);
+  const hasNumber = /\d/.test(pw);
+  return hasLetter && hasNumber;
+}
+
+/** Traduz erros comuns do Supabase Auth para PT-BR amigável. */
+export function friendlyAuthError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err ?? "");
+  const low = msg.toLowerCase();
+  if (low.includes("weak_password") || low.includes("known to be weak") || low.includes("pwned")) {
+    return "Senha muito fraca ou já vazada em outros sites. Escolha uma senha forte (mín. 8 caracteres, misture letras, números e símbolos).";
+  }
+  if (low.includes("already registered") || low.includes("already been registered") || low.includes("user already")) {
+    return "Este e-mail já está cadastrado. Faça login ou use outro e-mail.";
+  }
+  if (low.includes("invalid login credentials")) {
+    return "E-mail ou senha incorretos.";
+  }
+  if (low.includes("email rate limit") || low.includes("over_email_send_rate_limit")) {
+    return "Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.";
+  }
+  if (low.includes("invalid email")) {
+    return "E-mail inválido.";
+  }
+  return msg || "Erro inesperado";
+}
+

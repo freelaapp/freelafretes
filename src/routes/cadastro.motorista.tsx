@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { createProviderProfile } from "@/lib/api.functions";
 import { Field, SelectField, ButtonPrimary, Stepper } from "@/components/ui-kit";
-import { isValidCPF, maskCPF, maskPhone, maskPlate, isValidPlate } from "@/lib/format";
+import { isValidCPF, maskCPF, maskPhone, maskPlate, isValidPlate, isStrongPassword, friendlyAuthError } from "@/lib/format";
 import { VEHICLE_TYPES, BODY_TYPES, CNH_CATEGORIES, UF_LIST, BANK_OPTIONS, PIX_KEY_TYPES } from "@/lib/constants";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, CheckCircle2, ShieldCheck } from "lucide-react";
@@ -95,7 +95,7 @@ function DriverSignup() {
         setAuthedUserId(uid);
         return uid;
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Erro ao autenticar");
+        toast.error(friendlyAuthError(e));
         return null;
       } finally {
         setSigningUp(false);
@@ -143,7 +143,7 @@ function DriverSignup() {
       } });
       setDone(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao cadastrar");
+      toast.error(friendlyAuthError(e));
     } finally { setLoading(false); }
   }
 
@@ -186,8 +186,10 @@ function DriverSignup() {
             <Field label="Celular" value={phone} onChange={(v) => setPhone(maskPhone(v))} placeholder="(00) 00000-0000" />
             <Field label="Data de nascimento" type="date" value={birthdate} onChange={setBirthdate} />
             <Field label="Senha" type="password" value={password} onChange={setPassword} />
+            <p className="mt-1 text-[11px] text-muted-foreground">Mínimo 8 caracteres, com letras e números. Evite senhas óbvias.</p>
             <ButtonPrimary onClick={() => {
-              if (!full_name || !email || !phone || !birthdate || password.length < 6) return toast.error("Preencha todos os campos (senha 6+)");
+              if (!full_name || !email || !phone || !birthdate) return toast.error("Preencha todos os campos");
+              if (!isStrongPassword(password)) return toast.error("Senha fraca: use no mínimo 8 caracteres, misturando letras e números.");
               setStep(3);
             }}>Continuar</ButtonPrimary>
           </>

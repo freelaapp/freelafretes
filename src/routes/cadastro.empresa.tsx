@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { createContractorProfile } from "@/lib/api.functions";
 import { Field, SelectField, ButtonPrimary, Stepper } from "@/components/ui-kit";
-import { isValidCNPJ, isValidCPF, maskCPF, maskCNPJ, maskPhone } from "@/lib/format";
+import { isValidCNPJ, isValidCPF, maskCPF, maskCNPJ, maskPhone, isStrongPassword, friendlyAuthError } from "@/lib/format";
 import { SEGMENTS, MONTHLY_VOLUMES } from "@/lib/constants";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
@@ -37,7 +37,9 @@ function CompanySignup() {
     if (!isValidCNPJ(cnpj)) return toast.error("CNPJ inválido");
     if (!isValidCPF(cpf)) return toast.error("CPF do responsável inválido");
     if (!accept) return toast.error("Aceite os termos");
-    if (password.length < 6) return toast.error("Senha muito curta");
+    if (!isStrongPassword(password)) {
+      return toast.error("Senha fraca: use no mínimo 8 caracteres, misturando letras e números.");
+    }
     setLoading(true);
     try {
       const { data: signUp, error: sErr } = await supabase.auth.signUp({
@@ -59,7 +61,7 @@ function CompanySignup() {
       setDone(true);
       setStep(2);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao cadastrar");
+      toast.error(friendlyAuthError(e));
     } finally {
       setLoading(false);
     }
@@ -96,6 +98,7 @@ function CompanySignup() {
                 <span className="text-sm">Sou sócio da empresa</span>
               </label>
               <Field label="Senha" type="password" value={password} onChange={setPassword} />
+              <p className="mt-1 text-[11px] text-muted-foreground">Mínimo 8 caracteres, com letras e números. Evite senhas óbvias (ex.: 12345678, senha, qwerty).</p>
               <label className="flex items-start gap-2 mt-3">
                 <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} className="h-4 w-4 mt-0.5" />
                 <span className="text-xs">Li e aceito os <span className="underline">Termos de Uso</span> e <span className="underline">Política de Privacidade</span>.</span>
