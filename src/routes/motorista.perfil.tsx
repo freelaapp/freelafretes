@@ -50,7 +50,7 @@ function DriverProfile() {
   const [baseUf, setBaseUf] = useState("");
   const [baseCity, setBaseCity] = useState("");
   const [radius, setRadius] = useState(300);
-  const [cityOpts, setCityOpts] = useState<{ label: string; value: string }[]>([]);
+  const [cityOpts, setCityOpts] = useState<string[]>([]);
 
   useEffect(() => {
     if (p) { setBaseUf(p.uf ?? ""); setBaseCity(p.city ?? ""); setRadius(p.search_radius_km ?? 300); }
