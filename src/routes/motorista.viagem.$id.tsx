@@ -177,6 +177,7 @@ function DriverTripDetail() {
 
         {job.status === "IN_PROGRESS" && (
           <>
+            <PaymentTimeline pay={pay} />
             <div className="rounded-2xl bg-accent/10 border border-accent p-4 flex gap-3">
               <Truck className="h-6 w-6 text-accent shrink-0" />
               <p className="text-sm font-semibold">Carga em trânsito 🚛</p>
