@@ -67,7 +67,7 @@ export function SimulatorCard({ compact = false }: { compact?: boolean }) {
   const simulate = useServerFn(simulatePricing);
 
   const mut = useMutation({
-    mutationFn: async () => simulate({ data: buildInput(form) }),
+    mutationFn: async () => simulate({ data: buildInput(form) }) as Promise<PricingResult & { antt?: any; freight_mode?: "LOTACAO" | "FRACIONADO" }>,
   });
 
   const canSubmit = form.originUf && form.destUf && form.distanceKm && form.vehicleType && form.cargoType && form.pesoKg;
