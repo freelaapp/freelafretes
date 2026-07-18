@@ -282,8 +282,9 @@ function PublishPage() {
 
             <div className="mt-4 rounded-xl bg-secondary p-4 text-sm">
               <p className="font-semibold">Revisão</p>
-              <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg</p>
+              <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg{cargo_volume_m3 ? ` · ${cargo_volume_m3} m³` : ""}</p>
               <p>{origin_city}/{origin_uf} → {destination_city}/{destination_uf} · {distance_km} km</p>
+              <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
               <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
             </div>
             <ButtonPrimary onClick={submit} disabled={loading}>{loading ? "Publicando..." : "Publicar frete"}</ButtonPrimary>
