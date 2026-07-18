@@ -175,6 +175,7 @@ function DriverTripDetail() {
           </>
         )}
 
+        <TripDocumentsCard jobId={id} />
         <TripEventLog events={evQ.data ?? []} />
 
         {(job.status === "SCHEDULED" || job.status === "IN_PROGRESS") && (
