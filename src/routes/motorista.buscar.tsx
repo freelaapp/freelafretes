@@ -26,24 +26,26 @@ function SearchFreights() {
   const [vt, setVt] = useState("");
   const [onlyCompatible, setOnlyCompatible] = useState(true);
 
-  const { data: myVehicles = [] } = useQuery({
+  const { data: me } = useQuery({
     enabled: !!auth.user,
-    queryKey: ["my-vehicles-compat", auth.user?.id],
+    queryKey: ["me-provider-base", auth.user?.id],
     queryFn: async () => {
-      const { data: p } = await supabase.from("providers").select("id").eq("user_id", auth.user!.id).maybeSingle();
-      if (!p) return [];
-      const { data } = await supabase.from("vehicles").select("vehicle_type,body_type").eq("provider_id", p.id);
-      return data ?? [];
+      const { data: p } = await supabase.from("providers").select("id,base_lat,base_lng,search_radius_km").eq("user_id", auth.user!.id).maybeSingle();
+      if (!p) return null;
+      const { data: v } = await supabase.from("vehicles").select("vehicle_type,body_type").eq("provider_id", p.id);
+      return { ...p, vehicles: v ?? [] };
     },
   });
 
-  const myVehicleTypes = useMemo(() => new Set(myVehicles.map((v) => v.vehicle_type)), [myVehicles]);
-  const myBodyTypes = useMemo(() => new Set(myVehicles.map((v) => v.body_type)), [myVehicles]);
+  const myVehicleTypes = useMemo(() => new Set((me?.vehicles ?? []).map((v: any) => v.vehicle_type)), [me]);
+  const myBodyTypes = useMemo(() => new Set((me?.vehicles ?? []).map((v: any) => v.body_type)), [me]);
+  const hasBase = !!me?.base_lat && !!me?.base_lng;
+  const [onlyInRadius, setOnlyInRadius] = useState(true);
 
   const { data: freights = [] } = useQuery({
     queryKey: ["driver-freights", originUf, destUf, cargo, vt],
     queryFn: async () => {
-      let q = supabase.from("freights").select("*").eq("status", "OPEN").order("pickup_at", { ascending: true }).limit(100);
+      let q = supabase.from("freights").select("*").eq("status", "OPEN").order("pickup_at", { ascending: true }).limit(200);
       if (originUf) q = q.eq("origin_uf", originUf);
       if (destUf) q = q.eq("destination_uf", destUf);
       if (cargo) q = q.eq("cargo_type", cargo);
@@ -52,6 +54,13 @@ function SearchFreights() {
       return data ?? [];
     },
   });
+
+  function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const R = 6371, toRad = (v: number) => (v * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
 
   function compat(f: { vehicle_types: string[] | null; body_types: string[] | null }) {
     const vtOk = !f.vehicle_types?.length || f.vehicle_types.some((t) => myVehicleTypes.has(t));
@@ -62,9 +71,22 @@ function SearchFreights() {
     return { ok: vtOk && btOk, missing };
   }
 
-  const visible = onlyCompatible && myVehicles.length > 0
-    ? freights.filter((f) => compat(f).ok)
-    : freights;
+  const enriched = useMemo(() => {
+    const list = (freights as any[]).map((f) => {
+      const km = hasBase && f.origin_lat && f.origin_lng
+        ? haversineKm(Number(me!.base_lat), Number(me!.base_lng), Number(f.origin_lat), Number(f.origin_lng))
+        : null;
+      return { f, km };
+    });
+    if (hasBase) list.sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9));
+    return list;
+  }, [freights, me, hasBase]);
+
+  const visible = enriched.filter(({ f, km }) => {
+    if (onlyCompatible && (me?.vehicles?.length ?? 0) > 0 && !compat(f).ok) return false;
+    if (hasBase && onlyInRadius && km != null && km > (me!.search_radius_km ?? 300)) return false;
+    return true;
+  });
 
   return (
     <div className="pb-24">
