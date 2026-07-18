@@ -369,7 +369,7 @@ export const listJobsAdmin = createServerFn({ method: "GET" })
     const from = (data.page - 1) * 20; const to = from + 19;
     const { data: rows, error, count } = await context.supabase
       .from("jobs")
-      .select("*,freights(title,origin_city,origin_uf,destination_city,destination_uf,pickup_at),providers(full_name),contractors(company_name),payments(status,amount_in_cents,released_at)", { count: "exact" })
+      .select("*,freights(title,origin_city,origin_uf,destination_city,destination_uf,pickup_at,freight_mode),providers(full_name),contractors(company_name),payments(status,amount_in_cents,released_at)", { count: "exact" })
       .eq("status", data.tab)
       .order("created_at", { ascending: false })
       .range(from, to);
