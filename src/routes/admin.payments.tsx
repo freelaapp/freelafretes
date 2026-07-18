@@ -13,7 +13,7 @@ export const Route = createFileRoute("/admin/payments")({
 });
 
 function PaymentsAdmin() {
-  const [status, setStatus] = useState<"ALL"|"PENDING"|"COMPLETED"|"RELEASED"|"REFUNDED">("ALL");
+  const [status, setStatus] = useState<"ALL"|"PENDING"|"HELD"|"COMPLETED"|"RELEASED"|"REFUNDED">("ALL");
   const [page, setPage] = useState(1);
   const list = useServerFn(listPaymentsAdmin);
   const summary = useServerFn(paymentsSummary);
