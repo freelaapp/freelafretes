@@ -106,9 +106,14 @@ function TripDetail() {
 
         {job.status === "SCHEDULED" && paid && (
           <>
-            <div className="rounded-2xl bg-success/10 border border-success p-4 flex gap-3">
-              <ShieldCheck className="h-6 w-6 text-success shrink-0" />
-              <p className="text-sm">Pagamento em custódia. Será liberado após a entrega.</p>
+            <PaymentTimeline pay={pay} />
+            <div className="rounded-2xl bg-card border border-border p-4">
+              <p className="text-sm font-semibold">Ciência do motorista</p>
+              {ackAt ? (
+                <p className="mt-1 text-xs text-success">✓ Motorista confirmou os dados em {formatDateBR(ackAt)}</p>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">Aguardando o motorista confirmar os dados do carregamento antes da coleta.</p>
+              )}
             </div>
             <div className="rounded-2xl bg-card border border-border p-4">
               <p className="text-sm font-semibold">Código de coleta</p>
@@ -116,8 +121,9 @@ function TripDetail() {
               {pickupCode ? (
                 <p className="mt-3 text-3xl font-black tracking-widest text-primary text-center py-2">{pickupCode}</p>
               ) : (
-                <div className="mt-3"><ButtonPrimary onClick={onGenPickup}>Gerar código de COLETA</ButtonPrimary></div>
+                <div className="mt-3"><ButtonPrimary onClick={onGenPickup} disabled={!ackAt}>Gerar código de COLETA</ButtonPrimary></div>
               )}
+              {!ackAt && <p className="mt-2 text-[11px] text-muted-foreground">Disponível após a ciência do motorista.</p>}
             </div>
             <ButtonOutline onClick={onCancel}>Cancelar viagem</ButtonOutline>
           </>
