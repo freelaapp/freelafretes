@@ -110,12 +110,12 @@ function PaymentsAdmin() {
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded-md border border-border bg-card px-3 py-2 text-sm" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <KpiCard label="Bruto pago" value={formatBRL(w.data?.grossCents ?? 0)} />
-          <KpiCard label="INSS 2,2%" value={formatBRL(w.data?.inssCents ?? 0)} />
-          <KpiCard label="SEST/SENAT 0,5%" value={formatBRL(w.data?.sestSenatCents ?? 0)} />
-          <KpiCard label="Total retido" value={formatBRL(w.data?.totalCents ?? 0)} tone="success" />
+          <KpiCard label="Bruto pago" value={formatBRL(w.data?.totals.gross ?? 0)} />
+          <KpiCard label="INSS 2,2%" value={formatBRL(w.data?.totals.inss ?? 0)} />
+          <KpiCard label="SEST/SENAT 0,5%" value={formatBRL(w.data?.totals.sest ?? 0)} />
+          <KpiCard label="Total retido" value={formatBRL((w.data ? (w.data.totals.inss + w.data.totals.sest) : 0))} tone="success" />
         </div>
-        <p className="text-xs text-muted-foreground">{w.data?.count ?? 0} repasse(s) no período.</p>
+        <p className="text-xs text-muted-foreground">{w.data?.totals.count ?? 0} repasse(s) no período.</p>
       </div>
     </div>
   );
