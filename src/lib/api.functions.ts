@@ -491,7 +491,8 @@ export const confirmDelivery = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid(), code: z.string().length(6) }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,status,provider_id,contractor_id,freights(title)").eq("id", data.job_id).maybeSingle();
+      .select("id,status,provider_id,contractor_id,agreed_amount_in_cents,freights(title,driver_payout_cents,freight_value_cents)")
+      .eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     if (job.status !== "IN_PROGRESS") throw new Error("Viagem não está em andamento");
     const { data: prov } = await context.supabase.from("providers")
@@ -519,17 +520,54 @@ export const confirmDelivery = createServerFn({ method: "POST" })
       console.error("[documents] finalizar docs falhou", e);
     }
 
+    // BLOCO 6 — Pagamento do motorista com retenções TAC (INSS + SEST/SENAT)
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { computePayout, computeIcms } = await import("./payouts");
+      const freight = (job as any).freights ?? {};
+      const grossCents: number =
+        freight.driver_payout_cents ??
+        (releasedPay ? (releasedPay.amount_in_cents - (releasedPay.service_fee_in_cents ?? 0)) : (job as any).agreed_amount_in_cents ?? 0);
+      const breakdown = computePayout(grossCents);
+      await supabaseAdmin.from("driver_payouts").upsert({
+        job_id: job.id,
+        provider_id: job.provider_id,
+        gross_cents: breakdown.grossCents,
+        inss_cents: breakdown.inssCents,
+        sest_senat_cents: breakdown.sestSenatCents,
+        net_cents: breakdown.netCents,
+        status: "PAID",
+        paid_at: now,
+      }, { onConflict: "job_id" });
+
+      // BLOCO 7 — Fatura única do embarcador (com ICMS destacado)
+      const shipperAmountCents: number =
+        freight.freight_value_cents ?? (job as any).agreed_amount_in_cents ?? 0;
+      const icmsCents = computeIcms(shipperAmountCents);
+      await supabaseAdmin.from("invoices").upsert({
+        job_id: job.id,
+        shipper_id: job.contractor_id,
+        amount_cents: shipperAmountCents,
+        icms_cents: icmsCents,
+        pdf_ready: true,
+        issued_at: now,
+      }, { onConflict: "job_id" });
+    } catch (e) {
+      console.error("[payout/invoice] falha ao gerar registros", e);
+    }
+
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
     const { notifyMany } = await import("./notify.server");
     const title = (job as any).freights?.title ?? "sua viagem";
     const netCents = releasedPay ? (releasedPay.amount_in_cents - (releasedPay.service_fee_in_cents ?? 0)) : 0;
     const brl = (c: number) => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     await notifyMany([
-      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue. Pagamento liberado ao motorista.`, link: `/embarcador/viagem/${job.id}` }] : []),
-      { user_id: prov.user_id, title: "Pagamento liberado ✓", body: releasedPay ? `${brl(netCents)} liberado via PIX.` : "Sua viagem foi concluída.", link: `/motorista/viagem/${job.id}` },
+      ...(c?.user_id ? [{ user_id: c.user_id, title: "Viagem concluída ✓", body: `${title} foi entregue. Fatura disponível em Minhas Faturas.`, link: `/embarcador/faturas` }] : []),
+      { user_id: prov.user_id, title: "Pagamento liberado ✓", body: releasedPay ? `${brl(netCents)} liberado via PIX (líquido após retenções TAC).` : "Sua viagem foi concluída.", link: `/motorista/viagem/${job.id}` },
     ]);
     return { ok: true };
   });
+
 
 // ============================================================
 // CIÊNCIA DO MOTORISTA (BLOCO 6)
