@@ -5,7 +5,7 @@ import { getMyInvoice } from "@/lib/finance.functions";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { ArrowLeft, Printer, TrendingUp } from "lucide-react";
 import { useRequireAuth } from "@/hooks/use-require-auth";
-import { LogoSmiley } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/embarcador/fatura/$id")({
   head: () => ({ meta: [{ title: "Fatura — Freela Fretes" }] }),
@@ -47,7 +47,7 @@ function FaturaPage() {
         <div className="bg-white text-black rounded-2xl shadow-lg print:shadow-none print:rounded-none p-8">
           <div className="flex items-start justify-between border-b border-gray-200 pb-4">
             <div className="flex items-center gap-3">
-              <LogoSmiley size={44} />
+              <Logo variant="mark" size={44} />
               <div>
                 <p className="font-black text-lg">Freela Fretes Transportes LTDA</p>
                 <p className="text-[11px] text-gray-600">Transportadora digital nacional — ETC (Lei 11.442/2007)</p>
