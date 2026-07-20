@@ -65,8 +65,9 @@ export const publishFreight = createServerFn({ method: "POST" })
 
     const freight_value_in_cents = Math.round(data.payment_reais * 100);
 
-    // Split conforme margem da plataforma
-    const { data: settings } = await context.supabase
+    // Split conforme margem da plataforma (leitura via admin — configuração restrita)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
       .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
     const margem = Number(settings?.carrier_margin_percent ?? 0.20);
     const split = applyCarrierSplit(freight_value_in_cents, margem);
