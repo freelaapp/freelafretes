@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logoAsset from "@/assets/freela-fretes-logo.png.asset.json";
 import {
   LayoutDashboard, ShieldCheck, Building2, Truck, Package, Route as RouteIcon,
-  Wallet, Star, ScrollText, Users, Menu, LogOut, X, Calculator,
+  Wallet, Star, ScrollText, Users, Menu, LogOut, X, Calculator, Landmark,
 } from "lucide-react";
 
 type NavItem = { to: string; icon: any; label: string; superOnly?: boolean; badge?: number };
@@ -42,6 +42,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     { to: "/admin/jobs", icon: RouteIcon, label: "Viagens" },
     { to: "/admin/payments", icon: Wallet, label: "Pagamentos" },
     { to: "/admin/pricing", icon: Calculator, label: "Precificação" },
+    { to: "/admin/transportadora", icon: Landmark, label: "Transportadora", superOnly: true },
     { to: "/admin/feedbacks", icon: Star, label: "Avaliações" },
     { to: "/admin/audit", icon: ScrollText, label: "Auditoria" },
     { to: "/admin/team", icon: Users, label: "Equipe", superOnly: true },
