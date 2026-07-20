@@ -312,7 +312,8 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
       .eq("id", freight.id);
 
     // Recalcula split conforme margem atual, sobre o valor efetivamente contratado.
-    const { data: settings } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
       .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
     const margem = Number(settings?.carrier_margin_percent ?? 0.20);
     const split = applyCarrierSplit(agreed, margem);
