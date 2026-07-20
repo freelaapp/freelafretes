@@ -1,20 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { publishFreight } from "@/lib/api.functions";
 import { simulatePricing } from "@/lib/pricing.functions";
+import { acceptContract, hasAcceptedContract, lookupNfeMock, getPlatformSettings } from "@/lib/carrier.functions";
+import { CONTRACT_SHIPPER_V1 } from "@/lib/contracts";
+import { ContractAcceptModal } from "@/components/ContractAcceptModal";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { ContractorNav } from "@/components/RoleNav";
 import { Field, SelectField, TextArea, ButtonPrimary, Stepper, Badge } from "@/components/ui-kit";
 import { CARGO_TYPES, VEHICLE_TYPES, BODY_TYPES, UF_LIST } from "@/lib/constants";
-import { maskCEP } from "@/lib/format";
+import { maskCEP, isValidNfeKey, maskNfeKey } from "@/lib/format";
+import { applyCarrierSplit } from "@/lib/pricing";
 import { readSavedSimulation, clearSavedSimulation, type SimulatorFormState } from "@/components/SimulatorCard";
 import type { PricingResult } from "@/lib/pricing";
 import { classifyFreight, freightModeLabel, type FreightMode } from "@/lib/freight-classifier";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, AlertTriangle, Truck } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Truck, FileSearch } from "lucide-react";
 
 export const Route = createFileRoute("/embarcador/publicar")({
   head: () => ({ meta: [{ title: "Publicar Frete — Freela Fretes" }] }),
@@ -36,6 +40,11 @@ function PublishPage() {
   const [mode_override, setModeOverride] = useState(false);
   const [mode_manual, setModeManual] = useState<FreightMode | null>(null);
   const [description, setDescription] = useState("");
+  // NF-e (opcional)
+  const [nfeKeyInput, setNfeKeyInput] = useState("");
+  const [nfeSummary, setNfeSummary] = useState<any>(null);
+  // Contrato
+  const [contractOpen, setContractOpen] = useState(false);
   // Rota
   const [origin_cep, setOCep] = useState("");
   const [origin_address, setOAddr] = useState("");
