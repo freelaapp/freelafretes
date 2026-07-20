@@ -477,7 +477,7 @@ export const confirmPickup = createServerFn({ method: "POST" })
     try {
       const { documentProvider } = await import("./document-emission.server");
       const { data: jobFull } = await context.supabase.from("jobs")
-        .select("id,freight_mode,agreed_amount_in_cents,driver_payout_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode,driver_payout_cents)")
+        .select("id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode,driver_payout_cents)")
         .eq("id", job.id).maybeSingle();
       if (jobFull) await documentProvider.emitMDFe(jobFull as any);
     } catch (e) {
