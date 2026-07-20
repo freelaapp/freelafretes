@@ -523,9 +523,11 @@ export type Database = {
           created_at: string
           doc_number: string | null
           doc_type: string
+          event_type: string | null
           id: string
           issued_at: string | null
           job_id: string
+          parent_doc_id: string | null
           payload: Json
           provider: string
           status: string
@@ -536,9 +538,11 @@ export type Database = {
           created_at?: string
           doc_number?: string | null
           doc_type: string
+          event_type?: string | null
           id?: string
           issued_at?: string | null
           job_id: string
+          parent_doc_id?: string | null
           payload?: Json
           provider?: string
           status?: string
@@ -549,9 +553,11 @@ export type Database = {
           created_at?: string
           doc_number?: string | null
           doc_type?: string
+          event_type?: string | null
           id?: string
           issued_at?: string | null
           job_id?: string
+          parent_doc_id?: string | null
           payload?: Json
           provider?: string
           status?: string
@@ -563,6 +569,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freight_documents_parent_doc_id_fkey"
+            columns: ["parent_doc_id"]
+            isOneToOne: false
+            referencedRelation: "freight_documents"
             referencedColumns: ["id"]
           },
         ]
