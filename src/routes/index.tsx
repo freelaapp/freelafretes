@@ -126,8 +126,8 @@ function Hero() {
             <Flag className="h-3.5 w-3.5" /> Transportadora digital nacional
           </span>
           <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-accent-foreground">
-            Abra o frete.<br />
-            <span className="text-primary">A gente cuida do resto.</span>
+            Você só abre a solicitação de frete,<br />
+            <span className="text-primary">a gente cuida de todo resto.</span>
           </h1>
           <p className="mt-4 text-sm md:text-base text-accent-foreground/85">
             A Freela Fretes é a <strong>transportadora digital</strong> que transporta sua carga de ponta a ponta.
