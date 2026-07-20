@@ -15,6 +15,8 @@ type Doc = {
   issued_at: string | null;
   payload: Record<string, any>;
   provider: string;
+  event_type: "ISSUED" | "COMPLEMENTAR" | "DELIVERED" | "CLOSED" | "CANCELLED" | null;
+  parent_doc_id: string | null;
 };
 
 const LABEL: Record<Doc["doc_type"], string> = {
