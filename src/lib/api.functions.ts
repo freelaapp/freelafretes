@@ -195,6 +195,13 @@ export const submitCandidacy = createServerFn({ method: "POST" })
     if (!provider) throw new Error("Cadastro de motorista não encontrado");
     if (provider.validation_status !== "APPROVED") throw new Error("Sua conta ainda não foi aprovada. Você poderá enviar propostas após a aprovação.");
 
+    // Aceite do contrato TAC↔Freela é obrigatório
+    const { data: tac } = await context.supabase
+      .from("contract_acceptances").select("id")
+      .eq("user_id", context.userId)
+      .eq("contract_type", "TAC_SUBCONTRATACAO")
+      .eq("version", CONTRACT_DRIVER_VERSION).maybeSingle();
+    if (!tac) throw new Error("Você precisa aceitar o contrato TAC (Lei 11.442/2007) para enviar propostas.");
 
     const { data: freight } = await context.supabase.from("freights")
       .select("id,status,vehicle_types,body_types").eq("id", data.freight_id).maybeSingle();
@@ -303,6 +310,19 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
       .update({ status: "CLOSED", agreed_amount_in_cents: agreed })
       .eq("id", freight.id);
 
+    // Recalcula split conforme margem atual, sobre o valor efetivamente contratado.
+    const { data: settings } = await context.supabase
+      .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
+    const margem = Number(settings?.carrier_margin_percent ?? 0.20);
+    const split = applyCarrierSplit(agreed, margem);
+
+    // Atualiza split no frete para refletir o valor negociado
+    await context.supabase.from("freights").update({
+      freight_value_cents: split.freightValueCents,
+      driver_payout_cents: split.driverPayoutCents,
+      platform_margin_cents: split.platformMarginCents,
+    }).eq("id", freight.id);
+
     // Cria viagem
     const { data: job, error: jErr } = await context.supabase.from("jobs").insert({
       freight_id: freight.id,
@@ -313,12 +333,12 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
     }).select("id").single();
     if (jErr) throw jErr;
 
-    // Cria payment
-    const fee = Math.round((agreed * SERVICE_FEE_BPS) / 10000);
+    // Cria payment — service_fee_in_cents guarda a margem da plataforma
+    // (o motorista recebe agreed − service_fee).
     await context.supabase.from("payments").insert({
       job_id: job.id,
       amount_in_cents: agreed,
-      service_fee_in_cents: fee,
+      service_fee_in_cents: split.platformMarginCents,
       status: "PENDING",
       method: "PIX",
     });
