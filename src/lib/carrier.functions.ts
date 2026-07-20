@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getHeader } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { createHash } from "crypto";
@@ -19,7 +19,8 @@ export const acceptContract = createServerFn({ method: "POST" })
     z.object({ contract_type: z.enum(CONTRACT_TYPES) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const ip = (getRequestHeader("x-forwarded-for") ?? "").split(",")[0].trim() || null;
+    const req = getRequest();
+    const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || null;
     const version = currentVersion(data.contract_type);
     const { error } = await context.supabase
       .from("contract_acceptances")
