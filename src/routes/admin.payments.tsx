@@ -100,6 +100,23 @@ function PaymentsAdmin() {
         }}>
         <textarea value={refundReason} onChange={(e) => setRefundReason(e.target.value)} placeholder="Motivo do estorno" rows={3} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
       </ConfirmModal>
+
+      <div className="pt-6 border-t border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-sm">Retenções TAC — relatório mensal</h3>
+            <p className="text-xs text-muted-foreground">INSS 2,2% + SEST/SENAT 0,5% recolhidos sobre repasses PAID.</p>
+          </div>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded-md border border-border bg-card px-3 py-2 text-sm" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <KpiCard label="Bruto pago" value={formatBRL(w.data?.grossCents ?? 0)} />
+          <KpiCard label="INSS 2,2%" value={formatBRL(w.data?.inssCents ?? 0)} />
+          <KpiCard label="SEST/SENAT 0,5%" value={formatBRL(w.data?.sestSenatCents ?? 0)} />
+          <KpiCard label="Total retido" value={formatBRL(w.data?.totalCents ?? 0)} tone="success" />
+        </div>
+        <p className="text-xs text-muted-foreground">{w.data?.count ?? 0} repasse(s) no período.</p>
+      </div>
     </div>
   );
 }
