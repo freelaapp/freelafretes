@@ -44,6 +44,7 @@ import { Route as MotoristaFreteIdRouteImport } from './routes/motorista.frete.$
 import { Route as EmbarcadorViagemIdRouteImport } from './routes/embarcador.viagem.$id'
 import { Route as EmbarcadorPagamentoJobIdRouteImport } from './routes/embarcador.pagamento.$jobId'
 import { Route as EmbarcadorFreteIdRouteImport } from './routes/embarcador.frete.$id'
+import { Route as EmbarcadorFaturaIdRouteImport } from './routes/embarcador.fatura.$id'
 import { Route as AdminProvidersIdRouteImport } from './routes/admin.providers.$id'
 import { Route as AdminJobsIdRouteImport } from './routes/admin.jobs.$id'
 import { Route as AdminFreightsIdRouteImport } from './routes/admin.freights.$id'
@@ -225,6 +226,11 @@ const EmbarcadorFreteIdRoute = EmbarcadorFreteIdRouteImport.update({
   path: '/embarcador/frete/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbarcadorFaturaIdRoute = EmbarcadorFaturaIdRouteImport.update({
+  id: '/embarcador/fatura/$id',
+  path: '/embarcador/fatura/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProvidersIdRoute = AdminProvidersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -281,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/jobs/$id': typeof AdminJobsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
+  '/embarcador/fatura/$id': typeof EmbarcadorFaturaIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -321,6 +328,7 @@ export interface FileRoutesByTo {
   '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/jobs/$id': typeof AdminJobsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
+  '/embarcador/fatura/$id': typeof EmbarcadorFaturaIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -363,6 +371,7 @@ export interface FileRoutesById {
   '/admin/freights/$id': typeof AdminFreightsIdRoute
   '/admin/jobs/$id': typeof AdminJobsIdRoute
   '/admin/providers/$id': typeof AdminProvidersIdRoute
+  '/embarcador/fatura/$id': typeof EmbarcadorFaturaIdRoute
   '/embarcador/frete/$id': typeof EmbarcadorFreteIdRoute
   '/embarcador/pagamento/$jobId': typeof EmbarcadorPagamentoJobIdRoute
   '/embarcador/viagem/$id': typeof EmbarcadorViagemIdRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/freights/$id'
     | '/admin/jobs/$id'
     | '/admin/providers/$id'
+    | '/embarcador/fatura/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/admin/freights/$id'
     | '/admin/jobs/$id'
     | '/admin/providers/$id'
+    | '/embarcador/fatura/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/admin/freights/$id'
     | '/admin/jobs/$id'
     | '/admin/providers/$id'
+    | '/embarcador/fatura/$id'
     | '/embarcador/frete/$id'
     | '/embarcador/pagamento/$jobId'
     | '/embarcador/viagem/$id'
@@ -512,6 +524,7 @@ export interface RootRouteChildren {
   MotoristaPropostasRoute: typeof MotoristaPropostasRoute
   MotoristaSuspensoRoute: typeof MotoristaSuspensoRoute
   MotoristaViagensRoute: typeof MotoristaViagensRoute
+  EmbarcadorFaturaIdRoute: typeof EmbarcadorFaturaIdRoute
   EmbarcadorFreteIdRoute: typeof EmbarcadorFreteIdRoute
   EmbarcadorPagamentoJobIdRoute: typeof EmbarcadorPagamentoJobIdRoute
   EmbarcadorViagemIdRoute: typeof EmbarcadorViagemIdRoute
@@ -766,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmbarcadorFreteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embarcador/fatura/$id': {
+      id: '/embarcador/fatura/$id'
+      path: '/embarcador/fatura/$id'
+      fullPath: '/embarcador/fatura/$id'
+      preLoaderRoute: typeof EmbarcadorFaturaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/providers/$id': {
       id: '/admin/providers/$id'
       path: '/$id'
@@ -896,6 +916,7 @@ const rootRouteChildren: RootRouteChildren = {
   MotoristaPropostasRoute: MotoristaPropostasRoute,
   MotoristaSuspensoRoute: MotoristaSuspensoRoute,
   MotoristaViagensRoute: MotoristaViagensRoute,
+  EmbarcadorFaturaIdRoute: EmbarcadorFaturaIdRoute,
   EmbarcadorFreteIdRoute: EmbarcadorFreteIdRoute,
   EmbarcadorPagamentoJobIdRoute: EmbarcadorPagamentoJobIdRoute,
   EmbarcadorViagemIdRoute: EmbarcadorViagemIdRoute,
