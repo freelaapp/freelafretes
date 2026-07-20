@@ -121,14 +121,20 @@ function PublishPage() {
   }, [step, suggestKey]);
 
   const antt = (suggestion as any)?.antt as { is_applicable: boolean; floor_cents: number; reason: string } | undefined;
-  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && payment * 100 < antt.floor_cents);
 
-  async function submit() {
-    if (payment <= 0) return toast.error("Informe o valor");
-    if (!pickup_at) return toast.error("Data de coleta obrigatória");
-    if (belowFloor && antt) {
-      return toast.error(`Valor abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
-    }
+  // Margem da plataforma e split (para exibição transparente ao embarcador)
+  const acceptCtr = useServerFn(acceptContract);
+  const hasAccepted = useServerFn(hasAcceptedContract);
+  const settingsFn = useServerFn(getPlatformSettings);
+  const lookupNfe = useServerFn(lookupNfeMock);
+
+  const contractQ = useQuery({ queryKey: ["contract-shipper"], queryFn: () => hasAccepted({ data: { contract_type: "EMBARCADOR_TRANSPORTE" as const } }) });
+  const settingsQ = useQuery({ queryKey: ["platform-settings-pub"], queryFn: () => settingsFn() });
+  const margem = Number((settingsQ.data as any)?.carrier_margin_percent ?? 0.20);
+  const splitPreview = applyCarrierSplit(Math.round(payment * 100), margem);
+  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && splitPreview.driverPayoutCents < antt.floor_cents);
+
+  async function doPublish() {
     setLoading(true);
     try {
       await publish({ data: {
@@ -147,18 +153,57 @@ function PublishPage() {
         suggested_amount_in_cents: suggestion?.freteCents ?? null,
         pricing_breakdown: suggestion?.breakdown ?? null,
         pricing_factors: suggestion?.fatores ?? null,
+        nfe_key: nfeSummary?.key ?? null,
+        nfe_summary: nfeSummary ?? null,
       } });
       toast.success("Frete publicado!");
       nav({ to: "/embarcador/fretes" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
-    } finally { setLoading(false); }
+    } finally { setLoading(false); setContractOpen(false); }
+  }
+
+  async function submit() {
+    if (payment <= 0) return toast.error("Informe o valor");
+    if (!pickup_at) return toast.error("Data de coleta obrigatória");
+    if (belowFloor && antt) {
+      return toast.error(`Repasse ao motorista abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Aumente o valor total (Lei 13.703/2018).`);
+    }
+    if (!contractQ.data?.accepted) { setContractOpen(true); return; }
+    await doPublish();
+  }
+
+  async function acceptAndPublish() {
+    try {
+      await acceptCtr({ data: { contract_type: "EMBARCADOR_TRANSPORTE" as const } });
+      await contractQ.refetch();
+      await doPublish();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao registrar aceite");
+    }
   }
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
+  async function fetchNfe() {
+    const clean = nfeKeyInput.replace(/\D/g, "");
+    if (!isValidNfeKey(clean)) return toast.error("Chave da NF-e inválida (44 dígitos, DV incorreto).");
+    try {
+      const r = await lookupNfe({ data: { key: clean } });
+      setNfeSummary(r);
+      // Preenche automaticamente
+      if (r.cargo.tipo && !cargo_type) setCargoType(r.cargo.tipo);
+      if (r.cargo.peso_kg && !cargo_weight_kg) setWeight(r.cargo.peso_kg);
+      if (r.cargo.volume_m3 && !cargo_volume_m3) setVolume(r.cargo.volume_m3);
+      if (!title) setTitle(`NF-e ${clean.slice(0, 6)} · ${r.cargo.tipo}`);
+      toast.success("NF-e importada (simulação Emiteaí)");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro na consulta");
+    }
+  }
 
 
 
