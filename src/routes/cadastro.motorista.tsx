@@ -3,6 +3,9 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { createProviderProfile } from "@/lib/api.functions";
+import { acceptContract } from "@/lib/carrier.functions";
+import { CONTRACT_DRIVER_V1 } from "@/lib/contracts";
+import { ContractAcceptModal } from "@/components/ContractAcceptModal";
 import { Field, SelectField, ButtonPrimary, Stepper } from "@/components/ui-kit";
 import { isValidCPF, maskCPF, maskPhone, maskPlate, isValidPlate, isStrongPassword, friendlyAuthError } from "@/lib/format";
 import { VEHICLE_TYPES, BODY_TYPES, CNH_CATEGORIES, UF_LIST, BANK_OPTIONS, PIX_KEY_TYPES } from "@/lib/constants";
@@ -122,15 +125,22 @@ function DriverSignup() {
     finally { setUploading(null); }
   }
 
+  const [tacOpen, setTacOpen] = useState(false);
+  const acceptCtr = useServerFn(acceptContract);
+
   async function submit() {
     if (!bank_code) return toast.error("Selecione o banco");
     if (!bank_agency || !bank_account) return toast.error("Preencha agência e conta");
     if (!pix_key) return toast.error("Informe a chave PIX");
     if (!docs.cnh_document_url || !docs.cnh_back_url || !docs.address_proof_url) return toast.error("Envie todos os documentos");
+    setTacOpen(true);
+  }
 
+  async function finalize() {
     setLoading(true);
     try {
       await ensureAuth();
+      await acceptCtr({ data: { contract_type: "TAC_SUBCONTRATACAO" as const } });
       await createProfile({ data: {
         full_name, email, phone, cpf: cpf.replace(/\D/g,""), birthdate,
         cnh_number, cnh_category, cnh_expires_at, city, uf,
@@ -141,6 +151,7 @@ function DriverSignup() {
         selfie_url: null,
         bank_code, bank_agency, bank_account, pix_key, pix_key_type,
       } });
+      setTacOpen(false);
       setDone(true);
     } catch (e) {
       toast.error(friendlyAuthError(e));
@@ -268,6 +279,14 @@ function DriverSignup() {
           </>
         )}
       </div>
+      <ContractAcceptModal
+        open={tacOpen}
+        onClose={() => setTacOpen(false)}
+        onAccept={finalize}
+        title="Contrato TAC — Subcontratação (Lei 11.442/2007)"
+        body={CONTRACT_DRIVER_V1}
+        loading={loading}
+      />
     </div>
   );
 }
