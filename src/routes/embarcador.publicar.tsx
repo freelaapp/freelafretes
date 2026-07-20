@@ -388,13 +388,26 @@ function PublishPage() {
               <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg{cargo_volume_m3 ? ` · ${cargo_volume_m3} m³` : ""}</p>
               <p>{origin_city}/{origin_uf} → {destination_city}/{destination_uf} · {distance_km} km</p>
               <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
-              <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <div className="mt-2 pt-2 border-t border-border">
+                <p className="text-primary font-bold text-base">Total do frete: R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Tudo incluso: transporte, CT-e/MDF-e/CIOT, seguro RCTR-C e repasse ao motorista. Sem taxas adicionais.
+                </p>
+              </div>
             </div>
             <ButtonPrimary onClick={submit} disabled={loading || belowFloor}>{loading ? "Publicando..." : belowFloor ? "Ajuste o valor para publicar" : "Publicar frete"}</ButtonPrimary>
 
           </>
         )}
       </div>
+      <ContractAcceptModal
+        open={contractOpen}
+        onClose={() => setContractOpen(false)}
+        onAccept={acceptAndPublish}
+        title="Contrato de transporte — FREELA FRETES (ETC)"
+        body={CONTRACT_SHIPPER_V1}
+        loading={loading}
+      />
       <ContractorNav />
     </div>
   );
