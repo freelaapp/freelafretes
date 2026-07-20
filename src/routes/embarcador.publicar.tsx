@@ -216,6 +216,24 @@ function PublishPage() {
       <div className="px-4 mt-4 space-y-3">
         {step === 1 && (
           <>
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-semibold flex items-center gap-1.5"><FileSearch className="h-3.5 w-3.5" /> Já tem a NF-e? Preencha automático</p>
+              <div className="flex gap-2">
+                <input value={nfeKeyInput} onChange={(e) => setNfeKeyInput(maskNfeKey(e.target.value))}
+                  placeholder="Chave de 44 dígitos"
+                  className="flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm font-mono" />
+                <button type="button" onClick={fetchNfe}
+                  className="rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold">
+                  Consultar
+                </button>
+              </div>
+              {nfeSummary && (
+                <p className="text-[11px] text-muted-foreground">
+                  <b>{nfeSummary.emitente.razao_social}</b> ({nfeSummary.emitente.uf}) · {nfeSummary.cargo.tipo} · {nfeSummary.cargo.peso_kg} kg · R$ {nfeSummary.cargo.valor_carga_reais.toLocaleString("pt-BR")}
+                  <span className="ml-1 opacity-70">· simulação Emiteaí</span>
+                </p>
+              )}
+            </div>
             <Field label="Título do frete" value={title} onChange={setTitle} placeholder="Ex.: Soja Sorriso → Santos" />
             <SelectField label="Tipo de carga" value={cargo_type} onChange={setCargoType} options={CARGO_TYPES} />
             <div className="grid grid-cols-2 gap-2">
