@@ -126,15 +126,23 @@ function Hero() {
             <Flag className="h-3.5 w-3.5" /> Transportadora digital nacional
           </span>
           <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-accent-foreground">
-            Sua carga tem pressa.<br />
-            <span className="text-primary">Seu caminhão tem destino.</span>
+            Abra o frete.<br />
+            <span className="text-primary">A gente cuida do resto.</span>
           </h1>
-          <p className="mt-4 text-sm md:text-base text-accent-foreground/80">
-            Conectamos embarcadores e caminhoneiros em todo o Brasil, com pagamento protegido e reputação verificada.
+          <p className="mt-4 text-sm md:text-base text-accent-foreground/85">
+            A Freela Fretes é a <strong>transportadora digital</strong> que transporta sua carga de ponta a ponta.
+            Processo <strong>100% automatizado</strong>: matching de motorista, contrato, seguro, CT-e, MDF-e,
+            CIOT, pagamento em custódia e nota fiscal — tudo emitido pela Freela. Seu único trabalho é abrir o frete.
           </p>
+          <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-4 text-sm text-accent-foreground/90">
+            <li className="flex items-center gap-2"><span className="text-primary">✓</span> Motorista subcontratado pela Freela</li>
+            <li className="flex items-center gap-2"><span className="text-primary">✓</span> Documentos fiscais automáticos</li>
+            <li className="flex items-center gap-2"><span className="text-primary">✓</span> Pagamento protegido em custódia</li>
+            <li className="flex items-center gap-2"><span className="text-primary">✓</span> Crédito de ICMS pra sua empresa</li>
+          </ul>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/cadastro/empresa" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-primary text-primary-foreground font-semibold shadow-elevated hover:bg-primary-hover">
-              Tenho carga para enviar <ArrowRight className="h-4 w-4" />
+              Abrir meu frete agora <ArrowRight className="h-4 w-4" />
             </Link>
             <Link to="/cadastro/motorista" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-accent-foreground/30 text-accent-foreground font-semibold hover:bg-accent-foreground/10">
               Sou motorista
