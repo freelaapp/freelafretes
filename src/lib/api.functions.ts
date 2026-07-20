@@ -510,12 +510,13 @@ export const confirmDelivery = createServerFn({ method: "POST" })
       .update({ status: "RELEASED", released_at: now })
       .eq("job_id", job.id).eq("status", "HELD").select("amount_in_cents,service_fee_in_cents").maybeSingle();
 
-    // Encerra MDF-e no check-out
+    // Emiteaí — registra entrega no CT-e e encerra MDF-e no check-out
     try {
       const { documentProvider } = await import("./document-emission.server");
-      await documentProvider.markMdfeClosed(job.id);
+      await documentProvider.registrarEntrega(job.id);
+      await documentProvider.encerrarMDFe(job.id);
     } catch (e) {
-      console.error("[documents] encerrar MDF-e falhou", e);
+      console.error("[documents] finalizar docs falhou", e);
     }
 
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
