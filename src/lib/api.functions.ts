@@ -709,7 +709,8 @@ export const createContractorProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => contractorProfileInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { error: rErr } = await context.supabase.from("user_roles").insert({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: rErr } = await supabaseAdmin.from("user_roles").insert({
       user_id: context.userId, role: "contractor",
     });
     if (rErr && rErr.code !== "23505") throw rErr;
