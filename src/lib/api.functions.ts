@@ -65,8 +65,9 @@ export const publishFreight = createServerFn({ method: "POST" })
 
     const freight_value_in_cents = Math.round(data.payment_reais * 100);
 
-    // Split conforme margem da plataforma
-    const { data: settings } = await context.supabase
+    // Split conforme margem da plataforma (leitura via admin — configuração restrita)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
       .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
     const margem = Number(settings?.carrier_margin_percent ?? 0.20);
     const split = applyCarrierSplit(freight_value_in_cents, margem);
@@ -311,7 +312,8 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
       .eq("id", freight.id);
 
     // Recalcula split conforme margem atual, sobre o valor efetivamente contratado.
-    const { data: settings } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
       .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
     const margem = Number(settings?.carrier_margin_percent ?? 0.20);
     const split = applyCarrierSplit(agreed, margem);
@@ -707,7 +709,8 @@ export const createContractorProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => contractorProfileInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { error: rErr } = await context.supabase.from("user_roles").insert({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: rErr } = await supabaseAdmin.from("user_roles").insert({
       user_id: context.userId, role: "contractor",
     });
     if (rErr && rErr.code !== "23505") throw rErr;
@@ -760,7 +763,8 @@ export const createProviderProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => providerProfileInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { error: rErr } = await context.supabase.from("user_roles").insert({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: rErr } = await supabaseAdmin.from("user_roles").insert({
       user_id: context.userId, role: "provider",
     });
     if (rErr && rErr.code !== "23505") throw rErr;
