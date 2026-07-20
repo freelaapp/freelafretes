@@ -15,6 +15,8 @@ type Doc = {
   issued_at: string | null;
   payload: Record<string, any>;
   provider: string;
+  event_type: "ISSUED" | "COMPLEMENTAR" | "DELIVERED" | "CLOSED" | "CANCELLED" | null;
+  parent_doc_id: string | null;
 };
 
 const LABEL: Record<Doc["doc_type"], string> = {
@@ -49,42 +51,60 @@ function DocRow({ d }: { d: Doc }) {
     }
   }
   const encerrado = d.doc_type === "MDFE" && (d.payload as any)?.encerrado === true;
+  const entregue = d.doc_type === "CTE" && (d.payload as any)?.entrega;
+  const complementar = d.event_type === "COMPLEMENTAR";
   return (
-    <div className="rounded-xl border border-border bg-card/50 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-            <p className="text-sm font-semibold">{LABEL[d.doc_type]}</p>
-            <StatusPill s={d.status} />
-            {encerrado && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full border border-accent/40 bg-accent/10 text-accent font-semibold">Encerrado</span>
+    <div className="relative pl-6">
+      <span className={`absolute left-1.5 top-3 h-2.5 w-2.5 rounded-full ring-2 ring-background ${d.status === "CANCELLED" ? "bg-muted-foreground" : "bg-success"}`} />
+      <div className="rounded-xl border border-border bg-card/50 p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+              <p className="text-sm font-semibold">
+                {LABEL[d.doc_type]}{complementar ? " (Complementar)" : ""}
+              </p>
+              <StatusPill s={d.status} />
+              {d.status === "ISSUED" && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full border border-success/40 bg-success/10 text-success font-semibold inline-flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3" /> Emitido automaticamente
+                </span>
+              )}
+              {encerrado && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full border border-accent/40 bg-accent/10 text-accent font-semibold">Encerrado</span>
+              )}
+              {entregue && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full border border-primary/40 bg-primary/10 text-primary font-semibold">Entrega registrada</span>
+              )}
+            </div>
+            {d.doc_number && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Nº <span className="font-mono text-foreground">{d.doc_number}</span>
+              </p>
+            )}
+            {d.access_key && (
+              <p className="mt-1 text-xs text-muted-foreground break-all">
+                Chave: <span className="font-mono text-foreground">{d.access_key}</span>
+              </p>
+            )}
+            {d.issued_at && (
+              <p className="mt-1 text-[11px] text-muted-foreground">Emitido em {formatDateTimeBR(d.issued_at)}</p>
+            )}
+            {complementar && (d.payload as any)?.motivo && (
+              <p className="mt-1 text-[11px] text-muted-foreground italic">Motivo: {(d.payload as any).motivo}</p>
             )}
           </div>
-          {d.doc_number && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Nº <span className="font-mono text-foreground">{d.doc_number}</span>
-            </p>
-          )}
-          {d.access_key && (
-            <p className="mt-1 text-xs text-muted-foreground break-all">
-              Chave: <span className="font-mono text-foreground">{d.access_key}</span>
-            </p>
-          )}
-          {d.issued_at && (
-            <p className="mt-1 text-[11px] text-muted-foreground">Emitido em {formatDateTimeBR(d.issued_at)}</p>
+          {key && (
+            <button
+              onClick={copy}
+              className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-muted"
+              title="Copiar"
+            >
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{copied ? "Copiado" : "Copiar"}</span>
+            </button>
           )}
         </div>
-        {key && (
-          <button
-            onClick={copy}
-            className="shrink-0 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-muted"
-            title="Copiar"
-          >
-            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            <span>{copied ? "Copiado" : "Copiar"}</span>
-          </button>
-        )}
       </div>
     </div>
   );
@@ -93,9 +113,11 @@ function DocRow({ d }: { d: Doc }) {
 export function TripDocumentsCard({
   jobId,
   actions,
+  audience = "driver",
 }: {
   jobId: string;
   actions?: React.ReactNode;
+  audience?: "driver" | "shipper" | "admin";
 }) {
   const list = useServerFn(listTripDocuments);
   const q = useQuery({
@@ -108,23 +130,31 @@ export function TripDocumentsCard({
     <div className="rounded-2xl bg-card border border-border p-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold">Documentos da viagem</p>
+          <p className="text-sm font-semibold">Documentos fiscais da viagem</p>
           <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3" /> Emitido via parceiro fiscal
+            <ShieldCheck className="h-3 w-3" />
+            {audience === "shipper"
+              ? "Emitidos pela Freela Fretes Transportes — você não precisa fazer nada."
+              : "Emissão automática via parceiro fiscal (Emiteaí)"}
           </p>
         </div>
         {actions}
       </div>
-      <div className="mt-3 space-y-2">
-        {q.isLoading && <p className="text-xs text-muted-foreground">Carregando...</p>}
-        {!q.isLoading && docs.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            Documentos serão emitidos após a confirmação do pagamento.
-          </p>
+      <div className="mt-3 relative">
+        {docs.length > 0 && (
+          <span className="absolute left-2 top-3 bottom-3 w-px bg-border" aria-hidden />
         )}
-        {docs.map((d) => (
-          <DocRow key={d.id} d={d} />
-        ))}
+        <div className="space-y-2 relative">
+          {q.isLoading && <p className="text-xs text-muted-foreground pl-6">Carregando...</p>}
+          {!q.isLoading && docs.length === 0 && (
+            <p className="text-xs text-muted-foreground pl-6">
+              Documentos serão emitidos assim que o pagamento for confirmado.
+            </p>
+          )}
+          {docs.map((d) => (
+            <DocRow key={d.id} d={d} />
+          ))}
+        </div>
       </div>
     </div>
   );

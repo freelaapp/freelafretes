@@ -55,3 +55,40 @@ export const adminReissueTripDocuments = createServerFn({ method: "POST" })
 
     return { ok: true, count: rows.length };
   });
+
+// Emite CT-e complementar (admin) — usado quando um incidente com custo extra é aprovado.
+export const adminEmitComplementarCte = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      job_id: z.string().uuid(),
+      valor_reais: z.number().positive(),
+      motivo: z.string().min(3).max(500),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: admin, error: aErr } = await context.supabase
+      .from("admins").select("id,is_active").eq("user_id", context.userId).maybeSingle();
+    if (aErr || !admin || !admin.is_active) throw new Error("Acesso negado");
+
+    const { data: job } = await context.supabase
+      .from("jobs")
+      .select("id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode,driver_payout_cents)")
+      .eq("id", data.job_id)
+      .maybeSingle();
+    if (!job) throw new Error("Viagem não encontrada");
+
+    const { documentProvider } = await import("./document-emission.server");
+    const valorCentavos = Math.round(data.valor_reais * 100);
+    const doc = await documentProvider.emitCTeComplementar(job as any, valorCentavos, data.motivo);
+
+    await context.supabase.from("admin_audit_logs").insert({
+      admin_id: admin.id,
+      action: "EMIT_COMPLEMENTAR_CTE",
+      entity_type: "job",
+      entity_id: data.job_id,
+      details: { motivo: data.motivo, valor_centavos: valorCentavos, doc_id: doc.id },
+    });
+
+    return { ok: true, doc_id: doc.id };
+  });

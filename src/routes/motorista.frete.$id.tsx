@@ -81,7 +81,13 @@ function DriverFreightDetail() {
             <p>Coleta: {formatDateBR(freight.pickup_at)}</p>
             {freight.description && <p className="mt-2 italic">{freight.description}</p>}
           </div>
-          <p className="mt-3 text-primary font-bold text-xl">{formatBRL(freight.base_amount_in_cents)}</p>
+          <div className="mt-3 rounded-xl border border-success/30 bg-success/5 p-3">
+            <p className="text-[11px] uppercase font-semibold text-success/80">Seu repasse (líquido)</p>
+            <p className="text-success font-bold text-2xl leading-tight">{formatBRL(freight.driver_payout_cents ?? freight.base_amount_in_cents)}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Subcontratação Freela Fretes — pagamento garantido no check-out.
+            </p>
+          </div>
         </div>
 
         <ButtonPrimary onClick={() => setShowModal(true)}>Enviar proposta</ButtonPrimary>

@@ -68,6 +68,7 @@ function JobDetail() {
 
       <TripDocumentsCard
         jobId={id}
+        audience="admin"
         actions={
           <button
             onClick={() => { setReissueReason(""); setReissueOpen(true); }}

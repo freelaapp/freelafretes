@@ -365,7 +365,7 @@ export const simulatePaymentPaid = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ job_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: job } = await context.supabase.from("jobs")
-      .select("id,contractor_id,provider_id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode)")
+      .select("id,contractor_id,provider_id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode,driver_payout_cents)")
       .eq("id", data.job_id).maybeSingle();
     if (!job) throw new Error("Viagem não encontrada");
     const { data: c } = await context.supabase.from("contractors")
@@ -473,6 +473,16 @@ export const confirmPickup = createServerFn({ method: "POST" })
       { job_id: job.id, type: "LOADING_FINISHED", created_by: context.userId },
       { job_id: job.id, type: "TRIP_STARTED", created_by: context.userId },
     ]);
+    // Emiteaí — MDF-e emitido no check-in validado (vincula CT-e, veículo, condutor)
+    try {
+      const { documentProvider } = await import("./document-emission.server");
+      const { data: jobFull } = await context.supabase.from("jobs")
+        .select("id,agreed_amount_in_cents,freights(title,origin_city,origin_uf,destination_city,destination_uf,weight_kg,cargo_type,freight_mode,driver_payout_cents)")
+        .eq("id", job.id).maybeSingle();
+      if (jobFull) await documentProvider.emitMDFe(jobFull as any);
+    } catch (e) {
+      console.error("[documents] MDF-e falhou", e);
+    }
     return { ok: true };
   });
 
@@ -500,12 +510,13 @@ export const confirmDelivery = createServerFn({ method: "POST" })
       .update({ status: "RELEASED", released_at: now })
       .eq("job_id", job.id).eq("status", "HELD").select("amount_in_cents,service_fee_in_cents").maybeSingle();
 
-    // Encerra MDF-e no check-out
+    // Emiteaí — registra entrega no CT-e e encerra MDF-e no check-out
     try {
       const { documentProvider } = await import("./document-emission.server");
-      await documentProvider.markMdfeClosed(job.id);
+      await documentProvider.registrarEntrega(job.id);
+      await documentProvider.encerrarMDFe(job.id);
     } catch (e) {
-      console.error("[documents] encerrar MDF-e falhou", e);
+      console.error("[documents] finalizar docs falhou", e);
     }
 
     const { data: c } = await context.supabase.from("contractors").select("user_id").eq("id", job.contractor_id).maybeSingle();
