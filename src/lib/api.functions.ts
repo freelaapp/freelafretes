@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { SERVICE_FEE_BPS, makeCode } from "./server-helpers.server";
+import { makeCode } from "./server-helpers.server";
 import { computeAnttFloor } from "./pricing.functions";
 import { applyCarrierSplit } from "./pricing";
 import { CONTRACT_SHIPPER_VERSION, CONTRACT_DRIVER_VERSION } from "./contracts";
