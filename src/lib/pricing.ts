@@ -309,6 +309,28 @@ export function calcularFrete(
 }
 
 // ============================================================
+// MODELO TRANSPORTADORA — split "frete cheio" (embarcador) vs "repasse" (TAC)
+// ============================================================
+/**
+ * Divide o preço final entre o valor cobrado do embarcador (freight_value)
+ * e o repasse ao motorista (driver_payout). A diferença é a margem da Freela.
+ *
+ * O motor puro em `calcularFrete` retorna o preço de mercado do transporte;
+ * essa função aplica a margem comercial configurável (0..1, default 0.20).
+ *
+ * Sanidade:
+ *   applyCarrierSplit(100000, 0.20) → { freightValueCents: 100000, driverPayoutCents: 80000, platformMarginCents: 20000 }
+ *   applyCarrierSplit(150000, 0.15) → { freightValueCents: 150000, driverPayoutCents: 127500, platformMarginCents: 22500 }
+ */
+export function applyCarrierSplit(freteCents: number, margem: number) {
+  const m = Math.max(0, Math.min(0.9, Number.isFinite(margem) ? margem : 0.20));
+  const freightValueCents = Math.max(0, Math.round(freteCents));
+  const driverPayoutCents = Math.round(freightValueCents * (1 - m));
+  const platformMarginCents = freightValueCents - driverPayoutCents;
+  return { freightValueCents, driverPayoutCents, platformMarginCents };
+}
+
+// ============================================================
 // TESTES DE SANIDADE (exemplos comentados)
 // ============================================================
 // 1. Carreta de grãos Sorriso→Santos, 1.980 km, 32.000 kg, com pedágio:
