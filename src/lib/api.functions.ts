@@ -3,6 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { SERVICE_FEE_BPS, makeCode } from "./server-helpers.server";
 import { computeAnttFloor } from "./pricing.functions";
+import { applyCarrierSplit } from "./pricing";
+import { CONTRACT_SHIPPER_VERSION, CONTRACT_DRIVER_VERSION } from "./contracts";
 
 
 // ============================================================
@@ -35,6 +37,8 @@ const publishFreightInput = z.object({
   suggested_amount_in_cents: z.number().int().positive().optional().nullable(),
   pricing_breakdown: z.any().optional().nullable(),
   pricing_factors: z.any().optional().nullable(),
+  nfe_key: z.string().length(44).optional().nullable(),
+  nfe_summary: z.any().optional().nullable(),
 });
 
 export const publishFreight = createServerFn({ method: "POST" })
