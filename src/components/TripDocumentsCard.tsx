@@ -113,9 +113,11 @@ function DocRow({ d }: { d: Doc }) {
 export function TripDocumentsCard({
   jobId,
   actions,
+  audience = "driver",
 }: {
   jobId: string;
   actions?: React.ReactNode;
+  audience?: "driver" | "shipper" | "admin";
 }) {
   const list = useServerFn(listTripDocuments);
   const q = useQuery({
@@ -128,23 +130,31 @@ export function TripDocumentsCard({
     <div className="rounded-2xl bg-card border border-border p-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold">Documentos da viagem</p>
+          <p className="text-sm font-semibold">Documentos fiscais da viagem</p>
           <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3" /> Emitido via parceiro fiscal
+            <ShieldCheck className="h-3 w-3" />
+            {audience === "shipper"
+              ? "Emitidos pela Freela Fretes Transportes — você não precisa fazer nada."
+              : "Emissão automática via parceiro fiscal (Emiteaí)"}
           </p>
         </div>
         {actions}
       </div>
-      <div className="mt-3 space-y-2">
-        {q.isLoading && <p className="text-xs text-muted-foreground">Carregando...</p>}
-        {!q.isLoading && docs.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            Documentos serão emitidos após a confirmação do pagamento.
-          </p>
+      <div className="mt-3 relative">
+        {docs.length > 0 && (
+          <span className="absolute left-2 top-3 bottom-3 w-px bg-border" aria-hidden />
         )}
-        {docs.map((d) => (
-          <DocRow key={d.id} d={d} />
-        ))}
+        <div className="space-y-2 relative">
+          {q.isLoading && <p className="text-xs text-muted-foreground pl-6">Carregando...</p>}
+          {!q.isLoading && docs.length === 0 && (
+            <p className="text-xs text-muted-foreground pl-6">
+              Documentos serão emitidos assim que o pagamento for confirmado.
+            </p>
+          )}
+          {docs.map((d) => (
+            <DocRow key={d.id} d={d} />
+          ))}
+        </div>
       </div>
     </div>
   );
