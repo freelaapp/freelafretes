@@ -27,6 +27,7 @@ import { Route as EmbarcadorFretesRouteImport } from './routes/embarcador.fretes
 import { Route as CadastroMotoristaRouteImport } from './routes/cadastro.motorista'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro.empresa'
 import { Route as AdminValidationRouteImport } from './routes/admin.validation'
+import { Route as AdminTransportadoraRouteImport } from './routes/admin.transportadora'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminProvidersRouteImport } from './routes/admin.providers'
 import { Route as AdminPricingRouteImport } from './routes/admin.pricing'
@@ -135,6 +136,11 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
 const AdminValidationRoute = AdminValidationRouteImport.update({
   id: '/validation',
   path: '/validation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTransportadoraRoute = AdminTransportadoraRouteImport.update({
+  id: '/transportadora',
+  path: '/transportadora',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminTeamRoute = AdminTeamRouteImport.update({
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
+  '/admin/transportadora': typeof AdminTransportadoraRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
@@ -288,6 +295,7 @@ export interface FileRoutesByTo {
   '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
+  '/admin/transportadora': typeof AdminTransportadoraRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   '/admin/pricing': typeof AdminPricingRoute
   '/admin/providers': typeof AdminProvidersRouteWithChildren
   '/admin/team': typeof AdminTeamRoute
+  '/admin/transportadora': typeof AdminTransportadoraRoute
   '/admin/validation': typeof AdminValidationRoute
   '/cadastro/empresa': typeof CadastroEmpresaRoute
   '/cadastro/motorista': typeof CadastroMotoristaRoute
@@ -369,6 +378,7 @@ export interface FileRouteTypes {
     | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
+    | '/admin/transportadora'
     | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
+    | '/admin/transportadora'
     | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
@@ -446,6 +457,7 @@ export interface FileRouteTypes {
     | '/admin/pricing'
     | '/admin/providers'
     | '/admin/team'
+    | '/admin/transportadora'
     | '/admin/validation'
     | '/cadastro/empresa'
     | '/cadastro/motorista'
@@ -620,6 +632,13 @@ declare module '@tanstack/react-router' {
       path: '/validation'
       fullPath: '/admin/validation'
       preLoaderRoute: typeof AdminValidationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/transportadora': {
+      id: '/admin/transportadora'
+      path: '/transportadora'
+      fullPath: '/admin/transportadora'
+      preLoaderRoute: typeof AdminTransportadoraRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/team': {
@@ -816,6 +835,7 @@ interface AdminRouteChildren {
   AdminPricingRoute: typeof AdminPricingRoute
   AdminProvidersRoute: typeof AdminProvidersRouteWithChildren
   AdminTeamRoute: typeof AdminTeamRoute
+  AdminTransportadoraRoute: typeof AdminTransportadoraRoute
   AdminValidationRoute: typeof AdminValidationRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -831,6 +851,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPricingRoute: AdminPricingRoute,
   AdminProvidersRoute: AdminProvidersRouteWithChildren,
   AdminTeamRoute: AdminTeamRoute,
+  AdminTransportadoraRoute: AdminTransportadoraRoute,
   AdminValidationRoute: AdminValidationRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -863,13 +884,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,20 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { publishFreight } from "@/lib/api.functions";
 import { simulatePricing } from "@/lib/pricing.functions";
+import { acceptContract, hasAcceptedContract, lookupNfeMock, getPlatformSettings } from "@/lib/carrier.functions";
+import { CONTRACT_SHIPPER_V1 } from "@/lib/contracts";
+import { ContractAcceptModal } from "@/components/ContractAcceptModal";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { AppHeader } from "@/components/AppHeader";
 import { ContractorNav } from "@/components/RoleNav";
 import { Field, SelectField, TextArea, ButtonPrimary, Stepper, Badge } from "@/components/ui-kit";
 import { CARGO_TYPES, VEHICLE_TYPES, BODY_TYPES, UF_LIST } from "@/lib/constants";
-import { maskCEP } from "@/lib/format";
+import { maskCEP, isValidNfeKey, maskNfeKey } from "@/lib/format";
+import { applyCarrierSplit } from "@/lib/pricing";
 import { readSavedSimulation, clearSavedSimulation, type SimulatorFormState } from "@/components/SimulatorCard";
 import type { PricingResult } from "@/lib/pricing";
 import { classifyFreight, freightModeLabel, type FreightMode } from "@/lib/freight-classifier";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, AlertTriangle, Truck } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Truck, FileSearch } from "lucide-react";
 
 export const Route = createFileRoute("/embarcador/publicar")({
   head: () => ({ meta: [{ title: "Publicar Frete — Freela Fretes" }] }),
@@ -36,6 +40,11 @@ function PublishPage() {
   const [mode_override, setModeOverride] = useState(false);
   const [mode_manual, setModeManual] = useState<FreightMode | null>(null);
   const [description, setDescription] = useState("");
+  // NF-e (opcional)
+  const [nfeKeyInput, setNfeKeyInput] = useState("");
+  const [nfeSummary, setNfeSummary] = useState<any>(null);
+  // Contrato
+  const [contractOpen, setContractOpen] = useState(false);
   // Rota
   const [origin_cep, setOCep] = useState("");
   const [origin_address, setOAddr] = useState("");
@@ -112,14 +121,20 @@ function PublishPage() {
   }, [step, suggestKey]);
 
   const antt = (suggestion as any)?.antt as { is_applicable: boolean; floor_cents: number; reason: string } | undefined;
-  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && payment * 100 < antt.floor_cents);
 
-  async function submit() {
-    if (payment <= 0) return toast.error("Informe o valor");
-    if (!pickup_at) return toast.error("Data de coleta obrigatória");
-    if (belowFloor && antt) {
-      return toast.error(`Valor abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
-    }
+  // Margem da plataforma e split (para exibição transparente ao embarcador)
+  const acceptCtr = useServerFn(acceptContract);
+  const hasAccepted = useServerFn(hasAcceptedContract);
+  const settingsFn = useServerFn(getPlatformSettings);
+  const lookupNfe = useServerFn(lookupNfeMock);
+
+  const contractQ = useQuery({ queryKey: ["contract-shipper"], queryFn: () => hasAccepted({ data: { contract_type: "EMBARCADOR_TRANSPORTE" as const } }) });
+  const settingsQ = useQuery({ queryKey: ["platform-settings-pub"], queryFn: () => settingsFn() });
+  const margem = Number((settingsQ.data as any)?.carrier_margin_percent ?? 0.20);
+  const splitPreview = applyCarrierSplit(Math.round(payment * 100), margem);
+  const belowFloor = !!(antt && antt.is_applicable && antt.floor_cents > 0 && payment > 0 && splitPreview.driverPayoutCents < antt.floor_cents);
+
+  async function doPublish() {
     setLoading(true);
     try {
       await publish({ data: {
@@ -138,18 +153,57 @@ function PublishPage() {
         suggested_amount_in_cents: suggestion?.freteCents ?? null,
         pricing_breakdown: suggestion?.breakdown ?? null,
         pricing_factors: suggestion?.fatores ?? null,
+        nfe_key: nfeSummary?.key ?? null,
+        nfe_summary: nfeSummary ?? null,
       } });
       toast.success("Frete publicado!");
       nav({ to: "/embarcador/fretes" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro");
-    } finally { setLoading(false); }
+    } finally { setLoading(false); setContractOpen(false); }
+  }
+
+  async function submit() {
+    if (payment <= 0) return toast.error("Informe o valor");
+    if (!pickup_at) return toast.error("Data de coleta obrigatória");
+    if (belowFloor && antt) {
+      return toast.error(`Repasse ao motorista abaixo do piso ANTT (R$ ${(antt.floor_cents / 100).toLocaleString("pt-BR")}). Aumente o valor total (Lei 13.703/2018).`);
+    }
+    if (!contractQ.data?.accepted) { setContractOpen(true); return; }
+    await doPublish();
+  }
+
+  async function acceptAndPublish() {
+    try {
+      await acceptCtr({ data: { contract_type: "EMBARCADOR_TRANSPORTE" as const } });
+      await contractQ.refetch();
+      await doPublish();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao registrar aceite");
+    }
   }
 
   const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
   const belowMin = suggestion && payment > 0 && payment * 100 < suggestion.faixaMinCents * 0.8;
   const aboveMax = suggestion && payment > 0 && payment * 100 > suggestion.faixaMaxCents * 1.2;
+
+  async function fetchNfe() {
+    const clean = nfeKeyInput.replace(/\D/g, "");
+    if (!isValidNfeKey(clean)) return toast.error("Chave da NF-e inválida (44 dígitos, DV incorreto).");
+    try {
+      const r = await lookupNfe({ data: { key: clean } });
+      setNfeSummary(r);
+      // Preenche automaticamente
+      if (r.cargo.tipo && !cargo_type) setCargoType(r.cargo.tipo);
+      if (r.cargo.peso_kg && !cargo_weight_kg) setWeight(r.cargo.peso_kg);
+      if (r.cargo.volume_m3 && !cargo_volume_m3) setVolume(r.cargo.volume_m3);
+      if (!title) setTitle(`NF-e ${clean.slice(0, 6)} · ${r.cargo.tipo}`);
+      toast.success("NF-e importada (simulação Emiteaí)");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro na consulta");
+    }
+  }
 
 
 
@@ -162,6 +216,24 @@ function PublishPage() {
       <div className="px-4 mt-4 space-y-3">
         {step === 1 && (
           <>
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <p className="text-xs font-semibold flex items-center gap-1.5"><FileSearch className="h-3.5 w-3.5" /> Já tem a NF-e? Preencha automático</p>
+              <div className="flex gap-2">
+                <input value={nfeKeyInput} onChange={(e) => setNfeKeyInput(maskNfeKey(e.target.value))}
+                  placeholder="Chave de 44 dígitos"
+                  className="flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm font-mono" />
+                <button type="button" onClick={fetchNfe}
+                  className="rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-semibold">
+                  Consultar
+                </button>
+              </div>
+              {nfeSummary && (
+                <p className="text-[11px] text-muted-foreground">
+                  <b>{nfeSummary.emitente.razao_social}</b> ({nfeSummary.emitente.uf}) · {nfeSummary.cargo.tipo} · {nfeSummary.cargo.peso_kg} kg · R$ {nfeSummary.cargo.valor_carga_reais.toLocaleString("pt-BR")}
+                  <span className="ml-1 opacity-70">· simulação Emiteaí</span>
+                </p>
+              )}
+            </div>
             <Field label="Título do frete" value={title} onChange={setTitle} placeholder="Ex.: Soja Sorriso → Santos" />
             <SelectField label="Tipo de carga" value={cargo_type} onChange={setCargoType} options={CARGO_TYPES} />
             <div className="grid grid-cols-2 gap-2">
@@ -316,13 +388,26 @@ function PublishPage() {
               <p className="mt-1"><b>{title}</b> · {cargo_type} · {cargo_weight_kg} kg{cargo_volume_m3 ? ` · ${cargo_volume_m3} m³` : ""}</p>
               <p>{origin_city}/{origin_uf} → {destination_city}/{destination_uf} · {distance_km} km</p>
               <p className="mt-1"><Badge tone={freight_mode === "LOTACAO" ? "primary" : "accent"}>{freightModeLabel(freight_mode)}</Badge>{mode_override && <span className="ml-2 text-[11px] text-muted-foreground">(escolha manual)</span>}</p>
-              <p className="mt-1 text-primary font-bold">R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+              <div className="mt-2 pt-2 border-t border-border">
+                <p className="text-primary font-bold text-base">Total do frete: R$ {payment.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Tudo incluso: transporte, CT-e/MDF-e/CIOT, seguro RCTR-C e repasse ao motorista. Sem taxas adicionais.
+                </p>
+              </div>
             </div>
             <ButtonPrimary onClick={submit} disabled={loading || belowFloor}>{loading ? "Publicando..." : belowFloor ? "Ajuste o valor para publicar" : "Publicar frete"}</ButtonPrimary>
 
           </>
         )}
       </div>
+      <ContractAcceptModal
+        open={contractOpen}
+        onClose={() => setContractOpen(false)}
+        onAccept={acceptAndPublish}
+        title="Contrato de transporte — FREELA FRETES (ETC)"
+        body={CONTRACT_SHIPPER_V1}
+        loading={loading}
+      />
       <ContractorNav />
     </div>
   );

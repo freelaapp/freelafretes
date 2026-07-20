@@ -268,6 +268,45 @@ export type Database = {
           },
         ]
       }
+      carrier_profile: {
+        Row: {
+          certificado_apelido: string | null
+          cnpj: string
+          created_at: string
+          endereco: Json
+          id: string
+          ie: string | null
+          razao_social: string
+          rntrc: string | null
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          certificado_apelido?: string | null
+          cnpj: string
+          created_at?: string
+          endereco?: Json
+          id?: string
+          ie?: string | null
+          razao_social: string
+          rntrc?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          certificado_apelido?: string | null
+          cnpj?: string
+          created_at?: string
+          endereco?: Json
+          id?: string
+          ie?: string | null
+          razao_social?: string
+          rntrc?: string | null
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           checked_in_at: string | null
@@ -337,6 +376,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contract_acceptances: {
+        Row: {
+          accepted_at: string
+          contract_type: string
+          id: string
+          ip: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          accepted_at?: string
+          contract_type: string
+          id?: string
+          ip?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          accepted_at?: string
+          contract_type?: string
+          id?: string
+          ip?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
       }
       contractors: {
         Row: {
@@ -520,10 +586,14 @@ export type Database = {
           destination_lng: number | null
           destination_uf: string
           distance_km: number
+          driver_payout_cents: number | null
           freight_mode: string
+          freight_value_cents: number | null
           id: string
           mode_override: boolean
           mode_suggested: string | null
+          nfe_key: string | null
+          nfe_summary: Json | null
           origin_address: string | null
           origin_cep: string | null
           origin_city: string
@@ -532,6 +602,7 @@ export type Database = {
           origin_uf: string
           payment: number
           pickup_at: string
+          platform_margin_cents: number | null
           pricing_breakdown: Json | null
           pricing_factors: Json | null
           status: Database["public"]["Enums"]["freight_status"]
@@ -559,10 +630,14 @@ export type Database = {
           destination_lng?: number | null
           destination_uf: string
           distance_km: number
+          driver_payout_cents?: number | null
           freight_mode?: string
+          freight_value_cents?: number | null
           id?: string
           mode_override?: boolean
           mode_suggested?: string | null
+          nfe_key?: string | null
+          nfe_summary?: Json | null
           origin_address?: string | null
           origin_cep?: string | null
           origin_city: string
@@ -571,6 +646,7 @@ export type Database = {
           origin_uf: string
           payment: number
           pickup_at: string
+          platform_margin_cents?: number | null
           pricing_breakdown?: Json | null
           pricing_factors?: Json | null
           status?: Database["public"]["Enums"]["freight_status"]
@@ -598,10 +674,14 @@ export type Database = {
           destination_lng?: number | null
           destination_uf?: string
           distance_km?: number
+          driver_payout_cents?: number | null
           freight_mode?: string
+          freight_value_cents?: number | null
           id?: string
           mode_override?: boolean
           mode_suggested?: string | null
+          nfe_key?: string | null
+          nfe_summary?: Json | null
           origin_address?: string | null
           origin_cep?: string | null
           origin_city?: string
@@ -610,6 +690,7 @@ export type Database = {
           origin_uf?: string
           payment?: number
           pickup_at?: string
+          platform_margin_cents?: number | null
           pricing_breakdown?: Json | null
           pricing_factors?: Json | null
           status?: Database["public"]["Enums"]["freight_status"]
@@ -797,6 +878,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_settings: {
+        Row: {
+          carrier_margin_percent: number
+          created_at: string
+          id: string
+          singleton: boolean
+          updated_at: string
+        }
+        Insert: {
+          carrier_margin_percent?: number
+          created_at?: string
+          id?: string
+          singleton?: boolean
+          updated_at?: string
+        }
+        Update: {
+          carrier_margin_percent?: number
+          created_at?: string
+          id?: string
+          singleton?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       pricing_cargo_factors: {
         Row: {

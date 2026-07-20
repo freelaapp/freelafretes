@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { SERVICE_FEE_BPS, makeCode } from "./server-helpers.server";
+import { makeCode } from "./server-helpers.server";
 import { computeAnttFloor } from "./pricing.functions";
+import { applyCarrierSplit } from "./pricing";
+import { CONTRACT_SHIPPER_VERSION, CONTRACT_DRIVER_VERSION } from "./contracts";
 
 
 // ============================================================
@@ -35,6 +37,8 @@ const publishFreightInput = z.object({
   suggested_amount_in_cents: z.number().int().positive().optional().nullable(),
   pricing_breakdown: z.any().optional().nullable(),
   pricing_factors: z.any().optional().nullable(),
+  nfe_key: z.string().length(44).optional().nullable(),
+  nfe_summary: z.any().optional().nullable(),
 });
 
 export const publishFreight = createServerFn({ method: "POST" })
@@ -51,9 +55,24 @@ export const publishFreight = createServerFn({ method: "POST" })
       .from("contractors").select("id").eq("user_id", context.userId).maybeSingle();
     if (cErr || !contractor) throw new Error("Cadastro de empresa não encontrado");
 
-    const base_amount_in_cents = Math.round(data.payment_reais * 100);
+    // Aceite do contrato ETC↔Embarcador é obrigatório
+    const { data: accepted } = await context.supabase
+      .from("contract_acceptances").select("id")
+      .eq("user_id", context.userId)
+      .eq("contract_type", "EMBARCADOR_TRANSPORTE")
+      .eq("version", CONTRACT_SHIPPER_VERSION).maybeSingle();
+    if (!accepted) throw new Error("Você precisa aceitar o contrato de transporte da FREELA FRETES para publicar um frete.");
+
+    const freight_value_in_cents = Math.round(data.payment_reais * 100);
+
+    // Split conforme margem da plataforma
+    const { data: settings } = await context.supabase
+      .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
+    const margem = Number(settings?.carrier_margin_percent ?? 0.20);
+    const split = applyCarrierSplit(freight_value_in_cents, margem);
 
     // Piso mínimo ANTT — obrigatório para LOTAÇÃO (Lei 13.703/2018)
+    // Aplica-se sobre o REPASSE ao TAC (o preço do transporte propriamente dito).
     if (data.freight_mode === "LOTACAO" && data.vehicle_types.length > 0) {
       const antt = await computeAnttFloor({
         vehicle_type: data.vehicle_types[0],
@@ -61,9 +80,9 @@ export const publishFreight = createServerFn({ method: "POST" })
         distance_km: data.distance_km,
         freight_mode: "LOTACAO",
       });
-      if (antt.is_applicable && antt.floor_cents > 0 && base_amount_in_cents < antt.floor_cents) {
+      if (antt.is_applicable && antt.floor_cents > 0 && split.driverPayoutCents < antt.floor_cents) {
         const floorReais = (antt.floor_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-        throw new Error(`O valor está abaixo do piso mínimo ANTT de ${floorReais} — fretes lotação não podem ser contratados abaixo do piso (Lei 13.703/2018).`);
+        throw new Error(`O repasse ao motorista (${(split.driverPayoutCents/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}) fica abaixo do piso ANTT de ${floorReais}. Aumente o valor do frete (Lei 13.703/2018).`);
       }
     }
 
@@ -102,8 +121,13 @@ export const publishFreight = createServerFn({ method: "POST" })
       pickup_at: data.pickup_at,
       delivery_expected_at: data.delivery_expected_at ?? null,
       toll_included: data.toll_included,
-      payment: base_amount_in_cents / 100,
-      base_amount_in_cents,
+      payment: freight_value_in_cents / 100,
+      base_amount_in_cents: freight_value_in_cents,
+      freight_value_cents: split.freightValueCents,
+      driver_payout_cents: split.driverPayoutCents,
+      platform_margin_cents: split.platformMarginCents,
+      nfe_key: data.nfe_key ?? null,
+      nfe_summary: data.nfe_summary ?? null,
       suggested_amount_in_cents: data.suggested_amount_in_cents ?? null,
       pricing_breakdown: data.pricing_breakdown ?? null,
       pricing_factors: data.pricing_factors ?? null,
@@ -171,6 +195,13 @@ export const submitCandidacy = createServerFn({ method: "POST" })
     if (!provider) throw new Error("Cadastro de motorista não encontrado");
     if (provider.validation_status !== "APPROVED") throw new Error("Sua conta ainda não foi aprovada. Você poderá enviar propostas após a aprovação.");
 
+    // Aceite do contrato TAC↔Freela é obrigatório
+    const { data: tac } = await context.supabase
+      .from("contract_acceptances").select("id")
+      .eq("user_id", context.userId)
+      .eq("contract_type", "TAC_SUBCONTRATACAO")
+      .eq("version", CONTRACT_DRIVER_VERSION).maybeSingle();
+    if (!tac) throw new Error("Você precisa aceitar o contrato TAC (Lei 11.442/2007) para enviar propostas.");
 
     const { data: freight } = await context.supabase.from("freights")
       .select("id,status,vehicle_types,body_types").eq("id", data.freight_id).maybeSingle();
@@ -279,6 +310,19 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
       .update({ status: "CLOSED", agreed_amount_in_cents: agreed })
       .eq("id", freight.id);
 
+    // Recalcula split conforme margem atual, sobre o valor efetivamente contratado.
+    const { data: settings } = await context.supabase
+      .from("platform_settings").select("carrier_margin_percent").eq("singleton", true).maybeSingle();
+    const margem = Number(settings?.carrier_margin_percent ?? 0.20);
+    const split = applyCarrierSplit(agreed, margem);
+
+    // Atualiza split no frete para refletir o valor negociado
+    await context.supabase.from("freights").update({
+      freight_value_cents: split.freightValueCents,
+      driver_payout_cents: split.driverPayoutCents,
+      platform_margin_cents: split.platformMarginCents,
+    }).eq("id", freight.id);
+
     // Cria viagem
     const { data: job, error: jErr } = await context.supabase.from("jobs").insert({
       freight_id: freight.id,
@@ -289,12 +333,12 @@ export const acceptCandidacy = createServerFn({ method: "POST" })
     }).select("id").single();
     if (jErr) throw jErr;
 
-    // Cria payment
-    const fee = Math.round((agreed * SERVICE_FEE_BPS) / 10000);
+    // Cria payment — service_fee_in_cents guarda a margem da plataforma
+    // (o motorista recebe agreed − service_fee).
     await context.supabase.from("payments").insert({
       job_id: job.id,
       amount_in_cents: agreed,
-      service_fee_in_cents: fee,
+      service_fee_in_cents: split.platformMarginCents,
       status: "PENDING",
       method: "PIX",
     });

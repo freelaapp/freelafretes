@@ -93,6 +93,27 @@ export function isValidPlate(p: string): boolean {
   return /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(p.toUpperCase());
 }
 
+// ---- Chave da NF-e (44 dígitos, módulo 11) ----
+export function maskNfeKey(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 44);
+  return d.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
+
+export function isValidNfeKey(k: string): boolean {
+  const d = k.replace(/\D/g, "");
+  if (d.length !== 44) return false;
+  const base = d.slice(0, 43);
+  let sum = 0;
+  // Pesos 2..9, cíclicos, aplicados da direita para a esquerda
+  for (let i = 0; i < 43; i++) {
+    const weight = 2 + ((42 - i) % 8);
+    sum += parseInt(base[i]) * weight;
+  }
+  const mod = sum % 11;
+  const dv = mod === 0 || mod === 1 ? 0 : 11 - mod;
+  return dv === parseInt(d[43]);
+}
+
 // Código 6 chars sem 0/O/1/I
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export function generateCode(len = 6): string {
