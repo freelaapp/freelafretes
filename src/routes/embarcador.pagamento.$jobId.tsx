@@ -37,7 +37,7 @@ function Payment() {
     },
   });
 
-  const total = (payment?.amount_in_cents ?? 0) + (payment?.service_fee_in_cents ?? 0);
+  const total = payment?.amount_in_cents ?? 0;
   const pixCode = `00020126...FREELAFRETES.${jobId.slice(0,8).toUpperCase()}...5204000053039865802BR6009SAO PAULO62070503***6304ABCD`;
 
   async function pay() {
@@ -66,9 +66,8 @@ function Payment() {
             <p className="font-semibold">{provider.full_name}</p>
           </div>
           <div className="border-t border-border mt-3 pt-3 space-y-1 text-sm">
-            <div className="flex justify-between"><span>Valor acordado</span><span>{formatBRL(payment.amount_in_cents)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Taxa da plataforma (10%)</span><span>{formatBRL(payment.service_fee_in_cents)}</span></div>
-            <div className="flex justify-between font-bold text-primary pt-1 border-t border-border"><span>Total</span><span>{formatBRL(total)}</span></div>
+            <div className="flex justify-between font-bold text-primary"><span>Total do frete</span><span>{formatBRL(total)}</span></div>
+            <p className="text-[11px] text-muted-foreground pt-1">Inclui transporte, documentação fiscal (CT-e, MDF-e, CIOT), seguro RCTR-C e repasse ao motorista. Sem taxas adicionais.</p>
           </div>
         </div>
 
