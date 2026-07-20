@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPaymentsAdmin, paymentsSummary, releasePayment, refundPayment } from "@/lib/admin.functions";
+import { adminWithholdingsReport } from "@/lib/finance.functions";
 import { PageHeader, DataTable, StatusBadge, Pagination, KpiCard, ConfirmModal } from "@/components/admin/ui";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
@@ -22,6 +23,11 @@ function PaymentsAdmin() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["payments-admin", status, page], queryFn: () => list({ data: { status, page } }) });
   const s = useQuery({ queryKey: ["payments-summary"], queryFn: () => summary() });
+
+  const now = new Date();
+  const [month, setMonth] = useState<string>(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+  const withhold = useServerFn(adminWithholdingsReport);
+  const w = useQuery({ queryKey: ["withholdings", month], queryFn: () => withhold({ data: { month } }) });
 
   const [releaseId, setReleaseId] = useState<string | null>(null);
   const [refundId, setRefundId] = useState<string | null>(null);
@@ -94,6 +100,23 @@ function PaymentsAdmin() {
         }}>
         <textarea value={refundReason} onChange={(e) => setRefundReason(e.target.value)} placeholder="Motivo do estorno" rows={3} className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm" />
       </ConfirmModal>
+
+      <div className="pt-6 border-t border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-sm">Retenções TAC — relatório mensal</h3>
+            <p className="text-xs text-muted-foreground">INSS 2,2% + SEST/SENAT 0,5% recolhidos sobre repasses PAID.</p>
+          </div>
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded-md border border-border bg-card px-3 py-2 text-sm" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <KpiCard label="Bruto pago" value={formatBRL(w.data?.totals.gross ?? 0)} />
+          <KpiCard label="INSS 2,2%" value={formatBRL(w.data?.totals.inss ?? 0)} />
+          <KpiCard label="SEST/SENAT 0,5%" value={formatBRL(w.data?.totals.sest ?? 0)} />
+          <KpiCard label="Total retido" value={formatBRL((w.data ? (w.data.totals.inss + w.data.totals.sest) : 0))} tone="success" />
+        </div>
+        <p className="text-xs text-muted-foreground">{w.data?.totals.count ?? 0} repasse(s) no período.</p>
+      </div>
     </div>
   );
 }

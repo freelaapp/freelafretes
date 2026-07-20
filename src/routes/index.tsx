@@ -17,9 +17,9 @@ import truckVideo from "@/assets/freela-trucks-parade.mp4.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Freela Fretes — Intermediador nacional de fretes" },
+      { title: "Freela Fretes — Transportadora digital nacional" },
       { name: "description", content: "Conectamos embarcadores a caminhoneiros autônomos em todo o Brasil. Publique cargas, encontre fretes e feche negócio com pagamento protegido." },
-      { property: "og:title", content: "Freela Fretes — Intermediador nacional de fretes" },
+      { property: "og:title", content: "Freela Fretes — Transportadora digital nacional" },
       { property: "og:description", content: "Conectamos embarcadores a caminhoneiros autônomos em todo o Brasil. Publique cargas, encontre fretes e feche negócio com pagamento protegido." },
       { property: "og:type", content: "website" },
     ],
@@ -123,7 +123,7 @@ function Hero() {
       <div className="grid md:grid-cols-2 gap-6 items-center p-6 md:p-10 min-h-[420px] md:min-h-[500px]">
         <div className="text-accent-foreground max-w-xl">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary">
-            <Flag className="h-3.5 w-3.5" /> Intermediador nacional de fretes
+            <Flag className="h-3.5 w-3.5" /> Transportadora digital nacional
           </span>
           <h1 className="mt-3 font-display text-4xl md:text-6xl leading-[1.05] text-accent-foreground">
             Sua carga tem pressa.<br />
@@ -372,7 +372,7 @@ function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <Logo size={40} variant="onDark" />
           <p className="mt-4 text-sm text-accent-foreground/70">
-            Intermediador nacional de fretes que conecta o Brasil.
+            Transportadora digital nacional que conecta o Brasil.
           </p>
         </div>
         <FooterCol title="Faça seu cadastro" links={[

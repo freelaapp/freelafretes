@@ -473,6 +473,63 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_payouts: {
+        Row: {
+          created_at: string
+          gross_cents: number
+          id: string
+          inss_cents: number
+          job_id: string
+          net_cents: number
+          paid_at: string | null
+          provider_id: string
+          sest_senat_cents: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gross_cents: number
+          id?: string
+          inss_cents?: number
+          job_id: string
+          net_cents: number
+          paid_at?: string | null
+          provider_id: string
+          sest_senat_cents?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gross_cents?: number
+          id?: string
+          inss_cents?: number
+          job_id?: string
+          net_cents?: number
+          paid_at?: string | null
+          provider_id?: string
+          sest_senat_cents?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_payouts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_payouts_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedbacks: {
         Row: {
           author_id: string
@@ -717,6 +774,57 @@ export type Database = {
           {
             foreignKeyName: "freights_contractor_id_fkey"
             columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          icms_cents: number
+          id: string
+          issued_at: string
+          job_id: string
+          pdf_ready: boolean
+          shipper_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          icms_cents?: number
+          id?: string
+          issued_at?: string
+          job_id: string
+          pdf_ready?: boolean
+          shipper_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          icms_cents?: number
+          id?: string
+          issued_at?: string
+          job_id?: string
+          pdf_ready?: boolean
+          shipper_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_shipper_id_fkey"
+            columns: ["shipper_id"]
             isOneToOne: false
             referencedRelation: "contractors"
             referencedColumns: ["id"]

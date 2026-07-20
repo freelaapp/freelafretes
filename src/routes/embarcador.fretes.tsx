@@ -34,7 +34,7 @@ function MyFreights() {
 
   return (
     <div className="pb-24">
-      <AppHeader title="Meus Fretes" subtitle="Gerencie suas cargas" right={
+      <AppHeader title="Meus Fretes" subtitle="A Freela Fretes transporta para você" right={
         <Link to="/embarcador/publicar" className="inline-flex items-center gap-1 rounded-full bg-accent text-accent-foreground px-3 py-1.5 text-xs font-semibold">
           <PlusCircle className="h-4 w-4" /> Publicar
         </Link>

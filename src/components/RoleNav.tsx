@@ -1,13 +1,14 @@
-import { Package, PlusCircle, TruckIcon, User, Search, ListChecks } from "lucide-react";
+import { Package, PlusCircle, TruckIcon, User, Search, ListChecks, FileText } from "lucide-react";
 import { BottomNav } from "./BottomNav";
 
 export function ContractorNav() {
   return (
     <BottomNav
       items={[
-        { to: "/embarcador/fretes", label: "Meus Fretes", icon: <Package className="h-5 w-5" /> },
+        { to: "/embarcador/fretes", label: "Fretes", icon: <Package className="h-5 w-5" /> },
         { to: "/embarcador/publicar", label: "Publicar", icon: <PlusCircle className="h-5 w-5" /> },
         { to: "/embarcador/viagens", label: "Viagens", icon: <TruckIcon className="h-5 w-5" /> },
+        { to: "/embarcador/faturas", label: "Faturas", icon: <FileText className="h-5 w-5" /> },
         { to: "/embarcador/perfil", label: "Perfil", icon: <User className="h-5 w-5" /> },
       ]}
     />
