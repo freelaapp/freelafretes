@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPaymentsAdmin, paymentsSummary, releasePayment, refundPayment } from "@/lib/admin.functions";
+import { adminWithholdingsReport } from "@/lib/finance.functions";
 import { PageHeader, DataTable, StatusBadge, Pagination, KpiCard, ConfirmModal } from "@/components/admin/ui";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { toast } from "sonner";
