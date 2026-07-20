@@ -24,6 +24,11 @@ function PaymentsAdmin() {
   const q = useQuery({ queryKey: ["payments-admin", status, page], queryFn: () => list({ data: { status, page } }) });
   const s = useQuery({ queryKey: ["payments-summary"], queryFn: () => summary() });
 
+  const now = new Date();
+  const [month, setMonth] = useState<string>(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+  const withhold = useServerFn(adminWithholdingsReport);
+  const w = useQuery({ queryKey: ["withholdings", month], queryFn: () => withhold({ data: { month } }) });
+
   const [releaseId, setReleaseId] = useState<string | null>(null);
   const [refundId, setRefundId] = useState<string | null>(null);
   const [refundReason, setRefundReason] = useState("");
